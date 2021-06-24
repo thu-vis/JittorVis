@@ -2,12 +2,12 @@
 
 Visual understanding of deep learning model.
 
-### JittorVis provides the visualization and tooling needed for machine learning experimentation:
+JittorVis provides the visualization and tooling needed for machine learning experimentation:
 * Observe the hierarchical structure of the model computational graph 
 * Visualizing the model computational graph in the different level (ops and layers)
 * Profiling JittorVis programs
 
-### Features to be supported in the future:
+Features to be supported in the future:
 * Tracking and visualizing metrics such as loss and accuracy
 * Viewing linechart of weights, biases, or other tensors as they change over time
 * And much more
