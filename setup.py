@@ -3,18 +3,20 @@ from distutils.core import setup
 setup(
   name = 'jittorvis',
   packages = ['jittorvis'],
-  version = '0.1',
+  version = '1.0.3',
   license='MIT',
   description = 'Dynamic graph visualization for Jittor',
   author = 'Zhen Li',
   author_email = 'thu.lz@outlook.com',
-  url = 'https://github.com/joelbarmettlerUZH/Scrapeasy',
-  download_url = 'https://github.com/joelbarmettlerUZH/Scrapeasy/archive/pypi-0_1_3.tar.gz',
-  keywords = ['scraping', 'easy', 'scraper', 'website', 'download', 'links', 'images', 'videos'],
+  url = 'https://github.com/swordsbird/JittorVis',
+  download_url = 'https://github.com/swordsbird/JittorVis/archive/pypi-0_1_3.tar.gz',
+  keywords = ['Jittor', 'visualization'],
   install_requires=[
-          'validators',
-          'beautifulsoup4',
+          'Flask',
+          'numpy',
       ],
+  include_package_data=True,
+  package_data={"jittorvis": ["jittorvis/static/*",  "jittorvis/data/*",  "jittorvis/static/css/*",  "jittorvis/static/fonts/*",  "jittorvis/static/js/*",  "jittorvis/static/lib/*"]},
   classifiers=[  # Optional
     # How mature is this project? Common values are
     #   3 - Alpha
@@ -31,9 +33,6 @@ setup(
 
     # Specify the Python versions you support here. In particular, ensure
     # that you indicate whether you support Python 2, Python 3 or both.
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.4',
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
   ],
 )
