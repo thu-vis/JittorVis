@@ -1,6 +1,4 @@
-# JittorVis
-
-Visual understanding of deep learning model.
+# JittorVis: Visual understanding of deep learning model
 
 JittorVis provides the visualization and tooling needed for machine learning experimentation:
 * Observe the hierarchical structure of the model computational graph 
