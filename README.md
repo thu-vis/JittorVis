@@ -1,6 +1,6 @@
 # JittorVis: Visual understanding of deep learning model
 
-![Image of JittorVis](https://octodex.github.com/images/yaktocat.png)
+![Image of JittorVis](https://github.com/swordsbird/JittorVis/raw/main/overview.png)
 
 JittorVis provides the visualization and tooling needed for machine learning experimentation:
 * Observe the hierarchical structure of the model computational graph 
