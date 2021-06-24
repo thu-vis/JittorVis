@@ -14,21 +14,19 @@ Visual analysis of deep learning model.
 
 
 ## Installation
-1. You can create a new python3.7 environment by anaconda: conda create -n jittorvis python=3.7.
-2. You can install the requirements in the requirements.txt, for example: pip install -r requirements.txt.
+pip install jittorvis
 
 
-## Run
-1. You can just start the server by "python server.py --port=8888 --data_path=example.pkl --host=0.0.0.0 --threaded=True --debug=False".
-2. Example data "simple_model.pkl" and "simple_model_train.pkl" in "data".
-3. Visit host:\<port\>/static/index.html.
+## Usage
+from jittorvis import server
+server.run('test.pkl', host='0.0.0.0', port=5005)
+Open 'http://localhost:5005/static/index.html' in your browser.
 
 ## Interaction
-1. Click "Statistics" and "ExecuteOpInfo" to switch the Statistics view and the ExecuteOpInfo view.
-2. Statistics view:
+1. Statistics view:
     1) Switch the played statistic value by the top-right menu.
     2) Scale by click.
-3. Network view:
+2. Network view:
     1) Drag the total panel to adapt its position and scale.
     2) Right-click on the network node to explore its detail information.
     3) Click on the network node to expand it, to explore its point cloud and feature map.
