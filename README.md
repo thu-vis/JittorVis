@@ -34,18 +34,22 @@ Then open the link 'http://localhost:5005/static/index.html' in your browser.
 
 ## Interaction
 
-<img src="https://github.com/swordsbird/JittorVis/raw/main/navigation.png" alt="Drawing" width="400px" />
 1. Navigation view:
     1) Each leaf node represents a computational node in the computational graph.
     2) Click one intermediate node to selected its computational nodes.
 
-<img src="https://github.com/swordsbird/JittorVis/raw/main/graph.png" alt="Drawing" width="600px" />
+<img src="https://github.com/swordsbird/JittorVis/raw/main/navigation.png" alt="Drawing" width="400px" />
+
+
 2. Graph structure view:
     1) Each rectangle represents a computational node, and each link represents data flows among computational nodes.
     2) Drag the total panel to adapt its position and scale.
     3) Click on the network node to expand it, to explore its point cloud and feature map.
     4) Click on the top-right plus button of each network node to explore its children.
     5) Right-click on the network node to explore its detail information.
+
+<img src="https://github.com/swordsbird/JittorVis/raw/main/graph.png" alt="Drawing" width="800px" />
+
 
 ## Requirement
 * Python 3.7
