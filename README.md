@@ -1,5 +1,7 @@
 # JittorVis: Visual understanding of deep learning model
 
+![Image of JittorVis](https://octodex.github.com/images/yaktocat.png)
+
 JittorVis provides the visualization and tooling needed for machine learning experimentation:
 * Observe the hierarchical structure of the model computational graph 
 * Visualizing the model computational graph in the different level (ops and layers)
@@ -24,9 +26,11 @@ Features to be supported in the future:
 pip install jittorvis
 
 ## Usage
+```python
 from jittorvis import server
 server.run('test.pkl', host='0.0.0.0', port=5005)
-Open 'http://localhost:5005/static/index.html' in your browser.
+```
+Then open the link 'http://localhost:5005/static/index.html' in your browser.
 
 ## Interaction
 1. Statistics view:
