@@ -34,13 +34,13 @@ Then open the link 'http://localhost:5005/static/index.html' in your browser.
 
 ## Interaction
 
-![Image of Navigation View](https://github.com/swordsbird/JittorVis/raw/main/navigation.png){width="400px"}
+![Image of Navigation View](https://github.com/swordsbird/JittorVis/raw/main/navigation.png){:height="50%" width="50%"}
 1. Navigation view:
     1) Each leaf node represents a computational node in the computational graph.
     2) Click one intermediate node to selected its computational nodes.
 
 
-![Image of Graph View](https://github.com/swordsbird/JittorVis/raw/main/graph.png){width="400px"}
+![Image of Graph View](https://github.com/swordsbird/JittorVis/raw/main/graph.png){:height="50%" width="50%"}
 2. Graph structure view:
     1) Each rectangle represents a computational node, and each link represents data flows among computational nodes.
     2) Drag the total panel to adapt its position and scale.
