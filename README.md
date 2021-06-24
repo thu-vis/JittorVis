@@ -48,7 +48,7 @@ Then open the link 'http://localhost:5005/static/index.html' in your browser.
     4) Click on the top-right plus button of each network node to explore its children.
     5) Right-click on the network node to explore its detail information.
 
-<img src="https://github.com/swordsbird/JittorVis/raw/main/graph.png" alt="Drawing" width="800px" />
+<img src="https://github.com/swordsbird/JittorVis/raw/main/graph.png" alt="Drawing" width="600px" />
 
 
 ## Requirement
