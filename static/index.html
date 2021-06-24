@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JittorVis</title>
+    <link rel="shortcut icon" type="image/x-ico" href="favicon.ico">
+    <link rel="stylesheet" type="text/css" href="css/flex.css">
+    <link rel="stylesheet" type="text/css" href="css/font.css">
+    <link rel="stylesheet" href="css/bootstrap3.3.7.min.css">
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/introjs.min.css">
+    <link rel="stylesheet" type="text/css" href="lib/contextMenu/contextMenu.min.css">
+</head>
+<body>
+    <div id="AnalyzerView">
+    <div id="AnalyzerView">
+        <div id="PanelGrid">
+            <div id="PanelRow-0">
+                <div id="ControlPanel">
+                    <ul class="nav nav-tabs" style="margin-bottom: 0">
+                        <li class="active" id="statistics_btn"><a>Statistics</a></li>
+                        <!--li id="execute_op_info_btn"><a>ExecuteOpInfo</a></li-->
+                        <!--li id="hidden_btn"><a>Hidden</a></li-->
+                    </ul>
+                    <ul class="nav nav-tabs" style="margin-bottom: 0" id="value_menu_ul">
+                        <li class="nav-item dropdown" id="value_menu_li">
+                            <a class="dropdown-toggle" data-toggle="dropdown" id="value_menu_title">Value</a>
+                            <div class="dropdown-menu" id="value_menu">
+                            </div>
+                        </li>
+                    </ul>
+                    <!--<ul class="nav nav-tabs" style="margin-bottom: 0" id="checkpoints_menu_ul">-->
+                        <!--<li id="checkpoints_add_btn"><a>Add</a></li>-->
+                        <!--<li id="checkpoints_del_btn"><a>Delete</a></li>-->
+                    <!--</ul>-->
+                </div>
+            </div>
+            <div id="PanelRow-1">
+                <div id="StatisticPanel">
+                    <div id="StatisticComponent"></div>
+                </div>
+            </div>
+            <div id="PanelRow-2">
+                <div id="NetworkPanel">
+                    <div id="NetworkComponent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="info-tip-div">
+        <div id="info-tip-title">
+            <label id="info-tip-title-text"></label>
+            <span id="info-remove-btn" class="glyphicon glyphicon-remove"></span>
+        </div>
+
+        <div id="info-tip-content">
+
+        </div>
+    </div>
+</body>
+
+<script src="lib/d3.v4.min.js"></script>
+<script src="lib/dagre.js"></script>
+<script src="lib/jquery-3.2.1.min.js"></script>
+<script src="lib/contextMenu/contextMenu.min.js"></script>
+<script src="lib/popper.min.js"></script>
+<script src="lib/bootstrap3.3.7.min.js"></script>
+<script src="lib/bootstrap.min.js"></script>
+<script src="lib/intro.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/tools.js"></script>
+<script src="js/SegmentedDAG.js"></script>
+<script src="js/widgets.js"></script>
+<script src="js/ColorManager.js"></script>
+<script src="js/StatisticVis.js"></script>
+<script src="js/NetworkVis.js"></script>
+<script src="js/handlers.js"></script>
+<script src="js/main.js"></script>
+</html>
