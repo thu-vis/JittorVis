@@ -39,7 +39,7 @@ Then open the link 'http://localhost:5005/static/index.html' in your browser.
     1) Each leaf node represents a computational node in the computational graph.
     2) Click one intermediate node to selected its computational nodes.
 
-<img src="https://github.com/swordsbird/JittorVis/raw/main/graph.png" alt="Drawing" width="400px" />
+<img src="https://github.com/swordsbird/JittorVis/raw/main/graph.png" alt="Drawing" width="600px" />
 2. Graph structure view:
     1) Each rectangle represents a computational node, and each link represents data flows among computational nodes.
     2) Drag the total panel to adapt its position and scale.
