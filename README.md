@@ -2,16 +2,20 @@
 
 ![Image of JittorVis](https://github.com/swordsbird/JittorVis/raw/main/overview.png)
 
-Deep neural networks have achieved breakthrough performance in many tasks such as image classification. However, the development of high-quality deep models typically relies on a substantial amount of trial-and-error, as there is still no clear understanding of when and why a deep model works. Also, the complexity of the deep neural network architecture brings difficulties to debugging and modifying the model. The visualization of the computational graph of the deep neural network at different levels can bring users a deeper understanding of the computational graph from the whole to the part, so as to debug and modify the model more effectively.
+**Jittor** is a high-performance deep learning framework based on JIT compiling and meta-operators. The whole framework and meta-operators are compiled just-in-time. 
 
-JittorVis provides the visualization and tooling needed for machine learning experimentation:
+**JittorVis** is a deep neural network computational graph visualization library based on **Jittor**.
+
+Deep neural networks have achieved breakthrough performance in many tasks such as image recognition, detection, segmentation, generation, etc. However, the development of high-quality deep models typically relies on a substantial amount of trial and error, as there is still no clear understanding of when and why a deep model works. Also, the complexity of the deep neural network architecture brings difficulties to debugging and modifying the model. **JittorVis** facilitates the visualization of the computational graph of the deep neural network at different levels, which brings users a deeper understanding of the computational graph from the whole to the part to debug and modify the model more effectively.
+
+**JittorVis** provides the visualization and tooling needed for machine learning experimentation:
 * Observe the hierarchical structure of the model computational graph 
-* Visualizing the model computational graph in the different level (ops and layers)
+* Visualizing the computational model graph in the different level (ops and layers)
 * Profiling JittorVis programs
 
 Features to be supported in the future:
 * Tracking and visualizing metrics such as loss and accuracy
-* Viewing linechart of weights, biases, or other tensors as they change over time
+* Viewing line chart of weights, biases, or other tensors as they change over time
 * And much more
 
 Related Links:
@@ -58,7 +62,7 @@ Then open the link 'http://localhost:5005/static/index.html' in your browser.
 
 ## Citation
 
-Towards Better Analysis of Deep Convolutional Neural Networks
+**Towards Better Analysis of Deep Convolutional Neural Networks**
 ```
 @article {
     liu2017convolutional,
@@ -72,7 +76,7 @@ Towards Better Analysis of Deep Convolutional Neural Networks
 }
 ```
 
-Analyzing the Training Processes of Deep Generative Models
+**Analyzing the Training Processes of Deep Generative Models**
 ```
 @article {
     liu2018generative,
@@ -86,7 +90,7 @@ Analyzing the Training Processes of Deep Generative Models
 }
 ```
 
-Analyzing the Noise Robustness of Deep Neural Networks
+**Analyzing the Noise Robustness of Deep Neural Networks**
 ```
 @article {
     cao2021robustness,
