@@ -111,6 +111,10 @@ JittorVis contains three main views, statistics view, navigation view, and graph
 }
 ```
 
+## The Team
+
+JittorVis is currently maintained by the Tsinghua Vis Group. If you are also interested in JittorVis and want to improve it, Please [**join us!**](http://shixialiu.com/)
+
 ## License
 
 JittorVis is Apache 2.0 licensed, as found in the LICENSE.txt file.
