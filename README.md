@@ -36,6 +36,8 @@ pip3 install jittorvis
 ```
 
 ## Usage
+
+[Download link for test.pkl](https://cloud.tsinghua.edu.cn/lib/246262e5-8d6d-4b94-bd29-3b33a4442fef/file/test.zip?dl=1)
 ```python
 from jittorvis import server
 server.run('test.pkl', host='0.0.0.0', port=5005)
