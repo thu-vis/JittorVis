@@ -41,6 +41,9 @@ pip3 install jittorvis
 ```python
 from jittorvis import server
 server.run('test.pkl', host='0.0.0.0', port=5005)
+# JittorVis start.
+server.stop()
+# JittorVis stop.
 ```
 Then open the link 'http://localhost:5005/static/index.html' in your browser.
 
