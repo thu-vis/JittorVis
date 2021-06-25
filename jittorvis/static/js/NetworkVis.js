@@ -220,56 +220,6 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                     }
                     node.op_highlight = [];
                 });
-                /*
-                nodes.forEach(function(node){
-                    node.expand = false;
-                    node.expand_info = 'point_cloud';
-                    node.exploring = false;
-                    node.name = `${node.index}`;
-                    if (node.is_var) {
-                        node.w = self.var_node_r * 2;
-                        node.h = self.var_node_r * 2;
-                    }
-                    else {
-                        node.w = self.node_width;
-                        node.h = self.node_height;
-                    }
-                    node.op_highlight = [];
-                });*/
-
-                let max_group_size = data['max_var_node_group_size'];
-                let group_sizes = [2, 11, 51];
-
-                self.var_node_legends = [{
-                    circle_num: 1,
-                    text: '1',
-                    index: 0
-                }];
-
-                for (let i = 1; i < group_sizes.length; i++) {
-                    if (max_group_size >= group_sizes[i]) {
-                        self.var_node_legends.push({
-                            circle_num: self.var_node_legends.length + 1,
-                            text: `${group_sizes[i - 1]}~${group_sizes[i] - 1}`,
-                            index: self.var_node_legends.length
-                        });
-                    }
-                    else {
-                        self.var_node_legends.push({
-                            circle_num: self.var_node_legends.length + 1,
-                            text: `${group_sizes[i - 1]}~${max_group_size}`,
-                            index: self.var_node_legends.length
-                        });
-                        break;
-                    }
-                }
-                if (max_group_size >= group_sizes[group_sizes.length - 1]) {
-                    self.var_node_legends.push({
-                        circle_num: self.var_node_legends.length + 1,
-                        text: `${group_sizes[group_sizes.length - 1]}~${max_group_size}`,
-                        index: self.var_node_legends.length
-                    });
-                }
 
                 self.infopath = (idx) => {
                     let d = self.all_nodes[idx]
@@ -819,15 +769,6 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                 //.style('stroke', color_manager.edge_color)
                 //.style('fill', color_manager.edge_color);
 
-
-            self.main_group.append('text')
-                .attr('id', 'var_node_text')
-                .attr('class', 'var_node_text')
-                .text('')
-                .attr('x', 0)
-                .attr('y', 0)
-                .style('opacity', 0)
-                .style("user-select", "none");
             self.legend_group = self.chart.append('g').attr('class', 'legend_group');
             self.nodes = [];
             self.curr_all_nodes = [];
@@ -871,7 +812,7 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
             let nodes = self.nodes;
             let edges = self.curr_all_edges;
 
-            let [segNodes, segEdges] = layout(nodes, edges, self.visconfig);
+            DAGLayout(nodes, edges, (x, y) => [x, y]);
             let current_width = Math.max(...nodes.map(d => d.x)) + 100;
             let current_height = Math.max(...nodes.map(d => d.y)) + 50;
             const scale = Math.min((self.chart_width - 80) / current_width, (self.chart_height - 120) / current_height)
@@ -897,16 +838,12 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
             });
 
             get_exploring_node_level_and_height(all_nodes, self.exploring_nodes);
-            self.seg_nodes = segNodes;
-            self.seg_edges = segEdges;
             self.nodes = nodes;
             self.curr_all_edges = edges;
-            self.var_nodes = [];
             self.op_nodes = [];
             self.nodes.forEach(function (node) {
                 if (node.is_var) {
                     // node.y += self.time_cost_height / 2;
-                    self.var_nodes.push(node);
                 }
                 else {
                     self.op_nodes.push(node);
@@ -930,21 +867,6 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
         _create: function () {
             let self = this;
             self._create_network_node();
-            // self._create_network_exploring_node();
-            let seg_groups = self.node_map.selectAll('.seg_node_group')
-                .data(self.seg_nodes);
-            let seg_g_groups = seg_groups.enter()
-                .append('g')
-                .attr('class', 'seg_node_group')
-                .attr('transform', function (d) {
-                    return `translate(${d.x},${d.y})`;
-                });
-            seg_g_groups.append('path')
-                .attr('class', 'seg_node_circle')
-                .attr('d', function (d) {
-                    return seg_node_path_d(d);
-                })
-                .style('fill', color_manager.seg_node_color);
 
             let paths = self.edge_map.selectAll('.network_edge')
                 .data(self.edges, function (d) {
@@ -970,41 +892,12 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                 .style('stroke-width', '4px')
                 .style('opacity', 0)
                 .style('fill', 'none');
-/*
-            let seg_paths = self.edge_map.selectAll('.network_seg_edge')
-                .data(self.seg_edges);
 
-            seg_paths.enter()
-                .append('path')
-                .attr('class', 'network_seg_edge')
-                .attr('d', function (d) {
-                    return line(d.points);
-                })
-                .attr('marker-end', 'url(#edge-arrow)')
-                .style('stroke', color_manager.edge_color)
-                .style('stroke-width', '2px')
-                .style('opacity', '0')
-                .style('fill', 'none');*/
             init_network_click_menu();
         },
         _update: function () {
             let self = this;
             self._update_network_node();
-            // self._update_network_exploring_node();
-            self.node_map.selectAll('.seg_node_group')
-                .data(self.seg_nodes)
-                .transition()
-                .duration(self.duration)
-                .attr('transform', function (d) {
-                    return `translate(${d.x},${d.y})`;
-                });
-            self.node_map.selectAll('.seg_node_group').selectAll('.seg_node_circle').data(function (d) {
-                return [d];
-            }).transition()
-                .duration(self.duration)
-                .attr('d', function (d) {
-                    return seg_node_path_d(d);
-                });
 
             let paths = self.edge_map.selectAll('.network_edge')
                 .data(self.edges, function (d) {
@@ -1026,53 +919,6 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
             let exploring_cover_rects = self.exploring_cover_map.selectAll('.exploring_node_rect')
                 .data(self.op_nodes, function (d) {
                     return d.name;
-                });
-            let exploring_cover_var_circles = self.exploring_cover_map.selectAll('.exploring_var_node_circle')
-                .data(self.var_nodes, function (d) {
-                    return d.name;
-                });
-            let var_groups = self.node_map.selectAll('.var_node_group')
-                .data(self.var_nodes, function (d) {
-                    return d.name;
-                });
-            // let exploring_nodes = filter_exploring_nodes(self.exploring_nodes);
-            // let exploring_groups = self.exploring_node_map.selectAll('.exploring_node_group')
-            //     .data(exploring_nodes, function (d) {
-            //         return d.name;
-            //     });
-
-            // let exploring_hull_paths = self.exploring_node_map.selectAll('.exploring_node_group')
-            //     .selectAll('.exploring_node_bg_path_g')
-            //     .selectAll('.exploring_hull_path')
-            //     .data(function (d) {
-            //         return [d];
-            // });
-
-            let var_node_circles = self.node_map.selectAll('.var_node_group')
-                .selectAll('.var_node_circle')
-                .data(function (d) {
-                    let circle_num = 0;
-                    if (d.children.length === 0) {
-                        circle_num = 1;
-                    }
-                    else if (d.children.length + 1 <= 10) {
-                        circle_num = 2;
-                    }
-                    else if (d.children.length + 1 <= 50) {
-                        circle_num = 3;
-                    }
-                    else {
-                        circle_num = 4;
-                    }
-                    let res = [];
-                    for (let i = 0; i < circle_num; i++) {
-                        res.push({
-                            'circle_index': circle_num - 1 - i,
-                            'circle_num': circle_num,
-                            'var_data': d
-                        });
-                    }
-                    return res;
                 });
 
             let rects = groups.selectAll('.node_gpu_distribution_rect').data(function (d) {
@@ -1106,16 +952,10 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                     self.time_cost_unit_number, self.time_cost_height - 2);
             });
 
-            let seg_groups = self.node_map.selectAll('.seg_node_group')
-                .data(self.seg_nodes);
-
             let paths = self.edge_map.selectAll('.network_edge')
                 .data(self.edges, function (d) {
                     return `${d.start}-${d.end}`;
                 });
-
-            let seg_paths = self.edge_map.selectAll('.network_seg_edge')
-                .data(self.seg_edges);
 
             let op_highlight_rect = self.node_map.selectAll('.op_node_group')
                 .selectAll('.node_main_rect_g')
@@ -1220,26 +1060,7 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                 .transition()
                 .duration(self.remove_duration)
                 .style('opacity', 0);
-            exploring_cover_var_circles.exit()
-                .transition()
-                .duration(self.remove_duration)
-                .style('opacity', 0);
-            var_groups.exit()
-                .transition()
-                .duration(self.remove_duration)
-                .style('opacity', 0);
-            // exploring_hull_paths.exit()
-            //     .transition()
-            //     .duration(self.remove_duration)
-            //     .style('opacity', 0);
-            var_node_circles.exit()
-                .transition()
-                .duration(self.remove_duration)
-                .style('opacity', 0);
-            // exploring_groups.exit()
-            //     .transition()
-            //     .duration(self.remove_duration)
-            //     .style('opacity', 0);
+
             rects.exit()
                 .transition()
                 .duration(self.remove_duration)
@@ -1252,15 +1073,8 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                 .transition()
                 .duration(self.remove_duration)
                 .style('opacity', 0);
-            seg_groups.exit()
-                .transition()
-                .duration(self.remove_duration)
-                .style('opacity', 0);
+
             paths.exit()
-                .transition()
-                .duration(self.remove_duration)
-                .style('opacity', 0);
-            seg_paths.exit()
                 .transition()
                 .duration(self.remove_duration)
                 .style('opacity', 0);
@@ -1268,17 +1082,10 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
             setTimeout(() => {
                 groups.exit().remove();
                 exploring_cover_rects.exit().remove();
-                exploring_cover_var_circles.exit().remove();
-                var_groups.exit().remove();
-                // exploring_groups.exit().remove();
                 rects.exit().remove();
                 units.exit().remove();
-                seg_groups.exit().remove();
                 paths.exit().remove();
-                seg_paths.exit().remove();
                 op_highlight_rect.exit().remove();
-                // exploring_hull_paths.exit().remove();
-                var_node_circles.exit().remove();
             }, self.remove_duration);
         },
         _create_network_node: function () {
@@ -1286,11 +1093,7 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
             let groups = self.node_map.selectAll('.op_node_group')
                 .data(self.op_nodes, function (d) {
                     return d.name;
-                });
-            let var_groups = self.node_map.selectAll('.var_node_group')
-                .data(self.var_nodes, function (d) {
-                    return d.name;
-                });
+                })
             let g_groups = groups.enter()
                 .append('g')
                 .attr('class', 'op_node_group')
@@ -1919,28 +1722,6 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                 .style('opacity', 0)
                 .style('fill', 'transparent');
 
-            let exploring_var_node_circles = self.exploring_cover_map.selectAll('.exploring_var_node_circle')
-                .data(self.var_nodes, function (d) {
-                    return d.name;
-                });
-
-            exploring_var_node_circles.enter().append('circle')
-                .attr('class', 'exploring_var_node_circle')
-                .attr('id', function (d) {
-                    return `exploring_var_node_circle_${d.name}`;
-                })
-                .attr('cursor', "pointer")
-                .attr('cx', function (d) {
-                    return d.x;
-                })
-                .attr('cy', function (d) {
-                    return d.y;
-                })
-                .style('opacity', 0)
-                .style('r', function (d) {
-                    return (d.w + self.exploring_level_delta) / 2;
-                })
-                .style('fill', 'transparent');
         },
         _update_network_node: function () {
             let self = this;
@@ -1953,16 +1734,6 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                 .style('opacity', 1)
                 .attr('transform', function (d) {
                     return `translate(${d.x - d.w / 2},${d.y - d.h / 2})`;
-                });
-            let var_groups = self.node_map.selectAll('.var_node_group')
-                .data(self.var_nodes, function (d) {
-                    return d.name;
-                });
-            var_groups.transition()
-                .duration(self.duration)
-                .style('opacity', 1)
-                .attr('transform', function (d) {
-                    return `translate(${d.x},${d.y})`;
                 });
 
             groups.selectAll('.node_background').data(function (d) {
@@ -2225,52 +1996,6 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                     return d.attrs.shape ? `shape: [${d.attrs.shape.slice(1, d.attrs.shape.length - 2)}]` : `children: ${d.children.length}`
                 })
                 
-
-            self.node_map.selectAll('.var_node_group').selectAll('.var_node_circle').data(function (d) {
-                let circle_num = 0;
-                if (d.children.length === 0) {
-                    circle_num = 1;
-                }
-                else if (d.children.length + 1 <= 10) {
-                    circle_num = 2;
-                }
-                else if (d.children.length + 1 <= 50) {
-                    circle_num = 3;
-                }
-                else {
-                    circle_num = 4;
-                }
-                let res = [];
-                for (let i = 0; i < circle_num; i++) {
-                    res.push({
-                        'circle_index': circle_num - 1 - i,
-                        'circle_num': circle_num,
-                        'var_data': d
-                    });
-                }
-                return res;
-            }).transition()
-                .duration(self.duration)
-                .attr('id', function (d) {
-                    return `var_node_circle_${d.var_data.name}_${d.circle_index}`;
-                })
-                .attr('cx', function (d) {
-                    return ((d.circle_index + 1) - (d.circle_num + 1) / 2) * 2;
-                })
-                .attr('cy', function (d) {
-                    return ((d.circle_index + 1) - (d.circle_num + 1) / 2) * -2;
-                })
-                .style('fill', function (d) {
-                    return color_manager.get_color_by_exploring_height(d.var_data.exploring_height);
-                })
-                .style('opacity', function (d) {
-                    if (d.circle_index === 0) {
-                        return 1;
-                    }
-                    return 0.7;
-                });
-
-
             let rects = groups.selectAll('.node_gpu_distribution_rect').data(function (d) {
                 let max = 0;
                 let node_main_width = d.expand ? d.w - self.expand_btn_width : d.w;
@@ -2503,26 +2228,6 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                 })
                 .style('stroke', color_manager.node_border_color)
                 .style('stroke-width', 1);
-
-            self.exploring_cover_map.selectAll('.exploring_var_node_circle')
-                .data(self.var_nodes, function (d) {
-                    return d.name;
-                }).transition()
-                .duration(self.duration)
-                .attr('cx', function (d) {
-                    return d.x;
-                })
-                .attr('cy', function (d) {
-                    return d.y;
-                })
-                .style('r', function (d) {
-                    return (d.w + self.exploring_level_delta) / 2;
-                })
-                .style('fill', function (d) {
-                    return color_manager.brother_node_highlight_color;
-                })
-                .style('stroke', color_manager.node_border_color)
-                .style('stroke-width', 1);
         },
         _create_network_exploring_node: function () {
             let self = this;
@@ -2687,9 +2392,6 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
             self.edges = edges;
 
             self.op_nodes.forEach(node => {
-                get_exploring_height_of_node(node, self.data.nodes);
-            });
-            self.var_nodes.forEach(node => {
                 get_exploring_height_of_node(node, self.data.nodes);
             });
             self.edges.forEach(edge => {
