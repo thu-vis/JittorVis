@@ -1,6 +1,6 @@
 # JittorVis: Visual understanding of deep learning model
 
-![Image of JittorVis](https://github.com/swordsbird/JittorVis/raw/main/overview.png)
+![Image of JittorVis](https://github.com/swordsbird/JittorVis/raw/main/assets/overview.png)
 
 **Jittor** is a high-performance deep learning framework based on JIT compiling and meta-operators. The whole framework and meta-operators are compiled just-in-time. 
 
@@ -50,7 +50,7 @@ Then open the link 'http://localhost:5005/static/index.html' in your browser.
     1) Each leaf node represents a computational node in the computational graph.
     2) Click one intermediate node to selected its computational nodes.
 
-<img src="https://github.com/swordsbird/JittorVis/raw/main/navigation.png" alt="Drawing" width="400px" />
+<img src="https://github.com/swordsbird/JittorVis/raw/main/assets/navigation.png" alt="Drawing" width="400px" />
 
 
 2. Graph structure view:
@@ -60,7 +60,7 @@ Then open the link 'http://localhost:5005/static/index.html' in your browser.
     4) Click on the top-right plus button of each network node to explore its children.
     5) Right-click on the network node to explore its detail information.
 
-<img src="https://github.com/swordsbird/JittorVis/raw/main/graph.png" alt="Drawing" width="600px" />
+<img src="https://github.com/swordsbird/JittorVis/raw/main/assets/graph.png" alt="Drawing" width="600px" />
 
 ## Citation
 
