@@ -2,9 +2,7 @@
 
 ![Image of JittorVis](https://github.com/swordsbird/JittorVis/raw/main/assets/overview.png)
 
-**Jittor** is a high-performance deep learning framework based on JIT compiling and meta-operators. The whole framework and meta-operators are compiled just-in-time. 
-
-**JittorVis** is a deep neural network computational graph visualization library based on **Jittor**.
+**JittorVis** is a deep neural network computational graph visualization library based on [**Jittor**](https://github.com/jittor/jittor/).
 
 Deep neural networks have achieved breakthrough performance in many tasks such as image recognition, detection, segmentation, generation, etc. However, the development of high-quality deep models typically relies on a substantial amount of trial and error, as there is still no clear understanding of when and why a deep model works. Also, the complexity of the deep neural network architecture brings difficulties to debugging and modifying the model. **JittorVis** facilitates the visualization of the computational graph of the deep neural network at different levels, which brings users a deeper understanding of the computational graph from the whole to the part to debug and modify the model more effectively.
 
@@ -19,12 +17,8 @@ Features to be supported in the future:
 * And much more
 
 Related Links:
-*  [Jittor Github](https://github.com/jittor/jittor/)
+*  [Jittor](https://github.com/jittor/jittor/)
 *  [Jittor Website](https://cg.cs.tsinghua.edu.cn/jittor/)
-*  [Jittor Tutorials](https://cg.cs.tsinghua.edu.cn/jittor/tutorial/)
-*  [Jittor Models](https://cg.cs.tsinghua.edu.cn/jittor/resources/)
-*  [Jittor Documents](https://cg.cs.tsinghua.edu.cn/jittor/assets/docs/index.html)
-*  [Gitee](https://gitee.com/jittor/jittor)
 
 ## Installation
 
@@ -47,21 +41,29 @@ server.stop()
 ```
 Then open the link 'http://localhost:5005/static/index.html' in your browser.
 
-## Interaction
+## Visualization
 
-1. Navigation view:
-    1) Each leaf node represents a computational node in the computational graph.
-    2) Click one intermediate node to selected its computational nodes.
+JittorVis contains three main views, statistics view, navigation view, and graph structure view.
+
+1. **Statistics view**:
+
+    The statistics view provides statistics information for the deep neuron network, such as loss and accuracy
+
+2. **Navigation view**:
+
+    The graph structure view can visualize a hierarchical structure of a Jittor model, enabling exploration of the model. Each leaf node represents a computational node in the computational graph.
+    * Click one intermediate node to selected its computational nodes.
 
 <img src="https://github.com/swordsbird/JittorVis/raw/main/assets/navigation.png" alt="Drawing" width="400px" />
 
 
-2. Graph structure view:
-    1) Each rectangle represents a computational node, and each link represents data flows among computational nodes.
-    2) Drag the total panel to adapt its position and scale.
-    3) Click on the network node to expand it, to explore its point cloud and feature map.
-    4) Click on the top-right plus button of each network node to explore its children.
-    5) Right-click on the network node to explore its detail information.
+3. **Graph structure view**:
+
+    The graph structure view can visualize a Jittor graph, enabling inspection of the Jittor model. In the graph structure view, each rectangle represents a computational node, and each link represents data flows among computational nodes. The graph structure view has the following interactions:
+    * Drag the total panel to adapt its position and scale.
+    * Click on the network node to expand it, to explore its point cloud and feature map.
+    * Click on the top-right plus button of each network node to explore its children.
+    * Right-click on the network node to explore its detail information.
 
 <img src="https://github.com/swordsbird/JittorVis/raw/main/assets/graph.png" alt="Drawing" width="600px" />
 

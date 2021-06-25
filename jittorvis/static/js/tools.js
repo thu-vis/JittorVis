@@ -154,23 +154,23 @@ function add_intro() {
         },
         {
             element: document.querySelector('.tree-btn'),
-            intro: "Each leaf node represents a computing node in the computing graph."
+            intro: "Each leaf node represents a computational node in the computational graph."
         },
         {
             element: document.querySelector('.tree-btn'),
-            intro: "Click one intermediate node to selected its computing nodes."
+            intro: "Click one intermediate node to selected its computational nodes."
         },
         {
             element: document.querySelector('#networkView'),
-            intro: "This is the graph structure view, which shows the graph structure of selected computing nodes."
+            intro: "This is the graph structure view, which shows the graph structure of selected computational nodes."
         },
         {
             element: document.querySelector('#networkView'),
-            intro: "Each rectangle represents a computing node."
+            intro: "Each rectangle represents a computational node."
         },
         {
             element: document.querySelector('#networkView'),
-            intro: "Each link represents data flows among computing nodes."
+            intro: "Each link represents data flows among computational nodes."
         },{
             element: document.querySelector('body'),
             intro: "Start to explore your model in JittorVis!"
