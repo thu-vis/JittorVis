@@ -22,8 +22,14 @@ Related Links:
 *  [Jittor Documents](https://cg.cs.tsinghua.edu.cn/jittor/assets/docs/index.html)
 *  [Gitee](https://gitee.com/jittor/jittor)
 
-## Pip install
+## Installation
+
+JittorVis need python version >= 3.7.
+```
 pip install jittorvis
+or
+pip3 install jittorvis
+```
 
 ## Usage
 ```python
@@ -50,12 +56,50 @@ Then open the link 'http://localhost:5005/static/index.html' in your browser.
 
 <img src="https://github.com/swordsbird/JittorVis/raw/main/graph.png" alt="Drawing" width="600px" />
 
+## Citation
 
-## Requirement
-* Python 3.7
-* Flask==1.1.2
-* numpy==1.19.4
-* itsdangerous==1.1.0
-* Jinja2==2.11.2
-* MarkupSafe==1.1.1
-* Werkzeug==1.0.1
+Towards Better Analysis of Deep Convolutional Neural Networks
+```
+@article {
+    liu2017convolutional,
+    author={Liu, Mengchen and Shi, Jiaxin and Li, Zhen and Li, Chongxuan and Zhu, Jun and Liu, Shixia},
+    journal={IEEE Transactions on Visualization and Computer Graphics},
+    title={Towards Better Analysis of Deep Convolutional Neural Networks},
+    year={2017},
+    volume={23},
+    number={1},
+    pages={91-100}
+}
+```
+
+Analyzing the Training Processes of Deep Generative Models
+```
+@article {
+    liu2018generative,
+    author={Liu, Mengchen and Shi, Jiaxin and Cao, Kelei and Zhu, Jun and Liu, Shixia},
+    journal={IEEE Transactions on Visualization and Computer Graphics},
+    title={Analyzing the Training Processes of Deep Generative Models},
+    year={2018},
+    volume={24},
+    number={1},
+    pages={77-87}
+}
+```
+
+Analyzing the Noise Robustness of Deep Neural Networks
+```
+@article {
+    cao2021robustness,
+    author={Cao, Kelei and Liu, Mengchen and Su, Hang and Wu, Jing and Zhu, Jun and Liu, Shixia},
+    journal={IEEE Transactions on Visualization and Computer Graphics},
+    title={Analyzing the Noise Robustness of Deep Neural Networks},
+    year={2021},
+    volume={27},
+    number={7},
+    pages={3289-3304}
+}
+```
+
+## License
+
+JittorVis is Apache 2.0 licensed, as found in the LICENSE.txt file.
