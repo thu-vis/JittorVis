@@ -3609,55 +3609,6 @@ VIS.CHART.WIDGET.statisticVisWidget = function (options) {
                 })
                 .attr('y', -2);
 
-            // let op_group_path = self.op_schedule_node_group
-            //     .selectAll('.op_gpu_id_row_group')
-            //     .selectAll('.op_group_g')
-            //     .selectAll('.op_group_path')
-            //     .data(function (d, i) {
-            //         return [d];
-            //     });
-            //
-            // op_group_path
-            //     .transition()
-            //     .duration(duration)
-            //     .attr('d', function (d) {
-            //         return path_d([[self.row_gap_y / 2, 0],
-            //             [self.op_group_time_to_x_scale(d.op_info.end_time)
-            //             - self.op_group_time_to_x_scale(d.op_info.start_time)
-            //             - self.row_gap_y / 2, 0]]);
-            //     });
-            //
-            // let op_group_circle = self.op_schedule_node_group.selectAll('.op_gpu_id_row_group')
-            //     .selectAll('.op_group_g')
-            //     .selectAll('.op_group_circle')
-            //     .data(function (d, i) {
-            //         let cx1 = self.op_group_circle_r, cx2 = self.op_group_time_to_x_scale(d.op_info.end_time)
-            //                 - self.op_group_time_to_x_scale(d.op_info.start_time)
-            //                 - self.op_group_circle_r;
-            //         if (cx1 > cx2) {
-            //             cx1 = (cx1 + cx2) / 2;
-            //             cx2 = cx1;
-            //         }
-            //         return [{
-            //             'op_index': d.op_info.index,
-            //             'cx': cx1,
-            //             'cy': 0,
-            //             'r': self.op_group_circle_r
-            //         }, {
-            //             'op_index': d.op_info.index,
-            //             'cx': cx2,
-            //             'cy': 0,
-            //             'r': self.op_group_circle_r
-            //         }];
-            //     });
-            //
-            // op_group_circle
-            //     .transition()
-            //     .duration(duration)
-            //     .attr('cx', d=>d.cx)
-            //     .attr('cy', d=>d.cy)
-            //     .attr('r', d=>d.r);
-
             self.op_schedule_background_group.selectAll('#op_schedule_background_rect')
                 .transition()
                 .duration(self.zoomed_duration)

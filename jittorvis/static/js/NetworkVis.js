@@ -20,6 +20,405 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
         init: function () {
             this._init_chart();
         },
+        getNodetree: function() {
+            let self = this
+            const nodes = JSON.parse(JSON.stringify(self.all_nodes))
+            nodes.forEach(node => {
+                node.parent = null
+            })
+            nodes.forEach(node => {
+                node.children = node.children.map(id => nodes[id])
+                node.children.forEach(child => {
+                    child.father = node
+                })
+            })
+            let root = {
+                title: 'model',
+                index: -1,
+                children: nodes.filter(d => !d.father)
+            }
+            function visit(x) {
+                x.size = 1
+                for (let ch of x.children) {
+                    if (x.title != 'model') {
+                        self.all_nodes[ch.index].depth = self.all_nodes[x.index].depth + 1
+                    } else {
+                        self.all_nodes[ch.index].depth = 0
+                    }
+                    visit(ch)
+                    //self.all_nodes[ch.index].father = self.all_nodes[x.index]
+                    x.size += ch.size
+                }
+                if (x.title != 'model') {
+                    if (x.children.length == 0) {
+                        self.all_nodes[x.index].treenodes = [x.index]
+                    } else {
+                        self.all_nodes[x.index].treenodes = [x.index].concat(...x.children.map(e => self.all_nodes[e.index].treenodes))
+                    }
+                }
+                if (x.children.length <= 3)
+                    x.subnodes = [].concat(...x.children.map(d => d.children.length == 0 ? [d.index] : d.children.map(e => e.index)))
+                else
+                    x.subnodes = [].concat(...x.children.map(d => [d.index]))
+            }
+            visit(root)
+            nodes.push(root)
+            nodes.forEach(node => {
+                let next = []
+                for (let i = 0; i < node.children.length; ++i) {
+                    next.push([])
+                    node.children[i].visited = false
+                }
+                for (let i = 0; i < node.children.length; ++i) {
+                    for (let j = i + 1; j < node.children.length; ++j) {
+                        if (node.children[i].next.indexOf(node.children[j].index) != -1) {
+                            next[i].push(j)
+                        } else if (node.children[j].next.indexOf(node.children[i].index) != -1) {
+                            next[j].push(i)
+                        }
+                    }
+                }
+                let orders = []
+                let toposort = (x) => {
+                    if (node.children[x].visited) return
+                    node.children[x].visited = true
+                    for (let y of next[x]) {
+                        toposort(y)
+                    }
+                    orders.push(x)
+                }
+                for (let i = 0; i < node.children.length; ++i) {
+                    if (node.children[i].visited) continue
+                    toposort(i)
+                }
+
+                if (node.index != -1 && !self.all_nodes[node.index].attrs.shape && node.children.length > 0) {
+                    let current = self.all_nodes[node.index]
+                    let target = self.all_nodes[node.children[orders[0]].index]
+                    for (let i = 0; i < orders.length; ++i) {
+                        if (self.all_nodes[node.children[orders[i]].index].attrs.has_feature) {
+                            target = self.all_nodes[node.children[orders[i]].index]
+                            break
+                        }
+                    }
+                    current.attrs.has_feature = target.attrs.has_feature
+                    current.attrs.enable_expand = target.attrs.enable_expand
+                    current.attrs.shape = target.attrs.shape
+                    current.attrs.var_node_id = target.attrs.var_node_id
+                }
+                orders = orders.reverse()
+                node.children = orders.map(i => node.children[i])
+
+                let counts = {}
+                for (let i = 0; i < node.children.length; ++i) {
+                    if (node.children[i].children.length == 0) {
+                        if (node.children[i].title == '') {
+                            node.children[i].title = node.children[i].type
+                        }
+                        counts[node.children[i].title] = (counts[node.children[i].title] || 0) + 1
+                    }
+                }
+                let newarr = []
+                for (let i = 0; i < node.children.length; ++i) {
+                    if (node.children[i].children.length == 0 && counts[node.children[i].title] > 1) {
+                        newarr.push({
+                            title: `${node.children[i].title} * ${counts[node.children[i].title]}`,
+                            nodes: node.children.filter(d => d.title == node.children[i].title),
+                            size: counts[node.children[i].title],
+                            index: node.children[i].index,
+                            children: [],
+                        })
+                        counts[node.children[i].title] = 0
+                    } else if (node.children[i].children.length > 0 || counts[node.children[i].title] == 1) {
+                        newarr.push(node.children[i])
+                    }
+                }
+                if (newarr.length > 20) {
+                    const arr1 = newarr.filter(d => d.children.length > 0)
+                    const arr2 = newarr.filter(d => d.children.length == 0)
+                    newarr = arr1.concat(arr2.slice(0, 15))
+                    newarr[newarr.length - 1].others = arr2.slice(10)
+                    newarr[newarr.length - 1].title = newarr[newarr.length - 1].title + " ..."
+                }
+                node.children = newarr
+            })
+            return root
+        },
+        renderTree: function(nodetree) {
+            const self = this
+            const margin = ({ top: 10, right: 120, bottom: 50, left: 60 })
+            const diagonal = d3.linkHorizontal().x(d => d.y).y(d => d.x)
+            const dx = 25
+            const dy = 120
+            const width = self.guideview.attr("width")
+            const tree = d3.tree().nodeSize([dx, dy])
+            const root = d3.hierarchy(nodetree)
+            let nodeSet = new Set(self.all_nodes.map(d => d.index))
+
+            function expand(x) {
+                x.focus = true
+                if (nodeSet.has(x.data.index)) {
+                    return
+                }
+                if (!x.children) {
+                    x.children = x._children
+                }
+                if (!x.children) {
+                    return
+                }
+                for (let ch of x.children) {
+                    expand(ch)
+                }
+            }
+
+            function focus(x) {
+                root.descendants().forEach((d, i) => {
+                    d._children = d._children || d.children
+                    d.focus = false
+                    if (d.depth >= 2) d.children = null;
+                })
+                expand(x)
+                while (x) {
+                    x.children = x._children || x.children
+                    x = x.parent
+                }
+            }
+
+            let last
+            function moveTo(x) {
+                last = x
+                const back = self.righttop_area.select("g.back")
+                const lbarea = self.leftbottom_area
+                lbarea.selectAll("*").remove()
+                if (x.parent) {
+                    back.select("rect").attr("stroke", color_manager.darker_default_color)
+                    back.select("polygon").attr("fill", color_manager.darker_default_color)
+                    lbarea.append("text")
+                        .attr("dy", 40)
+                        .attr("fill", color_manager.darker_text_color)
+                        .attr("font-size", "24px")
+                        .attr("font-style", "italic")
+                        .text(self.infopath(x.data.index))
+                    lbarea.append("text")
+                        .attr("dy", 72)
+                        .attr("fill", color_manager.darker_text_color)
+                        .attr("font-size", "24px")
+                        .attr("font-style", "italic")
+                        .text(x.data.subnodes.length + ' nodes')
+                } else {
+                    back.select("rect").attr("stroke", color_manager.disable_color)
+                    back.select("polygon").attr("fill", color_manager.disable_color)
+                }
+                x.children = x._children;
+                const idx = x.data.subnodes
+                nodeSet = new Set(idx)
+                focus(x)
+                self.curr_all_nodes = idx.map(x => self.all_nodes[x]);
+                self.nodes = process_duplicated_brother_var_nodes(self.curr_all_nodes, self.all_edges);
+                [self.nodes, self.curr_all_edges] = compute_edges(self.nodes, self.all_edges, self.all_nodes)
+                self._generate_chart();
+                update(x)
+            }
+            self.moveTo = (idx) => {
+                if (idx === null) {
+                    if (last.parent)
+                        moveTo(last.parent)
+                    else
+                        moveTo(root)
+                    return
+                }
+                for (let i = 0; i < root.descendants().length; ++i) {
+                    if (root.descendants()[i].data.index == idx) {
+                        moveTo(root.descendants()[i])
+                        return
+                    }
+                }
+            }
+
+            root.x0 = dy / 2;
+            root.y0 = 0;
+            root.descendants().forEach((d, i) => {
+                d.id = i;
+                d._children = d.children;
+                d.focus = nodeSet.has(d.data.index)
+                if (d.depth >= 2) d.children = null;
+            });
+
+
+            const svg = self.guideview
+                .style("font", "15px sans-serif")
+                .style("user-select", "none")
+
+            const height = svg.attr("height")
+
+            self.treeview = svg.append("g")
+                .attr("class", "tree_view")
+
+            const canvas = self.treeview.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`)
+
+            const gLink = canvas.append("g")
+                .attr("fill", "none")
+                .attr("stroke", "#555")
+                .attr("stroke-opacity", 0.4)
+                .attr("stroke-width", 1.5);
+
+            const gNode = canvas.append("g")
+                .attr("cursor", "pointer")
+                .attr("pointer-events", "all");
+
+            function update(source) {
+                const duration = d3.event && d3.event.altKey ? 2500 : 250;
+                const nodes = root.descendants().reverse();
+                const links = root.links();
+
+                // Compute the new tree layout.
+                tree(root);
+
+                let left = root;
+                let right = root;
+                let bottom = root;
+                root.eachBefore(node => {
+                    if (node.x < left.x) left = node;
+                    if (node.x > right.x) right = node;
+                    if (node.y > bottom.y) bottom = node;
+                });
+
+                let left_x = left.x
+                let right_x = right.x
+                let real_height = right_x - left_x
+                let real_width = bottom.y
+                let offset_x = Math.max(((height - margin.top - margin.bottom) - real_height) / 2 - left_x + margin.top, -left.x + margin.top)
+                let offset_y = (bottom.y + 2 * dy > width) ? 0 : ((bottom.y + 2 * dy - width) / 2);
+                let scale = Math.min((height - margin.top - margin.bottom) / real_height, (width - margin.left - margin.right) / real_width)
+                if (scale < 1) {
+                    self.treeview.attr('transform', `scale(${scale})`)
+                }
+
+                root.eachBefore(node => {
+                    node.x += offset_x
+                    node.y -= offset_y
+                })
+                
+                const transition = svg.transition()
+                    .duration(duration)
+                    .tween("resize", window.ResizeObserver ? null : () => () => svg.dispatch("toggle"));
+
+                // Update the nodes…
+                const node = gNode.selectAll("g")
+                    .data(nodes, d => d.id);
+
+                // Enter any new nodes at the parent's previous position.
+                const nodeEnter = node.enter().append("g")
+                    .attr("transform", d => `translate(${source.y0},${source.x0})`)
+                    .attr("fill-opacity", 0)
+                    .attr("stroke-opacity", 0)
+                    .on("click", (d) => {
+                        if (!d.children) {
+                            moveTo(d)
+                        } else {
+                            d.children = null
+                            if (d.parent)
+                                moveTo(d.parent)
+                            else
+                                moveTo(root)
+                        }
+                    });
+
+                nodeEnter.append("circle")
+                    .attr("class", "tree-btn")
+                    .attr("r", 3.5)
+                    .attr("fill", d => nodeSet.has(d.data.index) ? color_manager.tree_highlight_color : color_manager.tree_default_color)
+                    .attr("stroke-width", 10);
+
+                nodeEnter.append("line").attr("class", "hline")
+                nodeEnter.append("line").attr("class", "vline")
+
+                nodeEnter.append("text")
+                    .attr("dy", "0.31em")
+                    .attr("x", d => d._children ? -6 : 6)
+                    .attr("text-anchor", d => d._children ? "end" : "start")
+                    .attr("font-size", "16px")
+                    .text(d => d.data.title)
+                    .clone(true).lower()
+                    .attr("stroke-linejoin", "round")
+                    .attr("stroke-width", 3)
+                    .attr("stroke", "white");
+
+                // Transition nodes to their new position.
+                const nodeUpdate = node.merge(nodeEnter).transition(transition)
+                    .attr("transform", d => `translate(${d.y},${d.x})`)
+                    .attr("fill-opacity", 1)
+                    .attr("stroke-opacity", 1)
+
+                nodeUpdate
+                    .select("circle")
+                    .attr("r", d => d._children && d._children.length > 0 ? 5 : 3.5)
+                    .attr("fill", d => {
+                        return d.focus ? color_manager.tree_highlight_color : color_manager.tree_default_color
+                    })
+                
+                const glyph_r = 3
+
+                nodeUpdate
+                    .select("line.vline")
+                    .attr("x1", -glyph_r)
+                    .attr("y1", 0)
+                    .attr("x2", glyph_r)
+                    .attr("y2", 0)
+                    .attr("stroke", "white")
+                    .attr("stroke-width", d => (d._children && d._children.length > 0) ? 2 : 0)
+                
+                nodeUpdate
+                    .select("line.hline")
+                    .attr("x1", 0)
+                    .attr("y1", -glyph_r)
+                    .attr("x2", 0)
+                    .attr("y2", glyph_r)
+                    .attr("stroke", "white")
+                    .attr("stroke-width", d => (!d.children && d._children && d._children.length > 0) ? 2 : 0)
+
+
+                // Transition exiting nodes to the parent's new position.
+                const nodeExit = node.exit().transition(transition).remove()
+                    .attr("transform", d => `translate(${source.y},${source.x})`)
+                    .attr("fill-opacity", 0)
+                    .attr("stroke-opacity", 0);
+
+                // Update the links…
+                const link = gLink.selectAll("path")
+                    .data(links, d => d.target.id);
+
+                // Enter any new links at the parent's previous position.
+                const linkEnter = link.enter().append("path")
+                    .attr("d", d => {
+                        const o = { x: source.x0, y: source.y0 };
+                        return diagonal({ source: o, target: o });
+                    })
+
+                // Transition links to their new position.
+                link.merge(linkEnter).transition(transition)
+                    .attr("d", diagonal)
+                    .attr("stroke", d => {
+                        return d.target.focus ? color_manager.tree_highlight_color : color_manager.tree_default_color
+                    })
+
+                // Transition exiting nodes to the parent's new position.
+                link.exit().transition(transition).remove()
+                    .attr("d", d => {
+                        const o = { x: source.x, y: source.y };
+                        return diagonal({ source: o, target: o });
+                    });
+
+                // Stash the old positions for transition.
+                root.eachBefore(d => {
+                    d.x0 = d.x;
+                    d.y0 = d.y;
+                });
+            }
+
+            moveTo(root)
+        },
         redraw: function (data) {
             let self = this;
             if (data) {
@@ -54,156 +453,14 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                     }
                 })
 
-                window.data = data
                 self.all_nodes = all_nodes
                 self.all_edges = all_edges
                 self.curr_all_nodes = root.map(x => all_nodes[x]);
 
-                function getNodetree() {
-                    let nodes = JSON.parse(JSON.stringify(all_nodes))
-                    nodes.forEach(node => {
-                        node.parent = null
-                    })
-                    nodes.forEach(node => {
-                        node.children = node.children.map(id => nodes[id])
-                        node.children.forEach(child => {
-                            child.father = node
-                        })
-                    })
-                    let root = {
-                        title: 'model',
-                        index: -1,
-                        children: nodes.filter(d => !d.father)
-                    }
-                    function visit(x) {
-                        x.size = 1
-                        for (let ch of x.children) {
-                            if (x.title != 'model') {
-                                self.all_nodes[ch.index].depth = self.all_nodes[x.index].depth + 1
-                            } else {
-                                self.all_nodes[ch.index].depth = 0
-                            }
-                            visit(ch)
-                            //self.all_nodes[ch.index].father = self.all_nodes[x.index]
-                            x.size += ch.size
-                        }
-                        if (x.title != 'model') {
-                            if (x.children.length == 0) {
-                                self.all_nodes[x.index].treenodes = [x.index]
-                            } else {
-                                self.all_nodes[x.index].treenodes = [x.index].concat(...x.children.map(e => self.all_nodes[e.index].treenodes))
-                            }
-                        }
-                        if (x.children.length <= 3)
-                            x.subnodes = [].concat(...x.children.map(d => d.children.length == 0 ? [d.index] : d.children.map(e => e.index)))
-                        else
-                            x.subnodes = [].concat(...x.children.map(d => [d.index]))
-                    }
-                    visit(root)
-                    nodes.push(root)
-                    nodes.forEach(node => {
-                        let next = []
-                        for (let i = 0; i < node.children.length; ++i) {
-                            next.push([])
-                            node.children[i].visited = false
-                        }
-                        for (let i = 0; i < node.children.length; ++i) {
-                            for (let j = i + 1; j < node.children.length; ++j) {
-                                if (node.children[i].next.indexOf(node.children[j].index) != -1) {
-                                    next[i].push(j)
-                                } else if (node.children[j].next.indexOf(node.children[i].index) != -1) {
-                                    next[j].push(i)
-                                }
-                            }
-                        }
-                        let orders = []
-                        let toposort = (x) => {
-                            if (node.children[x].visited) return
-                            node.children[x].visited = true
-                            for (let y of next[x]) {
-                                toposort(y)
-                            }
-                            orders.push(x)
-                        }
-                        for (let i = 0; i < node.children.length; ++i) {
-                            if (node.children[i].visited) continue
-                            toposort(i)
-                        }
-
-                        if (node.index != -1 && !self.all_nodes[node.index].attrs.shape && node.children.length > 0) {
-                            let current = self.all_nodes[node.index]
-                            let target = self.all_nodes[node.children[orders[0]].index]
-                            for (let i = 0; i < orders.length; ++i) {
-                                if (self.all_nodes[node.children[orders[i]].index].attrs.has_feature) {
-                                    target = self.all_nodes[node.children[orders[i]].index]
-                                    break
-                                }
-                            }
-                            current.attrs.has_feature = target.attrs.has_feature
-                            current.attrs.enable_expand = target.attrs.enable_expand
-                            current.attrs.shape = target.attrs.shape
-                            current.attrs.var_node_id = target.attrs.var_node_id
-                        }
-                        orders = orders.reverse()
-                        node.children = orders.map(i => node.children[i])
-
-                        let counts = {}
-                        for (let i = 0; i < node.children.length; ++i) {
-                            if (node.children[i].children.length == 0) {
-                                if (node.children[i].title == '') {
-                                    node.children[i].title = node.children[i].type
-                                }
-                                counts[node.children[i].title] = (counts[node.children[i].title] || 0) + 1
-                            }
-                        }
-                        let newarr = []
-                        for (let i = 0; i < node.children.length; ++i) {
-                            if (node.children[i].children.length == 0 && counts[node.children[i].title] > 1) {
-                                newarr.push({
-                                    title: `${node.children[i].title} * ${counts[node.children[i].title]}`,
-                                    nodes: node.children.filter(d => d.title == node.children[i].title),
-                                    size: counts[node.children[i].title],
-                                    index: node.children[i].index,
-                                    children: [],
-                                })
-                                counts[node.children[i].title] = 0
-                            } else if (node.children[i].children.length > 0 || counts[node.children[i].title] == 1) {
-                                newarr.push(node.children[i])
-                            }
-                        }
-                        if (newarr.length > 20) {
-                            const arr1 = newarr.filter(d => d.children.length > 0)
-                            const arr2 = newarr.filter(d => d.children.length == 0)
-                            newarr = arr1.concat(arr2.slice(0, 15))
-                            newarr[newarr.length - 1].others = arr2.slice(10)
-                            newarr[newarr.length - 1].title = newarr[newarr.length - 1].title + " ..."
-                        }
-                        node.children = newarr
-                    })
-                    window.nodes = nodes
-                    return root
-                }
-                const nodetree = getNodetree()
-
+                const nodetree = self.getNodetree()
                 self.nodes = process_duplicated_brother_var_nodes(self.curr_all_nodes, all_edges);
                 [self.nodes, self.curr_all_edges] = compute_edges(self.nodes, self.all_edges, self.all_nodes)
 
-
-                /*
-                let nodes = JSON.parse(JSON.stringify(all_nodes))
-                nodes.forEach(node => {
-                    node.father = null
-                })
-                nodes.forEach(node => {
-                    node.children = node.children.map(id => nodes[id])
-                    node.children.forEach(child => {
-                        child.father = node
-                    })
-                })
-                self.nodes = nodes.filter(d => !d.father)
-                self.edges = JSON.parse(JSON.stringify(all_edges))
-                    .filter(d => !nodes[d.start].father && !nodes[d.end].father)
-                    */
                 self.curr_all_edges = self.edges;
                 all_nodes.forEach(function (node) {
                     node.expand = false;
@@ -238,289 +495,7 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                     return info.join('/')
                 }
 
-                function drawTree() {
-                    const margin = ({ top: 10, right: 120, bottom: 50, left: 60 })
-                    const diagonal = d3.linkHorizontal().x(d => d.y).y(d => d.x)
-                    const dx = 25
-                    const dy = 120
-                    const width = self.guideview.attr("width")
-                    const tree = d3.tree().nodeSize([dx, dy])
-                    const root = d3.hierarchy(nodetree)
-                    let nodeSet = new Set(self.all_nodes.map(d => d.index))
-
-                    function expand(x) {
-                        x.focus = true
-                        if (nodeSet.has(x.data.index)) {
-                            return
-                        }
-                        if (!x.children) {
-                            x.children = x._children
-                        }
-                        if (!x.children) {
-                            return
-                        }
-                        for (let ch of x.children) {
-                            expand(ch)
-                        }
-                    }
-
-                    function focus(x) {
-                        root.descendants().forEach((d, i) => {
-                            d._children = d._children || d.children
-                            d.focus = false
-                            if (d.depth >= 2) d.children = null;
-                        })
-                        expand(x)
-                        while (x) {
-                            x.children = x._children || x.children
-                            x = x.parent
-                        }
-                    }
-
-                    let last
-                    function moveTo(x) {
-                        last = x
-                        const back = self.righttop_area.select("g.back")
-                        const lbarea = self.leftbottom_area
-                        lbarea.selectAll("*").remove()
-                        if (x.parent) {
-                            back.select("rect").attr("stroke", color_manager.darker_default_color)
-                            back.select("polygon").attr("fill", color_manager.darker_default_color)
-                            lbarea.append("text")
-                                .attr("dy", 40)
-                                .attr("fill", color_manager.darker_text_color)
-                                .attr("font-size", "24px")
-                                .attr("font-style", "italic")
-                                .text(self.infopath(x.data.index))
-                            lbarea.append("text")
-                                .attr("dy", 72)
-                                .attr("fill", color_manager.darker_text_color)
-                                .attr("font-size", "24px")
-                                .attr("font-style", "italic")
-                                .text(x.data.subnodes.length + ' nodes')
-                        } else {
-                            back.select("rect").attr("stroke", color_manager.disable_color)
-                            back.select("polygon").attr("fill", color_manager.disable_color)
-                        }
-                        x.children = x._children;
-                        const idx = x.data.subnodes
-                        nodeSet = new Set(idx)
-                        focus(x)
-                        self.curr_all_nodes = idx.map(x => self.all_nodes[x]);
-                        self.nodes = process_duplicated_brother_var_nodes(self.curr_all_nodes, self.all_edges);
-                        [self.nodes, self.curr_all_edges] = compute_edges(self.nodes, self.all_edges, self.all_nodes)
-                        self._generate_chart();
-                        update(x)
-                    }
-                    self.moveTo = (idx) => {
-                        if (idx === null) {
-                            if (last.parent)
-                                moveTo(last.parent)
-                            else
-                                moveTo(root)
-                            return
-                        }
-                        for (let i = 0; i < root.descendants().length; ++i) {
-                            if (root.descendants()[i].data.index == idx) {
-                                moveTo(root.descendants()[i])
-                                return
-                            }
-                        }
-                    }
-
-                    root.x0 = dy / 2;
-                    root.y0 = 0;
-                    root.descendants().forEach((d, i) => {
-                        d.id = i;
-                        d._children = d.children;
-                        d.focus = nodeSet.has(d.data.index)
-                        if (d.depth >= 2) d.children = null;
-                    });
-
-
-                    const svg = self.guideview
-                        .style("font", "15px sans-serif")
-                        .style("user-select", "none")
-
-                    const height = svg.attr("height")
-
-                    self.treeview = svg.append("g")
-                        .attr("class", "tree_view")
-
-                    const canvas = self.treeview.append("g")
-                        .attr("transform", `translate(${margin.left},${margin.top})`)
-
-                    const gLink = canvas.append("g")
-                        .attr("fill", "none")
-                        .attr("stroke", "#555")
-                        .attr("stroke-opacity", 0.4)
-                        .attr("stroke-width", 1.5);
-
-                    const gNode = canvas.append("g")
-                        .attr("cursor", "pointer")
-                        .attr("pointer-events", "all");
-
-                    function update(source) {
-                        const duration = d3.event && d3.event.altKey ? 2500 : 250;
-                        const nodes = root.descendants().reverse();
-                        const links = root.links();
-
-                        // Compute the new tree layout.
-                        tree(root);
-
-                        let left = root;
-                        let right = root;
-                        let bottom = root;
-                        root.eachBefore(node => {
-                            if (node.x < left.x) left = node;
-                            if (node.x > right.x) right = node;
-                            if (node.y > bottom.y) bottom = node;
-                        });
-
-                        let left_x = left.x
-                        let right_x = right.x
-                        let real_height = right_x - left_x
-                        let real_width = bottom.y
-                        let offset_x = Math.max(((height - margin.top - margin.bottom) - real_height) / 2 - left_x + margin.top, -left.x + margin.top)
-                        let offset_y = (bottom.y + 2 * dy > width) ? 0 : ((bottom.y + 2 * dy - width) / 2);
-                        let scale = Math.min((height - margin.top - margin.bottom) / real_height, (width - margin.left - margin.right) / real_width)
-                        if (scale < 1) {
-                            self.treeview.attr('transform', `scale(${scale})`)
-                        }
-
-                        root.eachBefore(node => {
-                            node.x += offset_x
-                            node.y -= offset_y
-                        })
-/*
-                        background
-                            .transition()
-                            .duration(duration)
-                            .attr("x", -margin.left * 0.5)
-                            .attr("y", left.x - margin.top)
-                            .attr("height", height)
-                            .attr("width", width - margin.right * 0.5)
-*/
-                        const transition = svg.transition()
-                            .duration(duration)
-                            .tween("resize", window.ResizeObserver ? null : () => () => svg.dispatch("toggle"));
-
-                        // Update the nodes…
-                        const node = gNode.selectAll("g")
-                            .data(nodes, d => d.id);
-
-                        // Enter any new nodes at the parent's previous position.
-                        const nodeEnter = node.enter().append("g")
-                            .attr("transform", d => `translate(${source.y0},${source.x0})`)
-                            .attr("fill-opacity", 0)
-                            .attr("stroke-opacity", 0)
-                            .on("click", (d) => {
-                                if (!d.children) {
-                                    moveTo(d)
-                                } else {
-                                    d.children = null
-                                    if (d.parent)
-                                        moveTo(d.parent)
-                                    else
-                                        moveTo(root)
-                                }
-                            });
-
-                        nodeEnter.append("circle")
-                            .attr("class", "tree-btn")
-                            .attr("r", 3.5)
-                            .attr("fill", d => nodeSet.has(d.data.index) ? color_manager.tree_highlight_color : color_manager.tree_default_color)
-                            .attr("stroke-width", 10);
-
-                        nodeEnter.append("line").attr("class", "hline")
-                        nodeEnter.append("line").attr("class", "vline")
-
-                        nodeEnter.append("text")
-                            .attr("dy", "0.31em")
-                            .attr("x", d => d._children ? -6 : 6)
-                            .attr("text-anchor", d => d._children ? "end" : "start")
-                            .attr("font-size", "16px")
-                            .text(d => d.data.title)
-                            .clone(true).lower()
-                            .attr("stroke-linejoin", "round")
-                            .attr("stroke-width", 3)
-                            .attr("stroke", "white");
-
-                        // Transition nodes to their new position.
-                        const nodeUpdate = node.merge(nodeEnter).transition(transition)
-                            .attr("transform", d => `translate(${d.y},${d.x})`)
-                            .attr("fill-opacity", 1)
-                            .attr("stroke-opacity", 1)
-
-                        nodeUpdate
-                            .select("circle")
-                            .attr("r", d => d._children && d._children.length > 0 ? 5 : 3.5)
-                            .attr("fill", d => {
-                                return d.focus ? color_manager.tree_highlight_color : color_manager.tree_default_color
-                            })
-                        
-                        const glyph_r = 3
-
-                        nodeUpdate
-                            .select("line.vline")
-                            .attr("x1", -glyph_r)
-                            .attr("y1", 0)
-                            .attr("x2", glyph_r)
-                            .attr("y2", 0)
-                            .attr("stroke", "white")
-                            .attr("stroke-width", d => (d._children && d._children.length > 0) ? 2 : 0)
-                        
-                        nodeUpdate
-                            .select("line.hline")
-                            .attr("x1", 0)
-                            .attr("y1", -glyph_r)
-                            .attr("x2", 0)
-                            .attr("y2", glyph_r)
-                            .attr("stroke", "white")
-                            .attr("stroke-width", d => (!d.children && d._children && d._children.length > 0) ? 2 : 0)
-
-
-                        // Transition exiting nodes to the parent's new position.
-                        const nodeExit = node.exit().transition(transition).remove()
-                            .attr("transform", d => `translate(${source.y},${source.x})`)
-                            .attr("fill-opacity", 0)
-                            .attr("stroke-opacity", 0);
-
-                        // Update the links…
-                        const link = gLink.selectAll("path")
-                            .data(links, d => d.target.id);
-
-                        // Enter any new links at the parent's previous position.
-                        const linkEnter = link.enter().append("path")
-                            .attr("d", d => {
-                                const o = { x: source.x0, y: source.y0 };
-                                return diagonal({ source: o, target: o });
-                            })
-
-                        // Transition links to their new position.
-                        link.merge(linkEnter).transition(transition)
-                            .attr("d", diagonal)
-                            .attr("stroke", d => {
-                                return d.target.focus ? color_manager.tree_highlight_color : color_manager.tree_default_color
-                            })
-
-                        // Transition exiting nodes to the parent's new position.
-                        link.exit().transition(transition).remove()
-                            .attr("d", d => {
-                                const o = { x: source.x, y: source.y };
-                                return diagonal({ source: o, target: o });
-                            });
-
-                        // Stash the old positions for transition.
-                        root.eachBefore(d => {
-                            d.x0 = d.x;
-                            d.y0 = d.y;
-                        });
-                    }
-
-                    moveTo(root)
-                }
-                drawTree()
+                self.renderTree(nodetree)
                 self._generate_chart();
             }
         },
@@ -765,9 +740,7 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                     .attr('orient', 'auto')
                 .append('path')
                     .attr('d', 'M0,-5 L10,0 L0,5Z')
-                    .style('fill', '#999');
-                //.style('stroke', color_manager.edge_color)
-                //.style('fill', color_manager.edge_color);
+                    .style('fill', '#999')
 
             self.legend_group = self.chart.append('g').attr('class', 'legend_group');
             self.nodes = [];
@@ -849,20 +822,6 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                     self.op_nodes.push(node);
                 }
             });
-
-
-            // self._remove();
-            // setTimeout(()=>{
-            //     // self._pre_update();
-            //     setTimeout(()=>{
-            //         self._update();
-            //         setTimeout(()=>{
-            //             self._create();
-            //             self._update();
-            //         }, self.duration);
-            //     }, self.duration);
-            //
-            // }, self.remove_duration);
         },
         _create: function () {
             let self = this;
@@ -920,37 +879,6 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                 .data(self.op_nodes, function (d) {
                     return d.name;
                 });
-
-            let rects = groups.selectAll('.node_gpu_distribution_rect').data(function (d) {
-                let max = 0;
-                d.gpu_distribution.forEach(value => {
-                    if (value > max) {
-                        max = value;
-                    }
-                });
-                return d.gpu_distribution.map((x, i) => {
-                    return {
-                        'label': self.data['gpu_ids'][i],
-                        'value': x / max,
-                        'width': Math.min(d.w / 15, 20),
-                        'height': Math.min((d.h - self.time_cost_height * 2 - 8) / 5, 10)
-                    };
-                });
-            });
-
-            let max_time_cost = 0;
-            self.op_nodes.forEach(node => {
-                if (node.time_cost > max_time_cost) {
-                    max_time_cost = node.time_cost;
-                }
-            });
-
-            let units = groups.selectAll('.node_time_cost_rect').data(function (d) {
-                let node_main_width = d.expand ? d.w - self.expand_btn_width : d.w;
-                return create_units(d.time_cost, max_time_cost,
-                    node_main_width - self.time_cost_height - self.explore_btn_width,
-                    self.time_cost_unit_number, self.time_cost_height - 2);
-            });
 
             let paths = self.edge_map.selectAll('.network_edge')
                 .data(self.edges, function (d) {
@@ -1060,20 +988,10 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                 .transition()
                 .duration(self.remove_duration)
                 .style('opacity', 0);
-
-            rects.exit()
-                .transition()
-                .duration(self.remove_duration)
-                .style('opacity', 0);
             op_highlight_rect.exit()
                 .transition()
                 .duration(self.remove_duration)
                 .style('opacity', 0);
-            units.exit()
-                .transition()
-                .duration(self.remove_duration)
-                .style('opacity', 0);
-
             paths.exit()
                 .transition()
                 .duration(self.remove_duration)
@@ -1082,8 +1000,6 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
             setTimeout(() => {
                 groups.exit().remove();
                 exploring_cover_rects.exit().remove();
-                rects.exit().remove();
-                units.exit().remove();
                 paths.exit().remove();
                 op_highlight_rect.exit().remove();
             }, self.remove_duration);

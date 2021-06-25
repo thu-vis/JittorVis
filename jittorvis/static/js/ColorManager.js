@@ -51,7 +51,6 @@ ColorManager.prototype.get_color_by_label = function (class_label) {
     }
     else {
         return self.available_colors[class_label % self.selection_max];
-        return self.default_color;
     }
 };
 
@@ -67,18 +66,6 @@ ColorManager.prototype.get_color_by_exploring_height = function (exploring_heigh
         let self = this;
         return self.old_get_color_by_exploring_height(exploring_height);
     }
-    // else if (exploring_height === 0) {
-    //     return `rgb(${240},${252},${255})`;
-    // }
-    // else if (exploring_height === 1) {
-    //     return `rgb(${219},${245},${251})`;
-    // }
-    // else if (exploring_height === 2) {
-    //     return `rgb(${198},${237},${248})`;
-    // }
-    // else if (exploring_height === 3) {
-    //     return `rgb(${156},${222},${240})`;
-    // }
 };
 
 
