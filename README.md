@@ -1,4 +1,4 @@
-# JittorVis: Visual understanding of deep learning model
+# JittorVis: Visual understanding of deep learning models
 
 ![Image of JittorVis](https://github.com/swordsbird/JittorVis/raw/main/assets/overview.png)
 
@@ -9,7 +9,7 @@ Deep neural networks have achieved breakthrough performance in many tasks such a
 **JittorVis** provides the visualization and tooling needed for machine learning experimentation:
 * Observing the hierarchical structure of the model dataflow graph
 * Visualizing the dataflow model graph in the different level (ops and layers)
-* Profiling JittorVis programs
+* Profiling Jittor programs
 
 Features to be supported in the future:
 * Tracking and visualizing metrics such as loss and accuracy
@@ -63,7 +63,7 @@ JittorVis contains three main views, statistics view, navigation view, and graph
     * Drag the total panel to adapt its position and scale.
     * Click on the network node to expand it, to explore its point cloud and feature map.
     * Click on the top-right plus button of each network node to explore its children.
-    * Right-click on the network node to explore its detail information.
+    * Right-click on the network node to explore its detailed information.
 
 <img src="https://github.com/swordsbird/JittorVis/raw/main/assets/graph.png" alt="Drawing" width="600px" />
 
