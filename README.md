@@ -1,6 +1,6 @@
 # JittorVis: Visual understanding of deep learning model
 
-![Image of JittorVis](https://github.com/swordsbird/JittorVis/raw/main/assets/logo.png)
+<img src="https://github.com/swordsbird/JittorVis/raw/main/assets/logo.png" alt="Drawing" width="500px" />
 **JittorVis** is an open-source library for understanding the inner workings of [**Jittor**](https://github.com/jittor/jittor/) models by visually illustrating their dataflow graphs.
 
 Deep neural networks have achieved breakthrough performance in many tasks such as image recognition, detection, segmentation, generation, etc. However, the development of high-quality deep models typically relies on a substantial amount of trial and error, as there is still no clear understanding of when and why a deep model works. Also, the complexity of the deep neural network architecture brings difficulties to debugging and modifying the model. **JittorVis** facilitates the visualization of the dataflow graph of the deep neural network at different levels, which brings users a deeper understanding of the dataflow graph from the whole to the part to debug and modify the model more effectively.
