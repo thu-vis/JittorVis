@@ -1,13 +1,13 @@
 # JittorVis: Visual understanding of deep learning model
 
 ![Image of JittorVis](https://github.com/swordsbird/JittorVis/raw/main/assets/overview.png)
-**JittorVis** is an open-source library for visualizing and exploring computational graphs of [**Jittor**](https://github.com/jittor/jittor/) models.
+**JittorVis** is an open-source library for visualizing and exploring dataflow graphs of [**Jittor**](https://github.com/jittor/jittor/) models.
 
-Deep neural networks have achieved breakthrough performance in many tasks such as image recognition, detection, segmentation, generation, etc. However, the development of high-quality deep models typically relies on a substantial amount of trial and error, as there is still no clear understanding of when and why a deep model works. Also, the complexity of the deep neural network architecture brings difficulties to debugging and modifying the model. **JittorVis** facilitates the visualization of the computational graph of the deep neural network at different levels, which brings users a deeper understanding of the computational graph from the whole to the part to debug and modify the model more effectively.
+Deep neural networks have achieved breakthrough performance in many tasks such as image recognition, detection, segmentation, generation, etc. However, the development of high-quality deep models typically relies on a substantial amount of trial and error, as there is still no clear understanding of when and why a deep model works. Also, the complexity of the deep neural network architecture brings difficulties to debugging and modifying the model. **JittorVis** facilitates the visualization of the dataflow graph of the deep neural network at different levels, which brings users a deeper understanding of the dataflow graph from the whole to the part to debug and modify the model more effectively.
 
 **JittorVis** provides the visualization and tooling needed for machine learning experimentation:
-* Observing the hierarchical structure of the model computational graph
-* Visualizing the computational model graph in the different level (ops and layers)
+* Observing the hierarchical structure of the model dataflow graph
+* Visualizing the dataflow model graph in the different level (ops and layers)
 * Profiling JittorVis programs
 
 Features to be supported in the future:
@@ -50,7 +50,7 @@ JittorVis contains three main views, statistics view, navigation view, and graph
 
 2. **Navigation view**:
 
-    The graph structure view can visualize a hierarchical structure of a Jittor model, enabling exploration of the model. Each leaf node represents a computational node in the computational graph.
+    The graph structure view can visualize a hierarchical structure of a Jittor model, enabling exploration of the model. Each leaf node represents a computational node in the dataflow graph.
     * Click one intermediate node to selected its computational nodes.
 
 <img src="https://github.com/swordsbird/JittorVis/raw/main/assets/navigation.png" alt="Drawing" width="400px" />
