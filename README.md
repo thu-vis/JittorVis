@@ -7,13 +7,14 @@
 Deep neural networks have achieved breakthrough performance in many tasks such as image recognition, detection, segmentation, generation, etc. However, the development of high-quality deep models typically relies on a substantial amount of trial and error, as there is still no clear understanding of when and why a deep model works. Also, the complexity of the deep neural network architecture brings difficulties to debugging and modifying the model. **JittorVis** facilitates the visualization of the dataflow graph of the deep neural network at different levels, which brings users a deeper understanding of the dataflow graph from the whole to the part to debug and modify the model more effectively.
 
 **JittorVis** provides the visualization and tooling needed for machine learning experimentation:
+
 * Observing the hierarchical structure of the model dataflow graph
-* Visualizing the dataflow model graph in the different level (ops and layers)
+* Visualizing the model dataflow graph in the different level (ops and layers)
 * Profiling Jittor programs
 
 Features to be supported in the future:
 * Tracking and visualizing metrics such as loss and accuracy
-* Viewing line chart of weights, biases, or other tensors as they change over time
+* Viewing line charts of weights, biases, or other tensors as they change over time
 * And much more
 
 Related Links:
@@ -43,27 +44,27 @@ Then open the link 'http://localhost:5005/static/index.html' in your browser.
 
 ## Visualization
 
-JittorVis contains three main views, statistics view, navigation view, and graph structure view.
+JittorVis contains three main views: statistics view, navigation view, and graph structure view.
 
 1. **Statistics view**:
 
-    The statistics view provides statistics information for the deep neuron network, such as loss and accuracy
+The statistics view provides statistics information for the deep neural network, such as loss and accuracy.
 
 2. **Navigation view**:
 
-    The graph structure view can visualize a hierarchical structure of a Jittor model, enabling exploration of the model. Each leaf node represents a computational node in the dataflow graph.
-    * Click one intermediate node to selected its computational nodes.
+    The navigation view visualizes the hierarchical structure of a Jittor model to facilitate the exploration of the model. Each leaf node represents a computational node in the dataflow graph. Users can click one intermediate node to selected its computational nodes and turn to the graph structure view to explore their graph structure.
 
 <img src="https://github.com/swordsbird/JittorVis/raw/main/assets/navigation.png" alt="Drawing" width="400px" />
 
 
 3. **Graph structure view**:
 
-    The graph structure view can visualize a Jittor graph, enabling inspection of the Jittor model. In the graph structure view, each rectangle represents a computational node, and each link represents data flows among computational nodes. The graph structure view has the following interactions:
-    * Drag the total panel to adapt its position and scale.
-    * Click on the network node to expand it, to explore its point cloud and feature map.
-    * Click on the top-right plus button of each network node to explore its children.
-    * Right-click on the network node to explore its detailed information.
+    The graph structure view displays the graph structure of a Jittor graph. In the graph structure view, each rectangle represents a computational node, and each link represents dataflows among computational nodes. The graph structure view has the following interactions:
+    * Drag to pan 
+    * Scroll to zoom in and out
+    * Click one computational node to explore its point cloud and feature map
+    * Click the top-right plus button of one computational node to explore its children
+    * Right-click one computational node to explore its detailed information
 
 <img src="https://github.com/swordsbird/JittorVis/raw/main/assets/graph.png" alt="Drawing" width="600px" />
 
