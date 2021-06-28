@@ -47,7 +47,7 @@ JittorVis contains three main views: statistics view, navigation view, and graph
 
 1. **Statistics view**:
 
-The statistics view provides statistics information for the deep neural network, such as loss and accuracy.
+    The statistics view provides statistics information for the deep neural network, such as loss and accuracy.
 
 2. **Navigation view**:
 
