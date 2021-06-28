@@ -51,7 +51,7 @@ The statistics view provides statistics information for the deep neural network,
 
 2. **Navigation view**:
 
-    The navigation view visualizes the hierarchical structure of a Jittor model to facilitate the exploration of the model. Each leaf node represents a computational node in the dataflow graph. Users can click one intermediate node to selected its computational nodes and turn to the graph structure view to explore their graph structure.
+    The navigation view visualizes the hierarchical structure of a Jittor model to facilitate the exploration of the model. Each tree node represents a computational node in the dataflow graph, and each leaf node represents a basic operation in the graph. Users can click one intermediate node to selected its computational nodes and turn to the graph structure view to explore their graph structure.
 
 <img src="https://github.com/swordsbird/JittorVis/raw/main/assets/navigation.png" alt="Drawing" width="400px" />
 
