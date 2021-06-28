@@ -61,8 +61,9 @@ The statistics view provides statistics information for the deep neural network,
     The graph structure view displays the graph structure of a Jittor graph. In the graph structure view, each rectangle represents a computational node, and each link represents dataflows among computational nodes. The graph structure view has the following interactions:
     * Drag to pan 
     * Scroll to zoom in and out
-    * Click one computational node to explore its point cloud and feature map
+    * Click one computational node to explore its feature map
     * Click the top-right plus button of one computational node to explore its children
+    * Click the top-right button “←” to return to the previous level of the graph
     * Right-click one computational node to explore its detailed information
 
 <img src="https://github.com/swordsbird/JittorVis/raw/main/assets/graph.png" alt="Drawing" width="600px" />
