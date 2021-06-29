@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
   name = 'jittorvis',
   packages = ['jittorvis'],
-  version = '1.0.3',
+  version = '1.0.8',
   license='MIT',
   description = 'Dynamic graph visualization for Jittor',
   author = 'Zhen Li',
@@ -15,6 +15,11 @@ setup(
           'Flask',
           'numpy',
       ],
+  entry_points={
+    'console_scripts':[
+        'jittorvis = jittorvis.server:main'
+    ]
+  },
   include_package_data=True,
   package_data={"jittorvis": ["jittorvis/static/*",  "jittorvis/data/*",  "jittorvis/static/css/*",  "jittorvis/static/fonts/*",  "jittorvis/static/js/*",  "jittorvis/static/lib/*"]},
   classifiers=[  # Optional

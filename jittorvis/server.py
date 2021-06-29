@@ -4,6 +4,7 @@ import sys
 import json
 import pickle
 import logging
+import argparse
 from multiprocessing import Process
 from .processing import *
 from .utils import get_exploring_height_and_level, create_feature_map_image
@@ -48,19 +49,22 @@ def get_image():
         image_path = create_feature_map_image(rawdata, data_id, shape, var_node_id)
         return image_path
 
-def run_server(data_path, host = None, port = 5005):
-    if not os.path.exists(data_path):
-        raise Exception("The path does not exist.")
+def run_server(data, host = None, port = 5005):
     app.logger.disabled = True
     global rawdata
-    rawdata = pickle.load(open(data_path, 'rb'))
+    if type(data) == str:
+        if not os.path.exists(data):
+            raise Exception("The path does not exist.")
+        rawdata = pickle.load(open(data, 'rb'))
+    else:
+        rawdata = data
     app.run(port=port, host=host, threaded=True, debug=False)
 
-def run(data_path, host = None, port = 5005):
+def run(data, host = None, port = 5005):
     global p
     if p is not None:
         p.terminate()
-    p = Process(target = run_server, args=(data_path, host, port))
+    p = Process(target = run_server, args=(data, host, port))
     p.start()
     print("JittorVis Start.")
 
@@ -73,3 +77,19 @@ def stop():
     p.terminate()
     p = None
     print("JittorVis Stop.")
+
+def main():
+    parser = argparse.ArgumentParser(description='manual to this script')
+    parser.add_argument("--data_path", type=str, default='.')
+    parser.add_argument("--host", type=str, default="0.0.0.0")
+    parser.add_argument("--port", type=int, default=5005)
+    args = parser.parse_args()
+    if not os.path.exists(args.data_path):
+        raise Exception("The path does not exist.")
+    global rawdata
+    rawdata = pickle.load(open(args.data_path, 'rb'))
+    app.run(port=args.port, host=args.host, threaded=True, debug=False)
+
+
+if __name__ == '__main__':
+    main()
