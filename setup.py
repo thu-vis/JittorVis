@@ -3,13 +3,13 @@ from distutils.core import setup
 setup(
   name = 'jittorvis',
   packages = ['jittorvis'],
-  version = '1.0.8',
+  version = '1.1.2',
   license='MIT',
   description = 'Dynamic graph visualization for Jittor',
   author = 'Zhen Li',
   author_email = 'thu.lz@outlook.com',
   url = 'https://github.com/swordsbird/JittorVis',
-  download_url = 'https://github.com/swordsbird/JittorVis/archive/pypi-0_1_3.tar.gz',
+  download_url = 'https://github.com/swordsbird/JittorVis/archive/jittorvis-1.1.0.tar.gz',
   keywords = ['Jittor', 'visualization'],
   install_requires=[
           'Flask',
@@ -31,13 +31,15 @@ setup(
 
     # Indicate who your project is intended for
     'Intended Audience :: Developers',
-    'Topic :: Software Development :: Build Tools',
+    'Topic :: Software Development :: Libraries',
 
     # Pick your license as you wish
-    'License :: OSI Approved :: MIT License',
+    'License :: OSI Approved :: Apache Software License',
 
     # Specify the Python versions you support here. In particular, ensure
     # that you indicate whether you support Python 2, Python 3 or both.
+    'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
   ],
 )

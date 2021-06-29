@@ -31,6 +31,37 @@ pip3 install jittorvis
 
 ## Usage
 
+Visualize a jittor model directly.
+```python
+import jittor as jt
+from jittor import Module
+from jittor import nn
+import numpy as np
+
+class Model(Module):
+    def __init__(self):
+        self.layer1 = nn.Linear(1, 10)
+        self.relu = nn.Relu() 
+        self.layer2 = nn.Linear(10, 1)
+    def execute (self,x) :
+        x = self.layer1(x)
+        x = self.relu(x)
+        x = self.layer2(x)
+        return x
+
+model = Model()
+
+from jittorvis import server
+input = jt.float32(np.random.rand(10, 1))
+server.visualize(input, model, host = '0.0.0.0')
+# JittorVis start.
+server.stop()
+# JittorVis stop.
+```
+Then open the link 'http://localhost:5005/static/index.html' in your browser.
+
+
+Visualize an exported jittor computational graph.
 [Download link for test.pkl](https://cloud.tsinghua.edu.cn/lib/246262e5-8d6d-4b94-bd29-3b33a4442fef/file/test.zip?dl=1)
 ```python
 from jittorvis import server
@@ -39,7 +70,11 @@ server.run('test.pkl', host='0.0.0.0', port=5005)
 server.stop()
 # JittorVis stop.
 ```
-Then open the link 'http://localhost:5005/static/index.html' in your browser.
+
+Run jittorvis via command line interface.
+```shell
+jittorvis --data_path test.pkl --host='0.0.0.0' --port=5005
+```
 
 ## Visualization
 

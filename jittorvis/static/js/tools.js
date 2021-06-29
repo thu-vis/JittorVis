@@ -289,28 +289,6 @@ function compute_edges(nodes, all_edges, all_nodes=[]) {
         let e = { start, end }
         edges.push(e)
     }
-    const is_ancestor = (x, y) => {
-        while (x != -1 && x != y) x = all_nodes[x].parent
-        return x == y
-    }
-    const shrink = (nodes) => {
-        let preserve_nodes = nodes.filter(d => is_ancestor(d, all_nodes[lca].parent))
-        let left_nodes = nodes.filter(d => !is_ancestor(d, all_nodes[lca].parent))
-        edges.forEach(d => {
-            for (let e of left_nodes) {
-                if (d.start == e && all_nodes[e].parent != -1) d.start = all_nodes[e].parent
-                if (d.end == e && all_nodes[e].parent != -1) d.end = all_nodes[e].parent
-            }
-        })
-        left_nodes = [...new Set(left_nodes.map(d => all_nodes[d].parent).filter(d => d != -1))]
-        return preserve_nodes.concat(left_nodes)
-    }
-    if (in_nodes.length > 1) {
-        in_nodes = shrink(in_nodes)
-    }
-    if (out_nodes.length > 1) {
-        out_nodes = shrink(out_nodes)
-    }
     
     in_nodes = in_nodes.map(d => all_nodes[d])
     out_nodes = out_nodes.map(d => all_nodes[d])
@@ -329,51 +307,6 @@ function compute_edges(nodes, all_edges, all_nodes=[]) {
     //}
     return [nodes, edges]
 }
-
-/*
-function compute_edges(nodes, all_edges, delete_edge_index=[], include_outside_edge=false, all_node_indexes=[]) {
-    let edges = [];
-    let delete_edge_index_map = new Array(all_edges.length).fill(0);
-    delete_edge_index.forEach(function (d) {
-        delete_edge_index_map[d] = 1;
-    });
-
-    if (include_outside_edge) {
-        let node_indexs = nodes.map(node=>node.index);
-
-        nodes.forEach(function (node) {
-            node.pre.forEach(function (edge_index) {
-                let edge = all_edges[edge_index];
-                if (!delete_edge_index_map[edge_index] && all_node_indexes.indexOf(edge.start) !== -1) {
-                    edges.push(edge);
-                }
-            });
-        });
-
-        nodes.forEach(function (node) {
-            node.next.forEach(function (edge_index) {
-                let edge = all_edges[edge_index];
-                if (!delete_edge_index_map[edge_index] && node_indexs.indexOf(edge.end) === -1 && all_node_indexes.indexOf(edge.end) !== -1) {
-                    edges.push(edge);
-                }
-            });
-        });
-    }
-    else {
-        let node_indexs = nodes.map(node => node.index);
-        nodes.forEach(function (node) {
-            node.next.forEach(function (edge_index) {
-                let edge = all_edges[edge_index];
-                if (!delete_edge_index_map[edge_index] && node_indexs.indexOf(edge.start) !== -1 && node_indexs.indexOf(edge.end) !== -1) {
-                    edges.push(edge);
-                }
-            });
-        });
-    }
-
-    return edges;
-}
-*/
 function spline(points) {
     let _spline = d3.line()
         .x(function (d) {

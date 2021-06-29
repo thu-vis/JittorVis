@@ -56,7 +56,7 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                         self.all_nodes[x.index].treenodes = [x.index].concat(...x.children.map(e => self.all_nodes[e.index].treenodes))
                     }
                 }
-                if (x.children.length <= 3)
+                if (x.children.length <= 2)
                     x.subnodes = [].concat(...x.children.map(d => d.children.length == 0 ? [d.index] : d.children.map(e => e.index)))
                 else
                     x.subnodes = [].concat(...x.children.map(d => [d.index]))
@@ -148,8 +148,8 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
             const self = this
             const margin = ({ top: 10, right: 120, bottom: 50, left: 60 })
             const diagonal = d3.linkHorizontal().x(d => d.y).y(d => d.x)
-            const dx = 25
-            const dy = 120
+            const dx = 30
+            const dy = 200
             const width = self.guideview.attr("width")
             const tree = d3.tree().nodeSize([dx, dy])
             const root = d3.hierarchy(nodetree)

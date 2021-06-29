@@ -5,6 +5,7 @@ import json
 import pickle
 import logging
 import argparse
+import jittor as jt
 from multiprocessing import Process
 from .processing import *
 from .utils import get_exploring_height_and_level, create_feature_map_image
@@ -59,6 +60,14 @@ def run_server(data, host = None, port = 5005):
     else:
         rawdata = data
     app.run(port=port, host=host, threaded=True, debug=False)
+
+def visualize(input, model, host = None, port = 5005):
+    with jt.flag_scope(trace_py_var=2, trace_var_data=1):
+        output = model(input)
+        output.sync()
+        data = jt.dump_trace_data()
+        jt.clear_trace_data()
+    run(data, host, port)
 
 def run(data, host = None, port = 5005):
     global p
