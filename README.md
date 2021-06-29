@@ -32,7 +32,7 @@ pip3 install jittorvis
 ## Usage
 There are several ways to use JittorVis.
 
-1. Visualizing a jittor model directly.
+1. Visualizing a Jittor model directly.
 ```python
 import jittor as jt
 from jittor import Module
