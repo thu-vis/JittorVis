@@ -146,7 +146,7 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
         },
         renderTree: function(nodetree) {
             const self = this
-            const margin = ({ top: 10, right: 120, bottom: 50, left: 60 })
+            const margin = ({ top: 10, right: 120, bottom: 50, left: 80 })
             const diagonal = d3.linkHorizontal().x(d => d.y).y(d => d.x)
             const dx = 30
             const dy = 200
@@ -338,7 +338,7 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                     .attr("dy", "0.31em")
                     .attr("x", d => d._children ? -6 : 6)
                     .attr("text-anchor", d => d._children ? "end" : "start")
-                    .attr("font-size", "16px")
+                    .attr("font-size", "21px")
                     .text(d => d.data.title)
                     .clone(true).lower()
                     .attr("stroke-linejoin", "round")
@@ -538,7 +538,7 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
             background.append("rect")
                 .attr("width", self.chart_width)
                 .attr("height", self.chart_height)
-                .attr("fill", color_manager.default_color)
+                .attr("fill", "white")//color_manager.default_color)
                 .style("opacity", .1)
             
             background.append("line")
@@ -581,9 +581,9 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
             background.append("rect")
                 .attr("width", self.chart_width)
                 .attr("height", self.chart_height)
-                .attr("fill", color_manager.default_color)
+                .attr("fill", "white")//color_manager.default_color)
                 .style("opacity", .1)
-            
+
             background.append("line")
                 .attr("x1", 1)
                 .attr("x2", 1)
@@ -613,7 +613,7 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                 .attr("x", 0)
                 .attr("y", 20)
                 .attr("text-anchor", "start")
-                .attr("font-size", "28px")
+                .attr("font-size", "24px")
                 .attr("font-family", "Arial")
                 .attr("fill", color_manager.disable_color)
                 .text("GRAPH STRUCTURE")
@@ -622,7 +622,7 @@ VIS.CHART.WIDGET.networkVisWidget = function (options) {
                 .attr("x", 0)
                 .attr("y", 20)
                 .attr("text-anchor", "start")
-                .attr("font-size", "28px")
+                .attr("font-size", "24px")
                 .attr("font-family", "Arial")
                 .attr("fill", color_manager.disable_color)
                 .text("NAVIGATION")

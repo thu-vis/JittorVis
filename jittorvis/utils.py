@@ -60,7 +60,9 @@ def transform_to_color(img_arr):
     color1 = np.array([103, 0, 31])
     color2 = np.array([5, 48, 97])
     white = np.array([255, 255, 255])
-    return np.array([((-x) * color1 + (1 + x) * white) if x < 0 else (x * color2 + (1 - x) * white) for x in img_arr.reshape(-1)], dtype=np.uint8)
+    arr = [-((-x) ** 0.5) if x < 0 else (x ** 0.5) for x in img_arr.reshape(-1)]
+    
+    return np.array([((-x) * color1 + (1 + x) * white) if x < 0 else (x * color2 + (1 - x) * white) for x in arr], dtype=np.uint8)
 
 
 def get_network_and_op_groups_from_data(data):

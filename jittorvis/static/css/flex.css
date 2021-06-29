@@ -25,7 +25,7 @@ html, body {
     display: flex;
     flex-direction: row;
     margin: 1px 3px 1px 3px;
-    height: 33px;
+    height: 40px;
     width: 100%;
     /*flex-wrap: wrap;*/
     /*background: lightgray;*/
@@ -70,6 +70,8 @@ a {
     /*height: 100px;*/
     /*width: 100%;*/
     /*opacity: 0;*/
+    box-shadow: 0 1px 3px 3px rgb(0 0 0 / 25%);
+    z-index: 1;
 }
 
 #PanelRow-0 {
@@ -77,9 +79,12 @@ a {
     flex-direction: row;
     /*margin: 0 5px 0 30px;*/
     width: 100%;
-    height: 35px;
+    height: 40px;
     /*width: 100%;*/
     /*opacity: 0;*/
+    background: steelblue;
+    box-shadow: 0 1px 3px 3px rgb(0 0 0 / 25%);
+    z-index: 1;
 }
 
 #ControlPanel button{
@@ -127,7 +132,6 @@ a {
     display: flex;
     flex-direction: row;
     margin-top: 3px;
-    border-top: 2px solid #aaa;
 }
 
 #NetworkComponent {
@@ -169,7 +173,7 @@ a {
     display: flex;
     flex-direction: row;
     color: black;
-    height: 33px;
+    height: 38px;
     /*background: lightgray;*/
     justify-content: space-between;
 }
@@ -221,7 +225,6 @@ a {
 #ControlContent {
     display: flex;
     flex-direction: column;
-    border-top: 1px solid #868686;
     width: 100%;
 }
 
@@ -485,7 +488,9 @@ a {
 }
 
 #ControlPanel a {
-    color: #555;
+    color: white;
+    background: rgba(0,0,0,0);
+    border: 3px solid #eee;
 }
 
 .list-action-btn-div {

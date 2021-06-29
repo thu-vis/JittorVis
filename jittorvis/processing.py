@@ -13,7 +13,7 @@ def handle_raw_data(data):
     network, op_groups, schedule = get_network_and_op_groups_from_data(data)
 
     statistics = {
-        'loss': [1 - x * 0.09 for x in range(10)],
+        'loss': [pow(1 - x * 0.09, 3) * 0.9 + 0.1 for x in range(10)],
         'accuracy': [0.9 * pow(x, 2) / 100 for x in range(10)],
         'precision': [0.8 * pow(x, 3) / 1000 for x in range(10)],
         'recall': [0.7 * pow(x / 10, 0.5) for x in range(10)],

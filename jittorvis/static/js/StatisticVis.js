@@ -4,7 +4,7 @@ VIS.CHART.WIDGET = VIS.CHART.WIDGET || {};
 VIS.CHART.WIDGET.statisticVisWidget = function (options) {
 
     let defaultVal = {
-        margin: { top: 25, right: 55, bottom: 25, left: 30 },
+        margin: { top: 25, right: 55, bottom: 35, left: 30 },
         events:{}
     };
 
@@ -1142,7 +1142,7 @@ VIS.CHART.WIDGET.statisticVisWidget = function (options) {
                 .attr('id', 'op_schedule_axis-x-label')
                 .text('Iteration')
                 .attr('x', self.settings.margin.left + self.statistic_width - 10)
-                .attr('y', self.settings.margin.top + self.statistic_height - 15)
+                .attr('y', self.settings.margin.top + self.statistic_height - 10)
                 .style("user-select", "none")
                 .attr('font-size', '15px')
                 .attr('font-family', 'Arial')
@@ -1218,7 +1218,7 @@ VIS.CHART.WIDGET.statisticVisWidget = function (options) {
                 .attr('id', 'op_schedule_axis-x-label')
                 .text('Iteration')
                 .attr('x', self.settings.margin.left + self.statistic_width - 10)
-                .attr('y', self.settings.margin.top + self.statistic_height - 15)
+                .attr('y', self.settings.margin.top + self.statistic_height - 10)
                 .style("user-select", "none")
                 .attr('font-size', '15px')
                 .attr('font-family', 'Arial')
@@ -1598,8 +1598,8 @@ VIS.CHART.WIDGET.statisticVisWidget = function (options) {
             paths.enter().append('path')
                 .attr('class', 'value_line')
                 .style('fill', 'none')
-                .style('stroke', color_manager.default_color)
-                .style('stroke-width', '2px')
+                .style('stroke', color_manager.darker_default_color)
+                .style('stroke-width', '3px')
                 .attr('id', function (d) {
                     return `value_line_${d.name}`;
                 });
@@ -2564,7 +2564,7 @@ VIS.CHART.WIDGET.statisticVisWidget = function (options) {
                 self.statistics_group
                     .transition()
                     .duration(duration)
-                .attr('transform', `translate(0,0)`)
+                .attr('transform', `translate(0,10)`)
                 .style('opacity', 1);
                 self.op_schedule_group
                     .transition()
@@ -2576,7 +2576,7 @@ VIS.CHART.WIDGET.statisticVisWidget = function (options) {
                 self.statistics_group
                     .transition()
                     .duration(duration)
-                .attr('transform', `translate(${-self.chart_width},0)`)
+                .attr('transform', `translate(${-self.chart_width},10)`)
                 .style('opacity', 0);
                 self.op_schedule_group
                     .transition()
@@ -3192,7 +3192,7 @@ VIS.CHART.WIDGET.statisticVisWidget = function (options) {
             self.statistics_group.selectAll('#op_schedule_axis-x-label')
                 .transition().duration(duration)
                 .attr('x', self.settings.margin.left + self.statistic_width - 10)
-                .attr('y', self.settings.margin.top + self.statistic_height - 15)
+                .attr('y', self.settings.margin.top + self.statistic_height - 25)
 
             // y axis
             self.op_schedule_group.selectAll('#axis-y-3')
@@ -3225,7 +3225,7 @@ VIS.CHART.WIDGET.statisticVisWidget = function (options) {
             self.op_schedule_group.selectAll('#op_schedule_axis-x-label')
                 .transition().duration(duration)
                 .attr('x', self.settings.margin.left + self.statistic_width - 10)
-                .attr('y', self.settings.margin.top + self.statistic_height - 15)
+                .attr('y', self.settings.margin.top + self.statistic_height - 25)
 
             self.op_schedule_group.selectAll('#op_schedule_iter_label')
                 .transition().duration(duration)
