@@ -1,2 +1,2 @@
-graft jittorvis/data
-graft jittorvis/static
+global-include *
+prune __pycache__
