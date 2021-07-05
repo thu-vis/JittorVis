@@ -14,6 +14,7 @@ setup(
   install_requires=[
           'Flask',
           'numpy',
+          'jittor',
       ],
   entry_points={
     'console_scripts':[
