@@ -62,7 +62,7 @@ server.visualize(input, model, host = '0.0.0.0')
 Then open the link 'http://localhost:5005/static/index.html' in your browser.
 
 
-2. Visualizing an exported Jittor computational graph (an example graph can be downloaded [here](https://cloud.tsinghua.edu.cn/lib/246262e5-8d6d-4b94-bd29-3b33a4442fef/file/test.zip?dl=1)).
+2. Visualizing an exported Jittor computational graph (an example graph can be downloaded [here](https://cloud.tsinghua.edu.cn/f/48f5580debc8459f9e90/?dl=1)).
 ```python
 from jittorvis import server
 server.run('test.pkl', host='0.0.0.0', port=5005)
