@@ -5,18 +5,24 @@
   "author": "ThuWangzw <wangzw834@163.com>",
   "private": true,
   "scripts": {
-    "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
+    "dev": "webpack-dev-server --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",
     "lint": "eslint --ext .js,.vue src",
     "build": "node build/build.js"
   },
   "dependencies": {
     "@vue/composition-api": "^1.1.3",
+    "axios": "^0.21.4",
+    "babel-plugin-component": "^1.1.1",
+    "babel-preset-es2015": "^6.24.1",
     "echarts": "^5.1.2",
+    "element-ui": "^2.15.6",
     "vue": "^2.5.2",
     "vue-echarts": "^6.0.0",
     "vue-router": "^3.0.1",
-    "vuex": "^3.6.2"
+    "vuex": "^3.6.2",
+    "webpack": "3.6.0",
+    "webpack-dev-server": "2.11.5"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
@@ -60,9 +66,7 @@
     "vue-loader": "^13.3.0",
     "vue-style-loader": "^3.0.1",
     "vue-template-compiler": "^2.5.2",
-    "webpack": "^3.6.0",
     "webpack-bundle-analyzer": "^2.9.0",
-    "webpack-dev-server": "^2.11.5",
     "webpack-merge": "^4.1.0"
   },
   "engines": {

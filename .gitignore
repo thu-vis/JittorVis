@@ -1,3 +1,4 @@
 jittorvis/
 jittorvis.egg-info/
 .vscode/
+__pycache__/

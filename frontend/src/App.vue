@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <div id="navigation">
+      <div id="navi-title">JittorVis</div>
+    </div>
     <div id="statistic-container">
       <statistic></statistic>
     </div>
@@ -14,10 +17,18 @@
 import Navigation from './components/Navigation.vue'
 import Network from './components/Network.vue'
 import Statistic from './components/Statistic.vue'
+import axios from 'axios'
 
 export default {
-  components: { Network, Navigation, Statistic },
-  name: 'App'
+    components: { Network, Navigation, Statistic },
+    name: 'App',
+    mounted: function () {
+        let store = this.$store
+        axios.get(store.getters.URL_GET_ALL_DATA)
+            .then(function (response) {
+                store.commit('setAllData', response.data)
+            })
+    }
 }
 </script>
 
@@ -32,6 +43,21 @@ html, body, #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   display: flex;
   flex-direction: column;
+}
+
+#navigation {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  background: rgb(54, 54, 54);
+}
+
+#navi-title {
+  color: rgb(255, 255, 255);
+  font-weight: 900;
+  font-size: 40px;
+  margin: 0 0 0 20px;
 }
 
 #statistic-container {
