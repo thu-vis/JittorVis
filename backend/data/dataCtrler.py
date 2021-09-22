@@ -1,4 +1,5 @@
 from data.network import JittorNetworkProcessor
+import copy
 
 class DataCtrler(object):
 
@@ -26,7 +27,11 @@ class DataCtrler(object):
         """get tree of network
         """        
         branch = self.__network["branch"]
-        return branch
+        newBranch = copy.deepcopy(branch)
+        for branchID, branchNode in newBranch.items():
+            if type(branchNode["children"][0])==int:
+                branchNode["children"]=[]
+        return newBranch
 
     def getStatisticData(self):
         """get statistic data
