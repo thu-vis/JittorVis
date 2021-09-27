@@ -1,14 +1,12 @@
 <template>
-<svg id="navigation-tree">
-    <text>this is navigation</text>
-</svg>
+    <text>this is layout</text>
 </template>
 
 <script>
 import { mapGetters, mapState } from 'vuex'
 
 export default {
-    name: 'navigation',
+    name: 'network-layout',
     computed: {
         ...mapGetters([
             'network'
@@ -19,10 +17,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-#navigation-tree {
-  width: 80%;
-  height: 80%;
-}
-</style>

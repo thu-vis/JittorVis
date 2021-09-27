@@ -1,4 +1,4 @@
-from data.network import JittorNetworkProcessor
+from backend.data.network import JittorNetworkProcessor
 import copy
 
 class DataCtrler(object):

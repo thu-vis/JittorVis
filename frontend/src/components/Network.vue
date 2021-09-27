@@ -1,16 +1,29 @@
 <template>
-    <p>{{ APIBASE }}</p>
+    <svg id="network-all">
+        <g id="network-main">
+            <network-layout></network-layout>
+        </g>
+    </svg>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapGetters } from 'vuex'
+import NetworkLayout from './NetworkLayout.vue'
 
 export default {
     name: 'network',
+    components: {NetworkLayout},
     computed: {
-        ...mapState([
-            'APIBASE'
+        ...mapGetters([
+            'network'
         ])
     }
 }
 </script>
+
+<style>
+#network-all {
+    width: 100%;
+    height: 100%;
+}
+</style>

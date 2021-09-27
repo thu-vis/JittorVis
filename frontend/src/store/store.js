@@ -9,7 +9,8 @@ export default new Vuex.Store({
         allData: {
             network: {},
             statistic: {}
-        }
+        },
+        focusID: null
     },
     mutations: {
         setAllData (state, allData) {

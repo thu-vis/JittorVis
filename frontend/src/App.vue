@@ -27,6 +27,7 @@ export default {
         axios.get(store.getters.URL_GET_ALL_DATA)
             .then(function (response) {
                 store.commit('setAllData', response.data)
+                console.log('network data', store.getters.network)
             })
     }
 }

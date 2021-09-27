@@ -3,7 +3,7 @@ import os
 import pickle
 import argparse
 from flask import Flask, jsonify
-from data.dataCtrler import dataCtrler
+from backend.data.dataCtrler import dataCtrler
 from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
