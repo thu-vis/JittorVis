@@ -1,4 +1,0 @@
-global-include *
-exclude __data__
-exclude __pycache__
-prune **/__data__/

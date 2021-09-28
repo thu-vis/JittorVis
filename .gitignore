@@ -1,3 +1,4 @@
-dist/*
-jittorvis/__pycache__/*
-*.pyc
+jittorvis/
+jittorvis.egg-info/
+.vscode/
+__pycache__/
