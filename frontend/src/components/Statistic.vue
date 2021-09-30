@@ -3,6 +3,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
 import { LineChart } from 'echarts/charts'
@@ -30,7 +32,11 @@ export default {
         }
     },
     computed: {
+        ...mapGetters([
+            'statistic'
+        ]),
         options: function () {
+            let loss = this.statistic.loss
             let option = {
                 xAxis: {
                     type: 'value',
@@ -48,7 +54,7 @@ export default {
                     bottom: '10%'
                 },
                 series: [{
-                    data: [[0, 150], [1, 230], [2, 224], [3, 218], [4, 135], [5, 147], [6, 260]],
+                    data: loss,
                     type: 'line',
                     encode: {
                         x: 0,

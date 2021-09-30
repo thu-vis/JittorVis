@@ -19,6 +19,7 @@ import Network from './components/Network.vue'
 import Statistic from './components/Statistic.vue'
 import axios from 'axios'
 
+// main vue component
 export default {
     components: { Network, Navigation, Statistic },
     name: 'App',
