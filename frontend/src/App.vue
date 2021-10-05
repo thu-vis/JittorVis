@@ -14,24 +14,24 @@
 </template>
 
 <script>
-import Navigation from './components/Navigation.vue'
-import Network from './components/Network.vue'
-import Statistic from './components/Statistic.vue'
-import axios from 'axios'
+import Navigation from './components/Navigation.vue';
+import Network from './components/Network.vue';
+import Statistic from './components/Statistic.vue';
+import axios from 'axios';
 
 // main vue component
 export default {
-    components: { Network, Navigation, Statistic },
+    components: {Network, Navigation, Statistic},
     name: 'App',
-    mounted: function () {
-        let store = this.$store
+    mounted: function() {
+        const store = this.$store;
         axios.get(store.getters.URL_GET_ALL_DATA)
-            .then(function (response) {
-                store.commit('setAllData', response.data)
-                console.log('network data', store.getters.network)
-            })
-    }
-}
+            .then(function(response) {
+                store.commit('setAllData', response.data);
+                console.log('network data', store.getters.network);
+            });
+    },
+};
 </script>
 
 <style>

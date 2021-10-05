@@ -3,69 +3,69 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import {mapGetters} from 'vuex';
 
-import { use } from 'echarts/core'
-import { SVGRenderer } from 'echarts/renderers'
-import { LineChart } from 'echarts/charts'
+import {use} from 'echarts/core';
+import {SVGRenderer} from 'echarts/renderers';
+import {LineChart} from 'echarts/charts';
 import {
     LegendComponent,
-    GridComponent
-} from 'echarts/components'
-import VChart from 'vue-echarts'
+    GridComponent,
+} from 'echarts/components';
+import VChart from 'vue-echarts';
 
 use([
     SVGRenderer,
     LineChart,
     LegendComponent,
-    GridComponent
-])
+    GridComponent,
+]);
 
 export default {
     name: 'statistic',
     components: {
-        VChart
+        VChart,
     },
-    data: function () {
+    data: function() {
         return {
 
-        }
+        };
     },
     computed: {
         ...mapGetters([
-            'statistic'
+            'statistic',
         ]),
-        options: function () {
-            let loss = this.statistic.loss
-            let option = {
+        options: function() {
+            const loss = this.statistic.loss;
+            const option = {
                 xAxis: {
                     type: 'value',
                     axisLabel: {
-                        interval: 1
-                    }
+                        interval: 1,
+                    },
                 },
                 yAxis: {
-                    type: 'value'
+                    type: 'value',
                 },
                 grid: {
                     left: '5%',
                     right: '5%',
                     top: '5%',
-                    bottom: '10%'
+                    bottom: '10%',
                 },
                 series: [{
                     data: loss,
                     type: 'line',
                     encode: {
                         x: 0,
-                        y: 1
-                    }
-                }]
-            }
-            return option
-        }
-    }
-}
+                        y: 1,
+                    },
+                }],
+            };
+            return option;
+        },
+    },
+};
 </script>
 
 <style>

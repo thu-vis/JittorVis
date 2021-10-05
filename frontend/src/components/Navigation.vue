@@ -5,19 +5,19 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex'
+import {mapGetters, mapState} from 'vuex';
 
 export default {
     name: 'navigation',
     computed: {
         ...mapGetters([
-            'network'
+            'network',
         ]),
         ...mapState([
-            'focusID'
-        ])
-    }
-}
+            'focusID',
+        ]),
+    },
+};
 </script>
 
 <style scoped>
