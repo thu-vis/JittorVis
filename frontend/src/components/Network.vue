@@ -1,9 +1,11 @@
 <template>
-    <svg id="network-all" ref="networkAll">
+<vue-scroll :ops="scrollOptions">
+    <svg id="network-all" ref="networkAll" v-bind:style="{ height: height+'px' }">
         <g id="network-main">
-            <network-layout :width="width" :height="height"></network-layout>
+            <network-layout :width="width" v-on:reheight='reheight'></network-layout>
         </g>
     </svg>
+</vue-scroll>
 </template>
 
 <script>
@@ -21,17 +23,25 @@ export default {
     data: function() {
         return {
             width: 0,
-            height: 0,
+            height: '100%',
+            scrollOptions: {
+                bar: {
+                    background: '#c6bebe',
+                },
+            },
         };
     },
     methods: {
-        resize: function() {
+        setsize: function() {
             this.width = this.$refs.networkAll.clientWidth;
             this.height = this.$refs.networkAll.clientHeight;
         },
+        reheight: function(height) {
+            this.height = height;
+        },
     },
     mounted: function() {
-        this.resize();
+        this.setsize();
     },
 };
 </script>
