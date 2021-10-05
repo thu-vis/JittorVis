@@ -3,6 +3,10 @@
 import Vue from 'vue';
 import App from './App';
 import store from './store/store.js';
+import vuescroll from 'vuescroll/dist/vuescroll-native';
+// import the css file
+import 'vuescroll/dist/vuescroll.css';
+Vue.use(vuescroll);
 
 Vue.config.productionTip = false;
 

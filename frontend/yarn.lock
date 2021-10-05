@@ -5607,6 +5607,11 @@ jstransformer@^1.0.0:
     is-promise "^2.0.0"
     promise "^7.0.1"
 
+just-clone@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.npmmirror.com/just-clone/download/just-clone-3.2.1.tgz#7396be5790d33f0fa7e8a145d7983b986a8cee39"
+  integrity sha1-c5a+V5DTPw+n6KFF15g7mGqM7jk=
+
 killable@^1.0.0:
   version "1.0.1"
   resolved "https://registry.nlark.com/killable/download/killable-1.0.1.tgz#4c8ce441187a061c7474fb87ca08e2a638194892"
@@ -9540,6 +9545,11 @@ vue@^2.5.2:
   version "2.6.14"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.14.tgz#e51aa5250250d569a3fbad3a8a5a687d6036e235"
   integrity sha512-x2284lgYvjOMj3Za7kqzRcUSxBboHqtgRE2zlos1qWaOye5yUmHn42LB1250NJBLRwEcdrB0JRwyPTEPhfQjiQ==
+
+vuescroll@^4.17.3:
+  version "4.17.3"
+  resolved "https://registry.npm.taobao.org/vuescroll/download/vuescroll-4.17.3.tgz#e1c29372a007e0dff0cee6b4515783d43924f9e1"
+  integrity sha1-4cKTcqAH4N/wzua0UVeD1Dkk+eE=
 
 vuex@^3.6.2:
   version "3.6.2"

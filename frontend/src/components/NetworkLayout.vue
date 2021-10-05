@@ -6,9 +6,10 @@
 </template>
 
 <script>
-import {mapGetters, mapState} from 'vuex';
+import {mapGetters} from 'vuex';
 import dagre from 'dagre';
 import * as d3 from 'd3';
+import clone from 'just-clone';
 
 export default {
     name: 'network-layout',
@@ -17,17 +18,10 @@ export default {
             type: Number,
             default: 0,
         },
-        height: {
-            type: Number,
-            default: 0,
-        },
     },
     computed: {
         ...mapGetters([
             'network',
-        ]),
-        ...mapState([
-            'focusID',
         ]),
         nodesG: function() {
             return d3.select('g#network-nodes');
@@ -71,12 +65,14 @@ export default {
                 'stroke-width': 1,
             },
             // dagre nodes/edges/graph result
+            layoutNetwork: {},
             nodes: {},
             edges: [],
             daggraph: {
                 width: 0,
                 height: 0,
             },
+            heightMargin: 50, // margin-top, margin-bottom of main layout
             // layout class
             nodeClass: 'network-node',
             edgeClass: 'network-edge',
@@ -87,34 +83,68 @@ export default {
     },
     watch: {
         network: function(newNetwork, oldNetwork) {
-            [this.nodes, this.edges] = this.getGraphFromNetwork(newNetwork, this.focusID);
-            this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions, this.nodeRectAttrs);
-            this.draw([this.nodes, this.edges]);
+            this.initGraphNetwork(newNetwork);
+            // find root
+            let root = Object.values(this.layoutNetwork)[0];
+            while (root.parent !== undefined) {
+                root = this.layoutNetwork[root.parent];
+            }
+            this.expandNode(root.id);
         },
         focusID: function(newFocusID, oldFocusID) {
-            [this.nodes, this.edges] = this.getGraphFromNetwork(this.network, newFocusID);
+            [this.nodes, this.edges] = this.getGraphFromNetwork(this.layoutNetwork);
+            console.log('focus to', newFocusID);
+            console.log(this.nodes);
             this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions, this.nodeRectAttrs);
             this.draw([this.nodes, this.edges]);
         },
     },
     methods: {
-    /**
+        expandNode: function(nodeid) {
+            let node = this.layoutNetwork[nodeid];
+            while (node !== undefined) {
+                node.expand = true;
+                node = this.layoutNetwork[node.parent];
+            }
+            [this.nodes, this.edges] = this.getGraphFromNetwork(this.layoutNetwork);
+            this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions, this.nodeRectAttrs);
+            this.$emit('reheight', this.daggraph.height+this.heightMargin*2);
+            this.draw([this.nodes, this.edges]);
+        },
+        initGraphNetwork: function(rawNetwork) {
+            this.layoutNetwork = clone(rawNetwork);
+            if (this.layoutNetwork==={}) {
+                return;
+            }
+            // init extent
+            Object.values(this.layoutNetwork).forEach((d) => {
+                d.expand = false;
+            });
+        },
+        /**
          * a pure function, get nodes and edges for showing from network and focusID
          * @param {Object} network - the whole network
          * @param {string} focusID - node to be focus, whose children will be visualized
          * @return {Array} an array of [nodes, edges]
          */
-        getGraphFromNetwork: function(network, focusID) {
-            // get nodes
-            const focusNode = network[focusID];
-            if (focusNode === undefined) {
-                throw new Error('wrong focus node id!');
+        getGraphFromNetwork: function(network) {
+            // find root
+            let root = Object.values(network)[0];
+            while (root.parent !== undefined) {
+                root = network[root.parent];
             }
+            // get nodes
             const nodes = {};
-            for (const childID of focusNode.children) {
-                nodes[childID] = {
-                    ...network[childID],
-                };
+            const queue = [root.id];
+            while (queue.length>0) {
+                const nodeid = queue.shift();
+                network[nodeid].children.forEach((childid) => {
+                    if (network[childid].expand) {
+                        queue.push(childid);
+                    } else {
+                        nodes[childid] = network[childid];
+                    }
+                });
             }
 
             // get edges
@@ -225,10 +255,56 @@ export default {
                 .data(edges, (d) => d.source.id + ',' + d.target.id);
 
             await this.remove(graph);
-            await this.transform(graph);
+            this.transform(graph);
             await this.update(graph);
             await this.create(graph);
-            console.log('draw done ');
+        },
+        one_edge: function(points) {
+        // const movePoint = (p, x, y, s) => {
+        //     return { x: p.x * s + x, y: p.y * s + y }
+        // };
+        // points = points.map(p => movePoint(p, transX, transY, scale))
+
+
+            const len = points.length;
+            if (len === 0) {
+                return '';
+            }
+            const start = `M ${points[0].x} ${points[0].y}`;
+            let vias = [];
+
+            const getInter = (p1, p2, n) => {
+                return `${p1.x * n + p2.x * (1 - n)} ${p1.y * n + p2.y * (1 - n)}`;
+            };
+
+            const getCurve = (points) => {
+                const vias = [];
+                const len = points.length;
+                const ratio = 0.5;
+                for (let i = 0; i < len - 2; i++) {
+                    let p1;
+                    let p5;
+                    if (i === 0) {
+                        p1 = `${points[i].x} ${points[i].y}`;
+                    } else {
+                        p1 = getInter(points[i], points[i + 1], ratio);
+                    }
+                    const p2 = getInter(points[i], points[i + 1], 1 - ratio);
+                    const p3 = `${points[i + 1].x} ${points[i + 1].y}`;
+                    const p4 = getInter(points[i + 1], points[i + 2], ratio);
+                    if (i === len - 3) {
+                        p5 = `${points[i + 2].x} ${points[i + 2].y}`;
+                    } else {
+                        p5 = getInter(points[i + 1], points[i + 2], 1 - ratio);
+                    }
+                    const cPath = `M ${p1} L${p2} Q${p3} ${p4} L${p5}`;
+                    vias.push(cPath);
+                }
+                return vias;
+            };
+            vias = getCurve(points);
+            const pathData = `${start}  ${vias.join(' ')}`;
+            return pathData;
         },
         create: async function() {
             const that = this;
@@ -240,7 +316,9 @@ export default {
                     .attr('transform', (d) => 'translate(' + d.x + ',' + d.y + ')')
                     .attr('opacity', 0)
                     .on('click', function(e, d) {
-                        that.$store.commit('setFocusID', d.id);
+                        if (d.children.length>0) {
+                            that.expandNode(d.id);
+                        }
                     });
                 nodesing.transition()
                     .duration(that.createDuration)
@@ -265,11 +343,6 @@ export default {
                     .attr('dy', that.nodeNameAttrs.dy);
 
                 const edgeAttrs = that.edgeAttrs;
-                const link = d3.linkVertical()
-                    .source((d) => d.points[0])
-                    .target((d) => d.points[2])
-                    .x((d) => d.x)
-                    .y((d) => d.y);
                 const edgeing = that.edgesing.enter()
                     .append('path')
                     .attr('class', that.edgeClass)
@@ -278,7 +351,7 @@ export default {
                     .attr('stroke', edgeAttrs.stroke)
                     .attr('stroke-width', edgeAttrs['stroke-width'])
                     .attr('transform', 'translate(' + rectAttrs.width / 2 + ',' + rectAttrs.height / 2 + ')')
-                    .attr('d', link);
+                    .attr('d', (d) => that.one_edge(d.points));
 
                 edgeing.transition()
                     .duration(that.createDuration)
@@ -316,16 +389,11 @@ export default {
                     .attr('dy', that.nodeNameAttrs.dy)
                     .on('end', resolve);
 
-                const link = d3.linkVertical()
-                    .source((d) => d.points[0])
-                    .target((d) => d.points[2])
-                    .x((d) => d.x)
-                    .y((d) => d.y);
                 const edgeing = that.edgesing;
                 edgeing.transition()
                     .duration(that.updateDuration)
                     .attr('transform', 'translate(' + rectAttrs.width / 2 + ',' + rectAttrs.height / 2 + ')')
-                    .attr('d', link)
+                    .attr('d', (d) => that.one_edge(d.points))
                     .on('end', resolve);
 
                 // if no update elements, resolve immediately
@@ -359,7 +427,7 @@ export default {
             const that = this;
             return new Promise((resolve, reject) => {
                 const dx = (that.width - that.daggraph.width) / 2;
-                const dy = that.height * 0.05;
+                const dy = that.heightMargin;
                 d3.select('g#network-layout')
                     .transition()
                     .duration(that.transformDuration)
