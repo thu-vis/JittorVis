@@ -1,5 +1,5 @@
 <template>
-<g id="network-layout">
+<g id="network-layout" :transform="`translate(${width/2},${heightMargin})`">
     <g id="network-nodes"></g>
     <g id="network-edges"></g>
 </g>
@@ -33,9 +33,9 @@ export default {
     data: function() {
         return {
             // transition duration
-            createDuration: 1000,
-            updateDuration: 1000,
-            removeDuration: 500,
+            createDuration: 500,
+            updateDuration: 500,
+            removeDuration: 200,
             transformDuration: 500,
             // dagre layout options
             dagreLayoutOptions: {
@@ -214,13 +214,22 @@ export default {
             }
             dagre.layout(g);
 
-            // move graph to (0, 0)
-            let nodeCenterX = Number.MAX_VALUE;
+            // move graph x-center to 0
+            let nodeCenterX = 0;
+            let nodeCenterCnts = 0;
             let nodeCenterY = Number.MAX_VALUE;
             g.nodes().forEach(function(d) {
-                nodeCenterX = Math.min(nodeCenterX, g.node(d).x);
-                nodeCenterY = Math.min(nodeCenterY, g.node(d).y);
+                const node = g.node(d);
+                if (nodeCenterY>node.y) {
+                    nodeCenterY = node.y;
+                    nodeCenterX = node.x;
+                    nodeCenterCnts = 1;
+                } else if (nodeCenterY === node.y) {
+                    nodeCenterX += node.x;
+                    nodeCenterCnts++;
+                }
             });
+            nodeCenterX = nodeCenterX / nodeCenterCnts + nodeOptions.width/2;
             g.nodes().forEach(function(d) {
                 g.node(d).x -= nodeCenterX;
                 g.node(d).y -= nodeCenterY;
@@ -242,6 +251,10 @@ export default {
 
             graph.width = g.graph().width;
             graph.height = g.graph().height;
+            console.log('compute dag layout done.');
+            console.log('nodes', nodes);
+            console.log('edges', edges);
+            console.log('graph', graph);
         },
         /**
          * main layout function
@@ -255,7 +268,6 @@ export default {
                 .data(edges, (d) => d.source.id + ',' + d.target.id);
 
             await this.remove(graph);
-            this.transform(graph);
             await this.update(graph);
             await this.create(graph);
         },
@@ -408,12 +420,14 @@ export default {
                 that.nodesing.exit()
                     .transition()
                     .duration(that.removeDuration)
+                    .attr('opacity', 0)
                     .remove()
                     .on('end', resolve);
 
                 that.edgesing.exit()
                     .transition()
                     .duration(that.removeDuration)
+                    .attr('opacity', 0)
                     .remove()
                     .on('end', resolve);
 
@@ -426,7 +440,7 @@ export default {
         transform: async function() {
             const that = this;
             return new Promise((resolve, reject) => {
-                const dx = (that.width - that.daggraph.width) / 2;
+                const dx = that.width/2;
                 const dy = that.heightMargin;
                 d3.select('g#network-layout')
                     .transition()
