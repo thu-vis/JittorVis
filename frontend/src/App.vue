@@ -3,12 +3,14 @@
     <div id="navigation">
       <div id="navi-title">JittorVis</div>
     </div>
-    <div id="statistic-container">
-      <statistic></statistic>
-    </div>
-    <div id="tree-container">
-      <div id="navi-container"><navigation></navigation></div>
-      <div id="network-container"><network></network></div>
+    <div id="content">
+      <div id="left">
+        <div id="statistic-container"><statistic></statistic></div>
+        <div id="navi-container"><navigation></navigation></div>
+      </div>
+      <div id="tree-container">
+        <div id="network-container"><network></network></div>
+      </div>
     </div>
   </div>
 </template>
@@ -68,19 +70,31 @@ html, body, #app {
 }
 
 #tree-container {
-  width: 100%;
-  height: 80%;
+  width: 70%;
+  height: 100%;
   display: flex;
   overflow: hidden;
 }
 
 #navi-container {
+  width: 100%;
+  height: 100%;
+}
+
+#content {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+}
+
+#left {
   width: 30%;
   height: 100%;
 }
 
 #network-container {
-  width: 70%;
+  width: 100%;
   height: 100%;
 }
 
