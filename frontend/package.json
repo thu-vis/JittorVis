@@ -27,6 +27,7 @@
     "extract-text-webpack-plugin": "^3.0.2",
     "html-webpack-plugin": "4.5.2",
     "just-clone": "^3.2.1",
+    "react-dev-utils": "11.0.4",
     "strip-ansi": "^7.0.1",
     "vue": "^2.5.2",
     "vue-echarts": "^6.0.0",

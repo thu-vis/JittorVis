@@ -9335,7 +9335,7 @@ react-codemirror2@^7.2.1:
   resolved "https://registry.nlark.com/react-codemirror2/download/react-codemirror2-7.2.1.tgz#38dab492fcbe5fb8ebf5630e5bb7922db8d3a10c"
   integrity sha1-ONq0kvy+X7jr9WMOW7eSLbjToQw=
 
-react-dev-utils@^11.0.0, react-dev-utils@^11.0.4:
+react-dev-utils@11.0.4, react-dev-utils@^11.0.0, react-dev-utils@^11.0.4:
   version "11.0.4"
   resolved "https://registry.npmmirror.com/react-dev-utils/download/react-dev-utils-11.0.4.tgz#a7ccb60257a1ca2e0efe7a83e38e6700d17aa37a"
   integrity sha1-p8y2Alehyi4O/nqD445nANF6o3o=
