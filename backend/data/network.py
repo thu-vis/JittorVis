@@ -5,14 +5,19 @@ class JittorNetworkProcessor(object):
         self.network = None
     
     def process(self, rawData: dict) -> dict:
-        """main process function"""
+        """main process function, it will call following methods:
+            1. mergeVarNode() to merge var node and opr node
+            2. constructHierarchy() to construct hierarchy of network
+            3. connectBranchNodes() to connect edges
+        
+        """
         self.network = rawData
-        self.network = self.__mergeVarNode(self.network)
-        self.network = self.__constructHierarchy(self.network)
-        self.network["branch"] = self.__connectBranchNodes(self.network["branch"], self.network["leaf"])
+        self.network = self.mergeVarNode(self.network)
+        self.network = self.constructHierarchy(self.network)
+        self.network["branch"] = self.connectBranchNodes(self.network["branch"], self.network["leaf"])
         return self.network
 
-    def __mergeVarNode(self, network: dict) -> dict:
+    def mergeVarNode(self, network: dict) -> dict:
         """Merge variable node into operation node
 
         Args:
@@ -56,7 +61,7 @@ class JittorNetworkProcessor(object):
 
         return newNetwork
 
-    def __constructHierarchy(self, network: dict) -> dict:
+    def constructHierarchy(self, network: dict) -> dict:
         """Construct hierarchy from leaf nodes
 
         Args:
@@ -133,7 +138,7 @@ class JittorNetworkProcessor(object):
             "branch": {**branchNetwork, **newBranchNodes}
         }
 
-    def __connectBranchNodes(self, branch: dict, leaf: dict) -> dict:
+    def connectBranchNodes(self, branch: dict, leaf: dict) -> dict:
         """connect branch nodes
 
         Args:
