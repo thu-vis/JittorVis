@@ -32,10 +32,19 @@ export default {
         };
     },
     methods: {
+        /**
+         * init svg size(width/height)
+         * @public
+         */
         setsize: function() {
             this.width = this.$refs.networkAll.clientWidth;
             this.height = this.$refs.networkAll.clientHeight;
         },
+        /**
+         * change height of svg
+         * @param {number} height - new height
+         * @public
+         */
         reheight: function(height) {
             this.height = height;
         },

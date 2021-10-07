@@ -5,12 +5,12 @@
   "author": "ThuWangzw <wangzw834@163.com>",
   "private": true,
   "scripts": {
-    "dev": "webpack-dev-server --progress --config build/webpack.dev.conf.js",
+    "dev": "webpack serve --mode=development --config build/webpack.dev.conf.js --progress",
     "start": "npm run dev",
     "lint": "eslint --ext .js,.vue src",
     "build": "node build/build.js",
-    "docs:build": "vuese gen",
-    "docs:serve": "vuese serve"
+    "styleguide": "vue-styleguidist server",
+    "styleguide:build": "vue-styleguidist build"
   },
   "dependencies": {
     "@vue/composition-api": "^1.1.3",
@@ -24,16 +24,24 @@
     "echarts": "^5.1.2",
     "element-ui": "^2.15.6",
     "eslint-loader": "^4.0.2",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "html-webpack-plugin": "4.5.2",
     "just-clone": "^3.2.1",
+    "strip-ansi": "^7.0.1",
     "vue": "^2.5.2",
     "vue-echarts": "^6.0.0",
+    "vue-loader": "15.9.3",
     "vue-router": "^3.0.1",
+    "vue-styleguidist": "^4.41.2",
+    "vue-template-compiler": "^2.6.14",
     "vuescroll": "^4.17.3",
     "vuex": "^3.6.2",
-    "webpack": "3.6.0",
-    "webpack-dev-server": "2.11.5"
+    "webpack": "5.50.0",
+    "webpack-cli": "4.8.0",
+    "webpack-dev-server": "3.11.2"
   },
   "devDependencies": {
+    "@webpack-cli/serve": "^1.5.2",
     "autoprefixer": "^7.1.2",
     "babel-core": "^6.22.1",
     "babel-helper-vue-jsx-merge-props": "^2.0.3",
@@ -55,10 +63,8 @@
     "eslint-plugin-promise": "^3.4.0",
     "eslint-plugin-standard": "^3.0.1",
     "eslint-plugin-vue": "^7.18.0",
-    "extract-text-webpack-plugin": "^3.0.0",
     "file-loader": "^1.1.4",
     "friendly-errors-webpack-plugin": "^1.6.1",
-    "html-webpack-plugin": "^2.30.1",
     "node-notifier": "^5.1.2",
     "optimize-css-assets-webpack-plugin": "^3.2.0",
     "ora": "^1.2.0",
@@ -72,9 +78,7 @@
     "uglifyjs-webpack-plugin": "^1.1.1",
     "url-loader": "^0.5.8",
     "vue-docgen-cli": "^4.41.2",
-    "vue-loader": "^13.3.0",
     "vue-style-loader": "^3.0.1",
-    "vue-template-compiler": "^2.5.2",
     "webpack-bundle-analyzer": "^2.9.0",
     "webpack-merge": "^4.1.0"
   },

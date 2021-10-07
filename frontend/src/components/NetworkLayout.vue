@@ -100,6 +100,16 @@ export default {
         },
     },
     methods: {
+        /**
+         * all things to do when you expand a network node, it will call following methods:
+         * 1. getGraphFromNetwork() to calculate which nodes should be showed after expanding and the edges among them
+         * 2. computeDAGLayout() to compute the dag layout
+         * 3. emit reheight event to resize the svg, which works well with scroll
+         * 4. draw() to render the network
+         *
+         * @param {string} nodeid - node to be expanded
+         * @public
+         */
         expandNode: function(nodeid) {
             let node = this.layoutNetwork[nodeid];
             while (node !== undefined) {
@@ -108,9 +118,18 @@ export default {
             }
             [this.nodes, this.edges] = this.getGraphFromNetwork(this.layoutNetwork);
             this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions, this.nodeRectAttrs);
+            /**
+             * reheight svg
+             * @property {number} height - new height
+             */
             this.$emit('reheight', this.daggraph.height+this.heightMargin*2);
             this.draw([this.nodes, this.edges]);
         },
+        /**
+         * init this.layoutNetwork based on rawNetwork, should be called when raw network data was changed
+         * @param {Object} rawNetwork - raw network data
+         * @public
+         */
         initGraphNetwork: function(rawNetwork) {
             this.layoutNetwork = clone(rawNetwork);
             if (this.layoutNetwork==={}) {
@@ -122,10 +141,10 @@ export default {
             });
         },
         /**
-         * a pure function, get nodes and edges for showing from network and focusID
+         * a pure function, get nodes and edges for showing from network
          * @param {Object} network - the whole network
-         * @param {string} focusID - node to be focus, whose children will be visualized
          * @return {Array} an array of [nodes, edges]
+         * @public
          */
         getGraphFromNetwork: function(network) {
             // find root
@@ -192,6 +211,7 @@ export default {
          * @param {Object} graph - graph width/height
          * @param {Object} layoutOptions - options for dagre.layout()
          * @param {Object} nodeOptions - options for nodes
+         * @public
          */
         computeDAGLayout: function(nodes, edges, graph, layoutOptions, nodeOptions) {
             // init nodes width
@@ -251,14 +271,12 @@ export default {
 
             graph.width = g.graph().width;
             graph.height = g.graph().height;
-            console.log('compute dag layout done.');
-            console.log('nodes', nodes);
-            console.log('edges', edges);
-            console.log('graph', graph);
         },
         /**
-         * main layout function
+         * main render function, which will call: create(), update(), remove()
+         *
          * @param {Object[]} graph - [nodes, edges]
+         * @public
          */
         draw: async function(graph) {
             const [nodes, edges] = graph;
@@ -271,6 +289,14 @@ export default {
             await this.update(graph);
             await this.create(graph);
         },
+        /**
+         * a tool function for beautiful edge routing
+         *
+         * @param {Object[]} points - array of edge points
+         *
+         * @return {string} pathData - a string for svg.path.d
+         * @public
+         */
         one_edge: function(points) {
         // const movePoint = (p, x, y, s) => {
         //     return { x: p.x * s + x, y: p.y * s + y }
@@ -435,18 +461,6 @@ export default {
                 if ((that.nodesing.exit().size() === 0) && (that.edgesing.exit().size() === 0)) {
                     resolve();
                 }
-            });
-        },
-        transform: async function() {
-            const that = this;
-            return new Promise((resolve, reject) => {
-                const dx = that.width/2;
-                const dy = that.heightMargin;
-                d3.select('g#network-layout')
-                    .transition()
-                    .duration(that.transformDuration)
-                    .attr('transform', `translate(${dx},${dy})`)
-                    .on('end', resolve);
             });
         },
 
