@@ -33,14 +33,19 @@
         self.network = None
     
     def process(self, rawData: dict) -&gt; dict:
-        &#34;&#34;&#34;main process function&#34;&#34;&#34;
+        &#34;&#34;&#34;main process function, it will call following methods:
+            1. mergeVarNode() to merge var node and opr node
+            2. constructHierarchy() to construct hierarchy of network
+            3. connectBranchNodes() to connect edges
+        
+        &#34;&#34;&#34;
         self.network = rawData
-        self.network = self.__mergeVarNode(self.network)
-        self.network = self.__constructHierarchy(self.network)
-        self.network[&#34;branch&#34;] = self.__connectBranchNodes(self.network[&#34;branch&#34;], self.network[&#34;leaf&#34;])
+        self.network = self.mergeVarNode(self.network)
+        self.network = self.constructHierarchy(self.network)
+        self.network[&#34;branch&#34;] = self.connectBranchNodes(self.network[&#34;branch&#34;], self.network[&#34;leaf&#34;])
         return self.network
 
-    def __mergeVarNode(self, network: dict) -&gt; dict:
+    def mergeVarNode(self, network: dict) -&gt; dict:
         &#34;&#34;&#34;Merge variable node into operation node
 
         Args:
@@ -84,7 +89,7 @@
 
         return newNetwork
 
-    def __constructHierarchy(self, network: dict) -&gt; dict:
+    def constructHierarchy(self, network: dict) -&gt; dict:
         &#34;&#34;&#34;Construct hierarchy from leaf nodes
 
         Args:
@@ -161,7 +166,7 @@
             &#34;branch&#34;: {**branchNetwork, **newBranchNodes}
         }
 
-    def __connectBranchNodes(self, branch: dict, leaf: dict) -&gt; dict:
+    def connectBranchNodes(self, branch: dict, leaf: dict) -&gt; dict:
         &#34;&#34;&#34;connect branch nodes
 
         Args:
@@ -231,14 +236,19 @@ if __name__ == &#34;__main__&#34;:
         self.network = None
     
     def process(self, rawData: dict) -&gt; dict:
-        &#34;&#34;&#34;main process function&#34;&#34;&#34;
+        &#34;&#34;&#34;main process function, it will call following methods:
+            1. mergeVarNode() to merge var node and opr node
+            2. constructHierarchy() to construct hierarchy of network
+            3. connectBranchNodes() to connect edges
+        
+        &#34;&#34;&#34;
         self.network = rawData
-        self.network = self.__mergeVarNode(self.network)
-        self.network = self.__constructHierarchy(self.network)
-        self.network[&#34;branch&#34;] = self.__connectBranchNodes(self.network[&#34;branch&#34;], self.network[&#34;leaf&#34;])
+        self.network = self.mergeVarNode(self.network)
+        self.network = self.constructHierarchy(self.network)
+        self.network[&#34;branch&#34;] = self.connectBranchNodes(self.network[&#34;branch&#34;], self.network[&#34;leaf&#34;])
         return self.network
 
-    def __mergeVarNode(self, network: dict) -&gt; dict:
+    def mergeVarNode(self, network: dict) -&gt; dict:
         &#34;&#34;&#34;Merge variable node into operation node
 
         Args:
@@ -282,7 +292,7 @@ if __name__ == &#34;__main__&#34;:
 
         return newNetwork
 
-    def __constructHierarchy(self, network: dict) -&gt; dict:
+    def constructHierarchy(self, network: dict) -&gt; dict:
         &#34;&#34;&#34;Construct hierarchy from leaf nodes
 
         Args:
@@ -359,7 +369,7 @@ if __name__ == &#34;__main__&#34;:
             &#34;branch&#34;: {**branchNetwork, **newBranchNodes}
         }
 
-    def __connectBranchNodes(self, branch: dict, leaf: dict) -&gt; dict:
+    def connectBranchNodes(self, branch: dict, leaf: dict) -&gt; dict:
         &#34;&#34;&#34;connect branch nodes
 
         Args:
@@ -396,21 +406,247 @@ if __name__ == &#34;__main__&#34;:
 </details>
 <h3>Methods</h3>
 <dl>
+<dt id="backend.data.network.JittorNetworkProcessor.connectBranchNodes"><code class="name flex">
+<span>def <span class="ident">connectBranchNodes</span></span>(<span>self, branch: dict, leaf: dict) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"><p>connect branch nodes</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>branch</code></strong> :&ensp;<code>dict</code></dt>
+<dd>branchnodes</dd>
+<dt><strong><code>leaf</code></strong> :&ensp;<code>dict</code></dt>
+<dd>leafnodes</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict</code></dt>
+<dd>new branch</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def connectBranchNodes(self, branch: dict, leaf: dict) -&gt; dict:
+    &#34;&#34;&#34;connect branch nodes
+
+    Args:
+        branch (dict): branchnodes
+        leaf (dict): leafnodes
+
+    Returns:
+        dict: new branch
+    &#34;&#34;&#34;               
+    for branchID, branchNode in branch.items():
+        assert len(branchNode[&#34;children&#34;])&gt;0
+        if type(branchNode[&#34;children&#34;][0])==int:
+            branchNode[&#34;inputs&#34;] = set()
+            branchNode[&#34;outputs&#34;] = set()
+
+    for branchID, branchNode in branch.items():
+        if type(branchNode[&#34;children&#34;][0])!=int:
+            continue
+        for child in branchNode[&#34;children&#34;]:
+            for inputchild in leaf[child][&#34;inputs&#34;]:
+                if (&#34;parent&#34; not in leaf[inputchild]) or (leaf[inputchild][&#34;parent&#34;]==branchID):
+                    continue
+                inputNode = leaf[inputchild][&#34;parent&#34;]
+                branchNode[&#34;inputs&#34;].add(branch[inputNode][&#34;id&#34;])
+                branch[inputNode][&#34;outputs&#34;].add(branchID)
+    
+    for branchID, branchNode in branch.items():
+        assert len(branchNode[&#34;children&#34;])&gt;0
+        if type(branchNode[&#34;children&#34;][0])==int:
+            branchNode[&#34;inputs&#34;] = list(branchNode[&#34;inputs&#34;])
+            branchNode[&#34;outputs&#34;] = list(branchNode[&#34;outputs&#34;])
+
+    return branch</code></pre>
+</details>
+</dd>
+<dt id="backend.data.network.JittorNetworkProcessor.constructHierarchy"><code class="name flex">
+<span>def <span class="ident">constructHierarchy</span></span>(<span>self, network: dict) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Construct hierarchy from leaf nodes</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>network</code></strong> :&ensp;<code>dict</code></dt>
+<dd>{nodeID: nodeInfo}</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict</code></dt>
+<dd>{leaf: {nodeID: nodeInfo}, branch: {nodeID: nodeInfo}}</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def constructHierarchy(self, network: dict) -&gt; dict:
+    &#34;&#34;&#34;Construct hierarchy from leaf nodes
+
+    Args:
+        network (dict): {nodeID: nodeInfo}
+
+    Returns:
+        dict: {leaf: {nodeID: nodeInfo}, branch: {nodeID: nodeInfo}}
+    &#34;&#34;&#34;
+    # remove stack
+    newNetwork = {}
+    for nodeID, node in network.items():
+        newNetwork[nodeID] = {
+            &#34;id&#34;: nodeID,
+            &#34;inputs&#34;: node[&#34;inputs&#34;],
+            &#34;outputs&#34;: node[&#34;outputs&#34;],
+            &#34;attrs&#34;: node[&#34;attrs&#34;]
+        }
+
+    # get branch nodes
+    branchNetwork = {}
+    for nodeID, node in network.items():
+        branchNodeKey = &#34;&#34;
+        stacks = []
+        if len(node[&#34;stacks&#34;])==0:
+            continue
+        for i in range(len(node[&#34;stacks&#34;])):
+            branchNode = node[&#34;stacks&#34;][i]
+            branchNodeKey += branchNode[&#34;name&#34;]+&#34;/&#34;
+            stacks.append(branchNodeKey)
+            if branchNodeKey not in branchNetwork:
+                branchNetwork[branchNodeKey] = {
+                    &#34;id&#34;: branchNodeKey,
+                    &#34;attrs&#34;: branchNode,
+                    &#34;children&#34;: []
+                }
+        stacks.append(nodeID)
+        for i in range(1, len(stacks)):
+            if stacks[i] not in branchNetwork[stacks[i-1]][&#34;children&#34;]:
+                branchNetwork[stacks[i-1]][&#34;children&#34;].append(stacks[i])
+                if type(stacks[i])==int:
+                    newNetwork[stacks[i]][&#34;parent&#34;] = stacks[i-1]
+                else:
+                    branchNetwork[stacks[i]][&#34;parent&#34;] = stacks[i-1]
+    
+    # process when children of a branch node both have a branch node and a leaf node
+    newBranchNodes = {}
+    for branchID, branchNode in branchNetwork.items():
+        assert len(branchNode[&#34;children&#34;])&gt;0
+        isBottom = type(branchNode[&#34;children&#34;][0])==int
+        needProcess = False
+        for childNodeID in branchNode[&#34;children&#34;]:
+            if (isBottom and type(childNodeID)!=int) or ((not isBottom) and type(childNodeID)==int):
+                needProcess = True
+                break
+        if needProcess:
+            for i in range(len(branchNode[&#34;children&#34;])):
+                if type(branchNode[&#34;children&#34;][i])==int:
+                    childNode = newNetwork[branchNode[&#34;children&#34;][i]]
+                    newBranchNode = {
+                        &#34;id&#34;: branchNode[&#34;id&#34;]+childNode[&#34;attrs&#34;][&#34;name&#34;]+&#39;/&#39;,
+                        &#34;children&#34;: [branchNode[&#34;children&#34;][i]],
+                        &#34;attrs&#34;: {
+                            &#34;name&#34;: childNode[&#34;attrs&#34;][&#34;name&#34;],
+                            &#34;type&#34;: childNode[&#34;attrs&#34;][&#34;dtype&#34;],
+                        },
+                        &#34;parent&#34;: branchID
+                    }
+                    childNode[&#34;parent&#34;] = newBranchNode[&#34;id&#34;]
+                    branchNode[&#34;children&#34;][i] = newBranchNode[&#34;id&#34;]
+                    newBranchNodes[newBranchNode[&#34;id&#34;]] = newBranchNode
+
+    return {
+        &#34;leaf&#34;: newNetwork,
+        &#34;branch&#34;: {**branchNetwork, **newBranchNodes}
+    }</code></pre>
+</details>
+</dd>
+<dt id="backend.data.network.JittorNetworkProcessor.mergeVarNode"><code class="name flex">
+<span>def <span class="ident">mergeVarNode</span></span>(<span>self, network: dict) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Merge variable node into operation node</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>network</code></strong> :&ensp;<code>dict</code></dt>
+<dd>{nodeID: nodeInfo}</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict</code></dt>
+<dd>{nodeID: nodeInfo}</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mergeVarNode(self, network: dict) -&gt; dict:
+    &#34;&#34;&#34;Merge variable node into operation node
+
+    Args:
+        network (dict): {nodeID: nodeInfo}
+
+    Returns:
+        dict: {nodeID: nodeInfo}
+    &#34;&#34;&#34;               
+    newNetwork = {}
+    for nodeID, node in network.items():
+        if node[&#34;attrs&#34;][&#34;is_var&#34;] == &#39;0&#39;: 
+            # assert outputs/inputs nodes are var nodes
+            nextnodesID = node[&#34;outputs&#34;]
+            for varnodeID in nextnodesID:
+                assert network[varnodeID][&#34;attrs&#34;][&#34;is_var&#34;]
+            prevnodesID = node[&#34;inputs&#34;]
+            for varnodeID in prevnodesID:
+                assert network[varnodeID][&#34;attrs&#34;][&#34;is_var&#34;]
+
+            # new outputs is the concat of outputs of all next varnodes
+            outputs = sum([network[varnodeID][&#34;outputs&#34;] for varnodeID in nextnodesID], [])
+            # new inputs is the concat of outputs of all prev varnodes
+            inputs = sum([network[varnodeID][&#34;inputs&#34;] for varnodeID in prevnodesID], [])
+
+
+            # new attrs is the merge of all varnodes and opnode
+            attrs = {}
+            for varnodeID in nextnodesID:
+                attrs.update(network[varnodeID][&#34;attrs&#34;])
+            attrs.update(node[&#34;attrs&#34;])
+
+            # new inputs is the concat of inputs of all last nodes
+
+
+            newNetwork[nodeID] = {
+                &#34;inputs&#34;: inputs,
+                &#34;outputs&#34;: outputs,
+                &#34;stacks&#34;: node[&#34;stacks&#34;],
+                &#34;attrs&#34;: attrs
+            }
+
+    return newNetwork</code></pre>
+</details>
+</dd>
 <dt id="backend.data.network.JittorNetworkProcessor.process"><code class="name flex">
 <span>def <span class="ident">process</span></span>(<span>self, rawData: dict) ‑> dict</span>
 </code></dt>
 <dd>
-<div class="desc"><p>main process function</p></div>
+<div class="desc"><p>main process function, it will call following methods:
+1. mergeVarNode() to merge var node and opr node
+2. constructHierarchy() to construct hierarchy of network
+3. connectBranchNodes() to connect edges</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def process(self, rawData: dict) -&gt; dict:
-    &#34;&#34;&#34;main process function&#34;&#34;&#34;
+    &#34;&#34;&#34;main process function, it will call following methods:
+        1. mergeVarNode() to merge var node and opr node
+        2. constructHierarchy() to construct hierarchy of network
+        3. connectBranchNodes() to connect edges
+    
+    &#34;&#34;&#34;
     self.network = rawData
-    self.network = self.__mergeVarNode(self.network)
-    self.network = self.__constructHierarchy(self.network)
-    self.network[&#34;branch&#34;] = self.__connectBranchNodes(self.network[&#34;branch&#34;], self.network[&#34;leaf&#34;])
+    self.network = self.mergeVarNode(self.network)
+    self.network = self.constructHierarchy(self.network)
+    self.network[&#34;branch&#34;] = self.connectBranchNodes(self.network[&#34;branch&#34;], self.network[&#34;leaf&#34;])
     return self.network</code></pre>
 </details>
 </dd>
@@ -435,6 +671,9 @@ if __name__ == &#34;__main__&#34;:
 <li>
 <h4><code><a title="backend.data.network.JittorNetworkProcessor" href="#backend.data.network.JittorNetworkProcessor">JittorNetworkProcessor</a></code></h4>
 <ul class="">
+<li><code><a title="backend.data.network.JittorNetworkProcessor.connectBranchNodes" href="#backend.data.network.JittorNetworkProcessor.connectBranchNodes">connectBranchNodes</a></code></li>
+<li><code><a title="backend.data.network.JittorNetworkProcessor.constructHierarchy" href="#backend.data.network.JittorNetworkProcessor.constructHierarchy">constructHierarchy</a></code></li>
+<li><code><a title="backend.data.network.JittorNetworkProcessor.mergeVarNode" href="#backend.data.network.JittorNetworkProcessor.mergeVarNode">mergeVarNode</a></code></li>
 <li><code><a title="backend.data.network.JittorNetworkProcessor.process" href="#backend.data.network.JittorNetworkProcessor.process">process</a></code></li>
 </ul>
 </li>
