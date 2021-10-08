@@ -25,6 +25,7 @@ export default {
     data(){
         return {
             _focusID:undefined,
+            ordering:{},
         }
     },
     watch:{
@@ -34,56 +35,115 @@ export default {
     },
     created() {
         const that=this
-        setTimeout(()=>{that.updateTree()},1000)
-        setTimeout(()=>{that._focusID="_model/layer4/";console.log("!")},2000)
+        setTimeout(()=>{
+            that.calcTopo();
+            that.updateTree()
+        },1000)
+        setTimeout(()=>{that._focusID="_model/layer3/";},2000)
         setTimeout(()=>{that.updateTree()},3000)
-        setTimeout(()=>{that._focusID="_model/layer3/";console.log("!")},4000)
+        setTimeout(()=>{that._focusID="_model/layer4/";},4000)
         setTimeout(()=>{that.updateTree()},5000)
     },
     methods:{
+        calcTopo()
+        {
+            console.log(this.network)
+            let items={}
+            let ordering=[]
+            let n=0
+            this.ordering={}
+            for(let key in this.network)
+            {
+                if(this.network[key].children.length==0)
+                {
+                    items[key]=this.network[key].inputs.length
+                    if(this.network[key].inputs.length==0)ordering.push(key)
+                    n++
+                }
+            }
+
+            for(let i=0;i<n;i++)
+            {
+                const key=ordering[i]
+                this.ordering[key]=i+1
+                if(i>=ordering.length)return false
+                for(let j in this.network[key].outputs)
+                {
+                    const chkey=this.network[key].outputs[j]
+                    if(--items[chkey]==0)ordering.push(chkey)
+                }
+            }
+            const that=this
+            const calcMiddle=(key)=>{
+                if(that.ordering[key])return that.ordering[key]
+                let ans=0
+                for(let ch in that.network[key].children){
+                    if(calcMiddle(that.network[key].children[ch]) >ans)
+                        ans=that.ordering[that.network[key].children[ch]]
+                }
+                that.ordering[key]=ans
+                return ans
+            }
+            for(let key in this.network)console.log(key,calcMiddle(key))
+        },
         updateTree(){
             console.log("..update",this._focusID)
             window.d3=d3
+            window.network=this.network
             const width=600
 
             // building tree
-            // required:  the first node must be the root
             // required:  the id of the nodes must follow the pattern "fa/fa/fa/fa/id/"
 
             let network_list=[]
 
-            let faID=undefined
+            
+            if(!this._focusID){
+                for(let key in this.network)
+                {
+                    if(!this.network[key].parent)this._focusID=key
+                }
+            }
+            let faID=this._focusID.slice(0,this._focusID.slice(0,-1).lastIndexOf('/'))+"/"
+
             for (let key in this.network)
             {
                 const id=this.network[key].id
                 const fa=this.network[key].parent
-                if(!this._focusID)this._focusID=id
-                if(!faID)faID=this._focusID.slice(0,this._focusID.slice(0,-1).lastIndexOf('/'))+"/"
                 if(fa==this._focusID || fa==faID)
                 {
                     network_list.push(
                     {
                         "id":id,
-                        "parent":fa
+                        "parent":fa,
+                        "attrs":this.network[key].attrs,
+                        "ordering":this.ordering[id]
                     })
                 }
                 else if(id==faID){
                     network_list.push(
                     {
                         "id":id,
-                        "parent":undefined
+                        "parent":undefined,
+                        "attrs":this.network[key].attrs,
+                        "ordering":this.ordering[id]
                     })
                 }
             }
+            network_list.sort((i,j)=>{
+                return i.ordering-j.ordering
+            })
             window.network_list=network_list
+
             var root=d3.stratify().id(d=>d["id"]).parentId(d=>d["parent"])(network_list)
             const tree = data => {
                 const root = d3.hierarchy(data);
-                root.dx = 10;
+                root.dx = 20;
                 root.dy = width / (root.height + 1);
                 return d3.tree().nodeSize([root.dx, root.dy])(root);
             }
             root=tree(root)
+            
             window.root=root
 
             // rendering
@@ -129,13 +189,13 @@ export default {
                 .attr("fill", d => d.children ? "#555" : "#999")
                 .attr("r", 2.5);
 
-            
-
             node.append("text")
                 .attr("dy", "0.31em")
                 .attr("x", d => d.children ? -6 : 6)
                 .attr("text-anchor", d => d.children ? "end" : "start")
-                .text(d => d.data.id.slice(d.parent && d.parent.data.id.length,-1))
+                //.text(d => d.data.id.slice(d.parent && d.parent.data.id.length,-1))
+                //.text(d=> `${d.data.data.attrs.type}(${d.data.data.ordering})`)
+                .text(d=> d.data.data.attrs.type)
                 .clone(true).lower()
                 .attr("stroke", "white");
         }
