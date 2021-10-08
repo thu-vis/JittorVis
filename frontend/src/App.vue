@@ -74,6 +74,7 @@ html, body, #app {
   height: 100%;
   display: flex;
   overflow: hidden;
+  border-left: 1px solid gray;
 }
 
 #navi-container {
