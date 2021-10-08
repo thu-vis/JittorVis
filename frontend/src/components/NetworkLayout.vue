@@ -48,9 +48,10 @@ export default {
                 'width': 200,
                 'height': 40,
                 'rx': 4,
-                'fill': 'none',
+                'fill': 'white',
                 'stroke': 'black',
                 'stroke-width': 2,
+                'cursor': 'pointer',
             },
             nodeNameAttrs: {
                 'text-anchor': 'middle',
@@ -79,6 +80,7 @@ export default {
             nodeNameClass: 'network-node-name',
             nodesing: null,
             edgesing: null,
+            nodeToolBtnsClass: 'network-node-tools',
         };
     },
     watch: {
@@ -116,6 +118,34 @@ export default {
                 node.expand = true;
                 node = this.layoutNetwork[node.parent];
             }
+            [this.nodes, this.edges] = this.getGraphFromNetwork(this.layoutNetwork);
+            this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions, this.nodeRectAttrs);
+            /**
+             * reheight svg
+             * @property {number} height - new height
+             */
+            this.$emit('reheight', this.daggraph.height+this.heightMargin*2);
+            this.draw([this.nodes, this.edges]);
+        },
+        /**
+         * all things to do when you collapse a network node, it will call following methods:
+         * 1. getGraphFromNetwork() to calculate which nodes should be showed after collapsing and the edges among them
+         * 2. computeDAGLayout() to compute the dag layout
+         * 3. emit reheight event to resize the svg, which works well with scroll
+         * 4. draw() to render the network
+         *
+         * @param {string} nodeid - node to be collapsed
+         * @public
+         */
+        collapseNode: function(nodeid) {
+            let queues = [nodeid];
+            while (queues.length > 0) {
+                nodeid = queues.shift();
+                const node = this.layoutNetwork[nodeid];
+                node.expand = false;
+                queues = queues.concat(node.children);
+            }
+
             [this.nodes, this.edges] = this.getGraphFromNetwork(this.layoutNetwork);
             this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions, this.nodeRectAttrs);
             /**
@@ -353,11 +383,20 @@ export default {
                     .attr('class', that.nodeClass)
                     .attr('transform', (d) => 'translate(' + d.x + ',' + d.y + ')')
                     .attr('opacity', 0)
-                    .on('click', function(e, d) {
-                        if (d.children.length>0) {
-                            that.expandNode(d.id);
-                        }
+                    .on('mouseenter', function(e, d) {
+                        // eslint-disable-next-line no-invalid-this
+                        const ele = d3.select(this);
+                        that.drawToolBtns(d, ele, that.nodeToolBtnsClass, {
+                            collapseNode: that.collapseNode,
+                            expandNode: that.expandNode,
+                        }, that.layoutNetwork);
+                    })
+                    .on('mouseleave', function(e, d) {
+                        // eslint-disable-next-line no-invalid-this
+                        const ele = d3.select(this);
+                        that.removeToolBtns(ele, that.nodeToolBtnsClass);
                     });
+
                 nodesing.transition()
                     .duration(that.createDuration)
                     .attr('opacity', 1)
@@ -369,7 +408,8 @@ export default {
                     .attr('rx', rectAttrs.rx)
                     .attr('fill', rectAttrs.fill)
                     .attr('stroke', rectAttrs.stroke)
-                    .attr('stroke-width', rectAttrs['stroke-width']);
+                    .attr('stroke-width', rectAttrs['stroke-width'])
+                    .attr('cursor', rectAttrs.cursor);
 
                 nodesing.append('text')
                     .attr('class', that.nodeNameClass)
@@ -463,7 +503,49 @@ export default {
                 }
             });
         },
+        drawToolBtns: function(d, ele, gClass, callbacks, nodes) {
+            const iconWidth = 15;
+            const iconMargin = 5;
+            const elementWidth = d.width;
+            let right = 5;
+            const g = ele.append('g').attr('class', gClass);
 
+            if (d.parent !== undefined && nodes[d.parent].parent !== undefined) {
+                // draw zoom-out
+                g.append('image')
+                    .attr('xlink:href', '/static/images/zoomout.svg')
+                    .attr('x', elementWidth-right-iconWidth)
+                    .attr('y', 5)
+                    .attr('width', iconWidth)
+                    .attr('height', iconWidth)
+                    .attr('cursor', 'pointer')
+                    .on('click', function() {
+                        if (d.parent != undefined) {
+                            callbacks.collapseNode(d.parent);
+                        }
+                    });
+                right += iconWidth+iconMargin;
+            }
+
+            if (d.children.length > 0) {
+                // draw zoom-in
+                g.append('image')
+                    .attr('xlink:href', '/static/images/zoomin.svg')
+                    .attr('x', elementWidth-right-iconWidth)
+                    .attr('y', 5)
+                    .attr('width', iconWidth)
+                    .attr('height', iconWidth)
+                    .attr('cursor', 'pointer')
+                    .on('click', function() {
+                        callbacks.expandNode(d.id);
+                    });
+
+                right += iconWidth+iconMargin;
+            }
+        },
+        removeToolBtns: function(ele, gClass) {
+            ele.select('.'+gClass).remove();
+        },
     },
 };
 </script>
