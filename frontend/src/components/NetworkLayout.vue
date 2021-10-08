@@ -503,6 +503,16 @@ export default {
                 }
             });
         },
+        /**
+         * draw tool buttons when hover on a network node
+         *
+         * @param {Object} d - data of network node
+         * @param {Object} ele - d3 element( d3.select(this) )
+         * @param {string} gClass - class of buttons' group
+         * @param {Object} callbacks - click functions of buttons
+         * @param {Object} nodes - all nodes
+         * @public
+         */
         drawToolBtns: function(d, ele, gClass, callbacks, nodes) {
             const iconWidth = 15;
             const iconMargin = 5;
@@ -543,6 +553,13 @@ export default {
                 right += iconWidth+iconMargin;
             }
         },
+        /**
+         * remove tool buttons when mouse leave a network node
+         *
+         * @param {Object} ele - d3 element( d3.select(this) )
+         * @param {string} gClass - class of buttons' group
+         * @public
+         */
         removeToolBtns: function(ele, gClass) {
             ele.select('.'+gClass).remove();
         },
