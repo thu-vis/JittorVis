@@ -34,14 +34,15 @@ export default {
     },
     created() {
         const that=this
-        setTimeout(()=>{that.updateTree()},1000)
-        setTimeout(()=>{that._focusID="_model/layer4/";console.log("!")},2000)
+        setTimeout(()=>{that.updateTree()},2000)
+        setTimeout(()=>{that._focusID="_model/layer4/";console.log("!")},2500)
         setTimeout(()=>{that.updateTree()},3000)
-        setTimeout(()=>{that._focusID="_model/layer3/";console.log("!")},4000)
-        setTimeout(()=>{that.updateTree()},5000)
+        // setTimeout(()=>{that._focusID="_model/layer3/";console.log("!")},4000)
+        // setTimeout(()=>{that.updateTree()},5000)
     },
     methods:{
         updateTree(){
+            console.log(this.network)
             console.log("..update",this._focusID)
             window.d3=d3
             const width=600
@@ -79,7 +80,7 @@ export default {
             var root=d3.stratify().id(d=>d["id"]).parentId(d=>d["parent"])(network_list)
             const tree = data => {
                 const root = d3.hierarchy(data);
-                root.dx = 10;
+                root.dx = 20;
                 root.dy = width / (root.height + 1);
                 return d3.tree().nodeSize([root.dx, root.dy])(root);
             }
@@ -101,18 +102,32 @@ export default {
             const g = svg.select("g.container")
                 .attr("transform", `translate(${root.dy / 3},${root.dx - x0})`)
                 
+            const reveal = path => path.transition()
+                .duration(1000)
+                .ease(d3.easeLinear)
+                .attrTween("stroke-dasharray", function() {
+                    const length = this.getTotalLength();
+                    return d3.interpolate(`0,${length}`, `${length},${length}`);
+                })                                                                                      
             const link = g.select("g.links")
                 .attr("fill", "none")
                 .attr("stroke", "#555")
                 .attr("stroke-opacity", 0.6)
                 .attr("stroke-width", 1)
-            
-            .selectAll("path")
+                .selectAll("path")
                 .data(root.links())
                 .join("path")
+                // .transition()
+                // .duration(500)
                 .attr("d", d3.linkHorizontal()
                     .x(d => d.y)
-                    .y(d => d.x));
+                    .y(d => d.x))
+                .attr("fill", "none")
+                .attr("stroke", "steelblue")
+                .attr("stroke-width", 1.5)
+                .attr("stroke-miterlimit", "1")
+                .attr("stroke-dasharray", "0,1")
+                .call(reveal);
             
             const node = g.select("g.nodes")
                 .attr("stroke-linejoin", "round")
