@@ -16,7 +16,7 @@ class DataCtrler(object):
     def processStatisticData(self, data):
         return {}
 
-    def process(self, rawdata):
+    def process(self, rawdata, modeltype='jittor', attrs = {}):
         """process raw data
         """        
         self.rawdata = rawdata
