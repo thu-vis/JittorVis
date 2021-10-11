@@ -5,16 +5,12 @@ class JittorNetworkProcessor(object):
         self.network = None
     
     def process(self, rawData: dict) -> dict:
-        """main process function, it will call following methods:
-            1. mergeVarNode() to merge var node and opr node
-            2. constructHierarchy() to construct hierarchy of network
-            3. connectBranchNodes() to connect edges
-        
-        """
+        """main process function"""
         self.network = rawData
         self.network = self.mergeVarNode(self.network)
         self.network = self.constructHierarchy(self.network)
         self.network["branch"] = self.connectBranchNodes(self.network["branch"], self.network["leaf"])
+        self.network["branch"] = self.setAttrsForBranchNodes(self.network["branch"], self.network["leaf"])
         return self.network
 
     def mergeVarNode(self, network: dict) -> dict:
@@ -173,7 +169,34 @@ class JittorNetworkProcessor(object):
 
         return branch
 
+    def setAttrsForBranchNodes(self, branch: dict, leaf: dict) -> dict:
+        """As branch nodes are created with lots of attrs hidden in leaf nodes, set attributes for branch nodes
 
+        Args:
+            branch (dict): branch nodes
+            leaf (dict): leaf nodes
+
+        Returns:
+            dict: new branch nodes
+        """   
+        # add conv kernal size and channel num for conv layer     
+        for branchNodeID, branchNode in branch.items():
+            branchNode["name"] = branchNode["attrs"]["name"]
+            branchNode["type"] = branchNode["attrs"]["type"]
+            newAttrs = {}
+            if branchNode["attrs"]["type"] == "Conv":
+                assert type(branchNode["children"][0]) == int
+                for childID in branchNode["children"]:
+                    if leaf[childID]["attrs"]["name"] == "binary.multiply":
+                        shape = [int(num) for num in leaf[childID]["attrs"]["shape"][1:len(leaf[childID]["attrs"]["shape"])-2].split(',')]
+                        newAttrs["channels"] = shape[1]
+                        newAttrs["inputSize"] = shape[2:5]
+                        newAttrs["kernalSize"] = shape[5:7]
+            if branchNode["attrs"]["type"] == "Sequential":
+                newAttrs["name"] = branchNode["attrs"]["name"]
+
+            branchNode["attrs"] = newAttrs
+        return branch
 
 if __name__ == "__main__":
     import pickle
