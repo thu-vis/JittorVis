@@ -43,7 +43,7 @@ export default {
         window.t=this
         setTimeout(()=>{
             that.initTree();
-        },2000)
+        },1000)
     },
     methods:{
         initTree()
