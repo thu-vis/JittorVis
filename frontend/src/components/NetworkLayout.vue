@@ -47,6 +47,7 @@ export default {
                 // default node size
                 'width': 200,
                 'height': 40,
+                'attrHeight': 20,
                 'rx': 4,
                 'fill': 'white',
                 'stroke': 'black',
@@ -58,7 +59,17 @@ export default {
                 'x': 100,
                 'y': 20,
                 'font-size': 20,
-                'dy': 5,
+                'dy': 25,
+            },
+            nodeAttrAttrs: {
+                'text-anchor': 'start',
+                'x': 5,
+                'font-size': 15,
+                'dy': 15,
+            },
+            nodeSepAttrs: {
+                'stroke': 'black',
+                'stroke-width': 1,
             },
             edgeAttrs: {
                 'fill': 'none',
@@ -78,6 +89,8 @@ export default {
             nodeClass: 'network-node',
             edgeClass: 'network-edge',
             nodeNameClass: 'network-node-name',
+            nodeAttrsClass: 'network-node-attrs',
+            nodeSepClass: 'network-node-sep',
             nodesing: null,
             edgesing: null,
             nodeToolBtnsClass: 'network-node-tools',
@@ -247,7 +260,7 @@ export default {
             // init nodes width
             for (const node of Object.values(nodes)) {
                 node.width = nodeOptions.width;
-                node.height = nodeOptions.height;
+                node.height = nodeOptions.height + Object.entries(node.attrs).length * nodeOptions.attrHeight;
             }
 
             // layout
@@ -270,11 +283,11 @@ export default {
             let nodeCenterY = Number.MAX_VALUE;
             g.nodes().forEach(function(d) {
                 const node = g.node(d);
-                if (nodeCenterY>node.y) {
-                    nodeCenterY = node.y;
+                if (nodeCenterY>node.y-node.height/2) {
+                    nodeCenterY = node.y-node.height/2;
                     nodeCenterX = node.x;
                     nodeCenterCnts = 1;
-                } else if (nodeCenterY === node.y) {
+                } else if (nodeCenterY === node.y-node.height/2) {
                     nodeCenterX += node.x;
                     nodeCenterCnts++;
                 }
@@ -404,7 +417,9 @@ export default {
 
                 nodesing.append('rect')
                     .attr('width', rectAttrs.width)
-                    .attr('height', rectAttrs.height)
+                    .attr('height', (d) => d.height)
+                    .attr('x', 0)
+                    .attr('y', (d) => -d.height/2)
                     .attr('rx', rectAttrs.rx)
                     .attr('fill', rectAttrs.fill)
                     .attr('stroke', rectAttrs.stroke)
@@ -413,12 +428,39 @@ export default {
 
                 nodesing.append('text')
                     .attr('class', that.nodeNameClass)
-                    .text((d) => d.attrs.type)
-                    .attr('x', that.nodeNameAttrs.x)
-                    .attr('y', that.nodeNameAttrs.y)
+                    .text((d) => d.type)
+                    .attr('x', (d) => d.width/2)
+                    .attr('y', (d) => -d.height/2)
                     .attr('text-anchor', that.nodeNameAttrs['text-anchor'])
                     .attr('font-size', that.nodeNameAttrs['font-size'])
                     .attr('dy', that.nodeNameAttrs.dy);
+
+                nodesing.append('line')
+                    .attr('class', that.nodeSepClass)
+                    .attr('x1', (d) => 0)
+                    .attr('y1', (d) => -d.height/2+that.nodeRectAttrs['height'])
+                    .attr('x2', (d) => d.width)
+                    .attr('y2', (d) => -d.height/2+that.nodeRectAttrs['height'])
+                    .attr('stroke', that.nodeSepAttrs['stroke'])
+                    .attr('stroke-width', that.nodeSepAttrs['stroke-width']);
+
+                nodesing.each(function(d) {
+                    let i = 0;
+                    // eslint-disable-next-line no-invalid-this
+                    const ele = d3.select(this);
+                    for (const [attrname, attrvalue] of Object.entries(d.attrs)) {
+                        ele.append('text')
+                            .attr('class', that.nodeAttrsClass)
+                            .attr('id', attrname+','+i)
+                            .text(`${attrname}: ${attrvalue}`)
+                            .attr('x', that.nodeAttrAttrs['x'])
+                            .attr('y', -d.height/2 + that.nodeRectAttrs['height']+20*i)
+                            .attr('text-anchor', that.nodeAttrAttrs['text-anchor'])
+                            .attr('font-size', that.nodeAttrAttrs['font-size'])
+                            .attr('dy', that.nodeAttrAttrs.dy);
+                        i++;
+                    }
+                });
 
                 const edgeAttrs = that.edgeAttrs;
                 const edgeing = that.edgesing.enter()
@@ -428,7 +470,7 @@ export default {
                     .attr('fill', edgeAttrs.fill)
                     .attr('stroke', edgeAttrs.stroke)
                     .attr('stroke-width', edgeAttrs['stroke-width'])
-                    .attr('transform', 'translate(' + rectAttrs.width / 2 + ',' + rectAttrs.height / 2 + ')')
+                    .attr('transform', (d) => 'translate(' + d.source.width / 2 + ',' + 0 + ')')
                     .attr('d', (d) => that.one_edge(d.points));
 
                 edgeing.transition()
@@ -456,21 +498,42 @@ export default {
                     .transition()
                     .duration(that.updateDuration)
                     .attr('width', rectAttrs.width)
-                    .attr('height', rectAttrs.height)
+                    .attr('height', (d) => d.height)
+                    .attr('x', 0)
+                    .attr('y', (d) => -d.height/2)
                     .on('end', resolve);
 
                 nodesing.selectAll('.' + that.nodeNameClass)
                     .transition()
                     .duration(that.updateDuration)
-                    .attr('x', that.nodeNameAttrs.x)
-                    .attr('y', that.nodeNameAttrs.y)
+                    .attr('x', (d) => d.width/2)
+                    .attr('y', (d) => -d.height/2)
                     .attr('dy', that.nodeNameAttrs.dy)
                     .on('end', resolve);
+
+                nodesing.selectAll('.' + that.nodeSepClass)
+                    .attr('x1', (d) => 0)
+                    .attr('y1', (d) => -d.height/2+that.nodeRectAttrs['height'])
+                    .attr('x2', (d) => d.width)
+                    .attr('y2', (d) => -d.height/2+that.nodeRectAttrs['height']);
+
+                nodesing.each(function(d) {
+                    // eslint-disable-next-line no-invalid-this
+                    const ele = d3.select(this);
+                    console.log(d.name, d.attrs);
+                    ele.selectAll('.'+that.nodeAttrsClass)
+                        .attr('x', that.nodeAttrAttrs['x'])
+                        .attr('y', function(d) {
+                            // eslint-disable-next-line no-invalid-this
+                            const i = parseInt(d3.select(this).attr('id').split(',')[1]);
+                            return -d.height/2 + that.nodeRectAttrs['height']+20*i;
+                        });
+                });
 
                 const edgeing = that.edgesing;
                 edgeing.transition()
                     .duration(that.updateDuration)
-                    .attr('transform', 'translate(' + rectAttrs.width / 2 + ',' + rectAttrs.height / 2 + ')')
+                    .attr('transform', (d) => 'translate(' + d.source.width / 2 + ',' + 0 + ')')
                     .attr('d', (d) => that.one_edge(d.points))
                     .on('end', resolve);
 
@@ -518,7 +581,8 @@ export default {
             const iconMargin = 5;
             const elementWidth = d.width;
             let right = 5;
-            const g = ele.append('g').attr('class', gClass);
+            const g = ele.append('g').attr('class', gClass)
+                .attr('transform', `translate(0,${-d.height/2})`);
 
             if (d.parent !== undefined && nodes[d.parent].parent !== undefined) {
                 // draw zoom-out
