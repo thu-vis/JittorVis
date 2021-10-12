@@ -22,6 +22,7 @@ export default {
             'focusID'
         ])
     },
+    props:['canFocusNode'],
     data(){
         return {
             focus_ID:"" ,
@@ -48,6 +49,7 @@ export default {
     methods:{
         initTree()
         {
+            console.log("navigation ready",this.canFocusNode)
             // calc ordering
             let items={}
             let ordering=[]
@@ -109,7 +111,7 @@ export default {
             window.network_list=network_list
             const root = d3.stratify().id(d=>d.name).parentId(d=>d.parent)(network_list)
             this.root=root
-            const dy=width/3
+            const dy=width/2
             root.x0 = dy / 2;
             root.y0 = 0;
             root.descendants().forEach((d, i) => {
@@ -143,22 +145,27 @@ export default {
                     if(this.focus_ID.startsWith(ch.data.name)){root=ch;found=1;break}
                 }
             }
-            //console.log("root",root,this.focus_ID)
+
             if(!source)source=root
+            root.descendants().forEach(d=>{
+                if(this.focus_ID.startsWith(d.data.name))d.children=d._children
+                else d.children=null
+            })
             root = root.parent || root
             
             root.descendants().forEach(d=>{
                 if(this.focus_ID.startsWith(d.data.name))d.children=d._children
                 else d.children=null
             })
+            
             window.root=root
 
             //console.log("source: ",source)
             
-            const width=900
+            const width=750
             const dx=20
             const dy=width/3
-            const margin=({top: 10, right: 120, bottom: 10, left: 80})
+            const margin=({top: 10, right: 60, bottom: 10, left: 80})
             const tree=d3.tree().nodeSize([dx, dy])
             const diagonal = d3.linkHorizontal().x(d => d.y).y(d => d.x)
             const svg = d3.select("#navigation-tree")
@@ -171,11 +178,9 @@ export default {
                 .attr("stroke-opacity", 0.4)
                 .attr("stroke-width", 1.5);
             const gNode = svg.select("g.nodes")
-                .attr("cursor", "pointer")
-                .attr("pointer-events", "all");
             window.root=root
             
-            const duration = d3.event && d3.event.altKey ? 2500 : 500;
+            const duration = 500;
             const nodes = root.descendants().reverse();
             const links = root.links();
             window.nodes=nodes
@@ -211,20 +216,28 @@ export default {
                 .attr("transform", d => `translate(${source.y0},${source.x0})`)
                 .attr("fill-opacity", 0)
                 .attr("stroke-opacity", 0)
+            
+            if(this.canFocusNode)
+            {
+                nodeEnter.attr("cursor", d=>d._children? "pointer":"default")
                 .on("click", (e,d)=> {
                     //console.log(event,d,that,that.focus_ID)
-                    if(d.data.name==that.focus_ID)
-                        that.focus_ID=d.parent.data.name || that.focus_ID
-                    else
-                        that.focus_ID=d.data.name
-                    
-                    //that.updateTree(d);
+                    if(d._children)
+                    {
+                        if(d.data.name==that.focus_ID)
+                        {
+                            that.$store.commit('setFocusID',d.parent.data.name || that.focus_ID)
+                        }
+                        else
+                        {
+                            that.$store.commit('setFocusID',d.data.name)
+                        }
+                    }
                 });
+            }
 
             nodeEnter.append("circle")
-                .attr("r", 2.5)
-                .attr("fill", d => d._children ? "#555" : "#999")
-                .attr("stroke-width", 10);
+                .attr("stroke-width", 10)
 
             nodeEnter.append("text")
                 .attr("dy", "0.31em")
@@ -240,7 +253,15 @@ export default {
             const nodeUpdate = node.merge(nodeEnter).transition(transition)
                 .attr("transform", d => `translate(${d.y},${d.x})`)
                 .attr("fill-opacity", 1)
-                .attr("stroke-opacity", 1);
+                .attr("stroke-opacity", 1)
+                
+            nodeUpdate.select("circle")
+                .attr("r", d=> d.data.name==this.focus_ID ? 3.5 : 2.5)
+                .attr("fill", d => d._children ? "#555" : "#999")
+
+            //nodeUpdate.selectAll("text")
+                //.attr("font-size", d => d.data.name==this.focus_ID ? "16px" : "14px")
+                //.attr("font-weight", d => d.data.name==this.focus_ID ? "800" : "400")
 
             // Transition exiting nodes to the parent's new position.
             const nodeExit = node.exit().transition(transition).remove()
