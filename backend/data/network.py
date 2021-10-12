@@ -179,11 +179,11 @@ class JittorNetworkProcessor(object):
         Returns:
             dict: new branch nodes
         """   
-        # add conv kernal size and channel num for conv layer     
         for branchNodeID, branchNode in branch.items():
             branchNode["name"] = branchNode["attrs"]["name"]
             branchNode["type"] = branchNode["attrs"]["type"]
             newAttrs = {}
+            # add conv kernal size and channel num for conv layer     
             if branchNode["attrs"]["type"] == "Conv":
                 assert type(branchNode["children"][0]) == int
                 for childID in branchNode["children"]:
@@ -192,8 +192,25 @@ class JittorNetworkProcessor(object):
                         newAttrs["channels"] = shape[1]
                         newAttrs["inputSize"] = shape[2:5]
                         newAttrs["kernalSize"] = shape[5:7]
+
+            # add name for sequential layer
             if branchNode["attrs"]["type"] == "Sequential":
                 newAttrs["name"] = branchNode["attrs"]["name"]
+
+            # add size for fc layer
+            if branchNode["attrs"]["type"] == "Linear":
+                assert type(branchNode["children"][0]) == int
+                for childID in branchNode["children"]:
+                    if leaf[childID]["attrs"]["name"] == "binary.multiply":
+                        inputDim = int(leaf[childID]["attrs"]["shape"].split(',')[2])
+                        newAttrs['inputDim'] = inputDim
+                    if leaf[childID]["attrs"]["name"] == "binary.add":
+                        outputDim = int(leaf[childID]["attrs"]["shape"].split(',')[1])
+                        newAttrs['outputDim'] = outputDim
+
+            if branchNode["attrs"]["type"].startswith('float'):
+                branchNode["type"] = branchNode["name"]
+
 
             branchNode["attrs"] = newAttrs
         return branch

@@ -22,7 +22,12 @@ export default {
             'focusID'
         ])
     },
-    props:['canFocusNode'],
+    props:{
+        canFocusNode: {
+            type: Boolean,
+            default: false
+        }
+    },
     data(){
         return {
             focus_ID:"" ,
