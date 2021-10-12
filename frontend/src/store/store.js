@@ -21,6 +21,9 @@ export default new Vuex.Store({
             state.allData.network = allData.network;
         },
         setFocusID(state, focusID) {
+            if ((state.allData.network[focusID] === undefined) || (state.allData.network[focusID].children.length===0)) {
+                return;
+            }
             state.focusID = focusID;
         },
     },
