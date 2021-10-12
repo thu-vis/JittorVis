@@ -7,11 +7,14 @@
       <div id="left">
         <div id="statistic-container"><statistic></statistic></div>
         <div id="navi-container"><navigation v-bind:canFocusNode="true"></navigation></div>
+<<<<<<< HEAD
         <div id="featuremap-container">
             <vue-scroll :ops="scrollOptions">
               <feature-map></feature-map>
             </vue-scroll>
         </div>
+=======
+>>>>>>> fda6ae4... feat: tree view and network view cooperation
       </div>
       <div id="tree-container">
           <div id="network-container"><network></network></div>
