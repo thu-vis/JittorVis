@@ -10,9 +10,11 @@ import {mapGetters, mapState} from 'vuex';
 import dagre from 'dagre';
 import * as d3 from 'd3';
 import clone from 'just-clone';
+import Util from './Util.vue';
 
 export default {
     name: 'network-layout',
+    mixins: [Util],
     props: {
         width: {
             type: Number,
@@ -48,26 +50,28 @@ export default {
             },
             nodeRectAttrs: {
                 // default node size
-                'width': 200,
                 'height': 40,
                 'attrHeight': 20,
                 'rx': 4,
                 'fill': 'white',
                 'stroke': 'black',
                 'stroke-width': 2,
-                'cursor': 'pointer',
             },
             nodeNameAttrs: {
                 'text-anchor': 'middle',
+                'font-family': 'Comic Sans MS',
+                'font-weight': 'normal',
                 'x': 100,
                 'y': 20,
-                'font-size': 20,
+                'font-size': '20px',
                 'dy': 25,
             },
             nodeAttrAttrs: {
                 'text-anchor': 'start',
+                'font-family': 'Century Gothic',
+                'font-weight': 'normal',
                 'x': 5,
-                'font-size': 15,
+                'font-size': '12px',
                 'dy': 15,
             },
             nodeSepAttrs: {
@@ -78,6 +82,13 @@ export default {
                 'fill': 'none',
                 'stroke': 'rgb(50,50,50)',
                 'stroke-width': 1,
+            },
+            nodeBackgroundAttrs: {
+                'height': 40,
+                'widthMargin': 30,
+                'rx': 4,
+                'fill': 'white',
+                'stroke': 'none',
             },
             // dagre nodes/edges/graph result
             layoutNetwork: {},
@@ -91,6 +102,8 @@ export default {
             // layout class
             nodeClass: 'network-node',
             edgeClass: 'network-edge',
+            nodeRectClass: 'network-rect',
+            nodeBackgroundClass: 'network-node-background',
             nodeNameClass: 'network-node-name',
             nodeAttrsClass: 'network-node-attrs',
             nodeSepClass: 'network-node-sep',
@@ -131,7 +144,8 @@ export default {
                 node = this.layoutNetwork[node.parent];
             }
             [this.nodes, this.edges] = this.getGraphFromNetwork(this.layoutNetwork);
-            this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions, this.nodeRectAttrs);
+            this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions,
+                this.nodeRectAttrs, this.nodeNameAttrs, this.nodeAttrAttrs);
             /**
              * reheight svg
              * @property {number} height - new height
@@ -248,12 +262,21 @@ export default {
          * @param {Object} graph - graph width/height
          * @param {Object} layoutOptions - options for dagre.layout()
          * @param {Object} nodeOptions - options for nodes
+         * @param {Object} nodeNameOptions - options for nodes name
+         * @param {Object} nodeAttrOptions - options for node attrs
          * @public
          */
-        computeDAGLayout: function(nodes, edges, graph, layoutOptions, nodeOptions) {
+        computeDAGLayout: function(nodes, edges, graph, layoutOptions, nodeOptions, nodeNameOptions, nodeAttrOptions) {
             // init nodes width
             for (const node of Object.values(nodes)) {
-                node.width = nodeOptions.width;
+                let maxWidth = this.getTextWidth(node.type,
+                    `${nodeNameOptions['font-weight']} ${nodeNameOptions['font-size']} ${nodeNameOptions['font-family']}`);
+                for (const [attrname, attr] of Object.entries(node.attrs)) {
+                    maxWidth = Math.max(maxWidth, this.getTextWidth(attrname+': '+attr,
+                        `${nodeAttrOptions['font-weight']} ${nodeAttrOptions['font-size']} ${nodeAttrOptions['font-family']}`));
+                }
+
+                node.width = maxWidth + 15*2;
                 node.height = nodeOptions.height + Object.entries(node.attrs).length * nodeOptions.attrHeight;
             }
 
@@ -286,7 +309,7 @@ export default {
                     nodeCenterCnts++;
                 }
             });
-            nodeCenterX = nodeCenterX / nodeCenterCnts + nodeOptions.width/2;
+            nodeCenterX = nodeCenterX / nodeCenterCnts;
             g.nodes().forEach(function(d) {
                 g.node(d).x -= nodeCenterX;
                 g.node(d).y -= nodeCenterY;
@@ -410,30 +433,41 @@ export default {
                     .on('end', resolve);
 
                 nodesing.append('rect')
-                    .attr('width', rectAttrs.width)
+                    .attr('class', that.nodeBackgroundClass)
+                    .attr('width', (d) => d.width+that.nodeBackgroundAttrs['widthMargin'])
                     .attr('height', (d) => d.height)
-                    .attr('x', 0)
+                    .attr('x', (d) => -d.width/2)
+                    .attr('y', (d) => -d.height/2)
+                    .attr('rx', that.nodeBackgroundAttrs.rx)
+                    .attr('fill', that.nodeBackgroundAttrs.fill)
+                    .attr('stroke', that.nodeBackgroundAttrs.stroke);
+
+                nodesing.append('rect')
+                    .attr('class', that.nodeRectClass)
+                    .attr('width', (d) => d.width)
+                    .attr('height', (d) => d.height)
+                    .attr('x', (d) => -d.width/2)
                     .attr('y', (d) => -d.height/2)
                     .attr('rx', rectAttrs.rx)
                     .attr('fill', rectAttrs.fill)
                     .attr('stroke', rectAttrs.stroke)
-                    .attr('stroke-width', rectAttrs['stroke-width'])
-                    .attr('cursor', rectAttrs.cursor);
+                    .attr('stroke-width', rectAttrs['stroke-width']);
 
                 nodesing.append('text')
                     .attr('class', that.nodeNameClass)
                     .text((d) => d.type)
-                    .attr('x', (d) => d.width/2)
+                    .attr('x', (d) => 0)
                     .attr('y', (d) => -d.height/2)
                     .attr('text-anchor', that.nodeNameAttrs['text-anchor'])
                     .attr('font-size', that.nodeNameAttrs['font-size'])
-                    .attr('dy', that.nodeNameAttrs.dy);
+                    .attr('dy', that.nodeNameAttrs.dy)
+                    .attr('font-family', that.nodeNameAttrs['font-family']);
 
                 nodesing.append('line')
                     .attr('class', that.nodeSepClass)
-                    .attr('x1', (d) => 0)
+                    .attr('x1', (d) => -d.width/2)
                     .attr('y1', (d) => -d.height/2+that.nodeRectAttrs['height'])
-                    .attr('x2', (d) => d.width)
+                    .attr('x2', (d) => d.width/2)
                     .attr('y2', (d) => -d.height/2+that.nodeRectAttrs['height'])
                     .attr('stroke', that.nodeSepAttrs['stroke'])
                     .attr('stroke-width', that.nodeSepAttrs['stroke-width']);
@@ -447,11 +481,12 @@ export default {
                             .attr('class', that.nodeAttrsClass)
                             .attr('id', attrname+','+i)
                             .text(`${attrname}: ${attrvalue}`)
-                            .attr('x', that.nodeAttrAttrs['x'])
+                            .attr('x', that.nodeAttrAttrs['x']-d.width/2)
                             .attr('y', -d.height/2 + that.nodeRectAttrs['height']+20*i)
                             .attr('text-anchor', that.nodeAttrAttrs['text-anchor'])
                             .attr('font-size', that.nodeAttrAttrs['font-size'])
-                            .attr('dy', that.nodeAttrAttrs.dy);
+                            .attr('dy', that.nodeAttrAttrs.dy)
+                            .attr('font-family', that.nodeAttrAttrs['font-family']);
                         i++;
                     }
                 });
@@ -464,7 +499,7 @@ export default {
                     .attr('fill', edgeAttrs.fill)
                     .attr('stroke', edgeAttrs.stroke)
                     .attr('stroke-width', edgeAttrs['stroke-width'])
-                    .attr('transform', (d) => 'translate(' + d.source.width / 2 + ',' + 0 + ')')
+                    .attr('transform', (d) => 'translate(' + 0 + ',' + 0 + ')')
                     .attr('d', (d) => that.one_edge(d.points));
 
                 edgeing.transition()
@@ -481,34 +516,39 @@ export default {
         update: async function() {
             const that = this;
             return new Promise((resolve, reject) => {
-                const rectAttrs = that.nodeRectAttrs;
                 const nodesing = that.nodesing;
                 nodesing.transition()
                     .duration(that.updateDuration)
                     .attr('transform', (d) => 'translate(' + d.x + ',' + d.y + ')')
                     .on('end', resolve);
 
-                nodesing.selectAll('rect')
+                nodesing.selectAll('.'+that.nodeBackgroundClass)
+                    .attr('width', (d) => d.width+that.nodeBackgroundAttrs['widthMargin'])
+                    .attr('height', (d) => d.height)
+                    .attr('x', (d) => -d.width/2)
+                    .attr('y', (d) => -d.height/2);
+
+                nodesing.selectAll('.'+that.nodeRectClass)
                     .transition()
                     .duration(that.updateDuration)
-                    .attr('width', rectAttrs.width)
+                    .attr('width', (d) => d.width)
                     .attr('height', (d) => d.height)
-                    .attr('x', 0)
+                    .attr('x', (d) => -d.width/2)
                     .attr('y', (d) => -d.height/2)
                     .on('end', resolve);
 
                 nodesing.selectAll('.' + that.nodeNameClass)
                     .transition()
                     .duration(that.updateDuration)
-                    .attr('x', (d) => d.width/2)
+                    .attr('x', (d) => 0)
                     .attr('y', (d) => -d.height/2)
                     .attr('dy', that.nodeNameAttrs.dy)
                     .on('end', resolve);
 
                 nodesing.selectAll('.' + that.nodeSepClass)
-                    .attr('x1', (d) => 0)
+                    .attr('x1', (d) => -d.width/2)
                     .attr('y1', (d) => -d.height/2+that.nodeRectAttrs['height'])
-                    .attr('x2', (d) => d.width)
+                    .attr('x2', (d) => d.width/2)
                     .attr('y2', (d) => -d.height/2+that.nodeRectAttrs['height']);
 
                 nodesing.each(function(d) {
@@ -516,7 +556,7 @@ export default {
                     const ele = d3.select(this);
                     console.log(d.name, d.attrs);
                     ele.selectAll('.'+that.nodeAttrsClass)
-                        .attr('x', that.nodeAttrAttrs['x'])
+                        .attr('x', that.nodeAttrAttrs['x']-d.width/2)
                         .attr('y', function(d) {
                             // eslint-disable-next-line no-invalid-this
                             const i = parseInt(d3.select(this).attr('id').split(',')[1]);
@@ -527,7 +567,7 @@ export default {
                 const edgeing = that.edgesing;
                 edgeing.transition()
                     .duration(that.updateDuration)
-                    .attr('transform', (d) => 'translate(' + d.source.width / 2 + ',' + 0 + ')')
+                    .attr('transform', (d) => 'translate(' + 0 + ',' + 0 + ')')
                     .attr('d', (d) => that.one_edge(d.points))
                     .on('end', resolve);
 
@@ -574,16 +614,32 @@ export default {
             const iconWidth = 15;
             const iconMargin = 5;
             const elementWidth = d.width;
-            let right = 5;
+            let top = 5;
             const g = ele.append('g').attr('class', gClass)
                 .attr('transform', `translate(0,${-d.height/2})`);
+
+            if (d.children.length > 0) {
+                // draw zoom-in
+                g.append('image')
+                    .attr('xlink:href', '/static/images/zoomin.svg')
+                    .attr('x', elementWidth/2+iconMargin)
+                    .attr('y', top)
+                    .attr('width', iconWidth)
+                    .attr('height', iconWidth)
+                    .attr('cursor', 'pointer')
+                    .on('click', function() {
+                        callbacks.expandNode(d.id);
+                    });
+
+                top += iconWidth+iconMargin;
+            }
 
             if (d.parent !== undefined && nodes[d.parent].parent !== undefined) {
                 // draw zoom-out
                 g.append('image')
                     .attr('xlink:href', '/static/images/zoomout.svg')
-                    .attr('x', elementWidth-right-iconWidth)
-                    .attr('y', 5)
+                    .attr('x', elementWidth/2+iconMargin)
+                    .attr('y', top)
                     .attr('width', iconWidth)
                     .attr('height', iconWidth)
                     .attr('cursor', 'pointer')
@@ -592,23 +648,7 @@ export default {
                             callbacks.collapseNode(d.parent);
                         }
                     });
-                right += iconWidth+iconMargin;
-            }
-
-            if (d.children.length > 0) {
-                // draw zoom-in
-                g.append('image')
-                    .attr('xlink:href', '/static/images/zoomin.svg')
-                    .attr('x', elementWidth-right-iconWidth)
-                    .attr('y', 5)
-                    .attr('width', iconWidth)
-                    .attr('height', iconWidth)
-                    .attr('cursor', 'pointer')
-                    .on('click', function() {
-                        callbacks.expandNode(d.id);
-                    });
-
-                right += iconWidth+iconMargin;
+                top += iconWidth+iconMargin;
             }
         },
         /**
