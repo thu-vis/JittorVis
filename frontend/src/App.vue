@@ -6,7 +6,7 @@
     <div id="content">
       <div id="left">
         <div id="statistic-container"><statistic></statistic></div>
-        <div id="navi-container"><navigation></navigation></div>
+        <div id="navi-container"><navigation v-bind:canFocusNode="true"></navigation></div>
       </div>
       <div id="tree-container">
         <div id="network-container"><network></network></div>

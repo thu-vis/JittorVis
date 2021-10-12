@@ -139,10 +139,20 @@ export default {
          */
         expandNode: function(nodeid) {
             let node = this.layoutNetwork[nodeid];
+            // expand parent
             while (node !== undefined) {
                 node.expand = true;
                 node = this.layoutNetwork[node.parent];
             }
+            // collapse children
+            let queues = [].concat(this.layoutNetwork[nodeid].children);
+            while (queues.length > 0) {
+                nodeid = queues.shift();
+                const node = this.layoutNetwork[nodeid];
+                node.expand = false;
+                queues = queues.concat(node.children);
+            }
+
             [this.nodes, this.edges] = this.getGraphFromNetwork(this.layoutNetwork);
             this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions,
                 this.nodeRectAttrs, this.nodeNameAttrs, this.nodeAttrAttrs);
@@ -155,25 +165,13 @@ export default {
             this.$store.commit('setFocusID', nodeid);
         },
         /**
-         * all things to do when you collapse a network node, it will call following methods:
-         * 1. getGraphFromNetwork() to calculate which nodes should be showed after collapsing and the edges among them
-         * 2. computeDAGLayout() to compute the dag layout
-         * 3. emit reheight event to resize the svg, which works well with scroll
-         * 4. draw() to render the network
+         * call expand(node.parent) to collapse a network node
          *
          * @param {string} nodeid - node to be collapsed
          * @public
          */
         collapseNode: function(nodeid) {
-            let queues = [nodeid];
             const nodeParent = this.layoutNetwork[nodeid].parent;
-            while (queues.length > 0) {
-                nodeid = queues.shift();
-                const node = this.layoutNetwork[nodeid];
-                node.expand = false;
-                queues = queues.concat(node.children);
-            }
-
             this.expandNode(nodeParent);
         },
         /**
