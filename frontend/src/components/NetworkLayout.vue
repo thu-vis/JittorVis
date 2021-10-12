@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import {mapGetters} from 'vuex';
+import {mapGetters, mapState} from 'vuex';
 import dagre from 'dagre';
 import * as d3 from 'd3';
 import clone from 'just-clone';
@@ -22,6 +22,9 @@ export default {
     computed: {
         ...mapGetters([
             'network',
+        ]),
+        ...mapState([
+            'focusID',
         ]),
         nodesG: function() {
             return d3.select('g#network-nodes');
@@ -107,11 +110,7 @@ export default {
             this.expandNode(root.id);
         },
         focusID: function(newFocusID, oldFocusID) {
-            [this.nodes, this.edges] = this.getGraphFromNetwork(this.layoutNetwork);
-            console.log('focus to', newFocusID);
-            console.log(this.nodes);
-            this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions, this.nodeRectAttrs);
-            this.draw([this.nodes, this.edges]);
+            this.expandNode(newFocusID);
         },
     },
     methods: {
@@ -139,6 +138,7 @@ export default {
              */
             this.$emit('reheight', this.daggraph.height+this.heightMargin*2);
             this.draw([this.nodes, this.edges]);
+            this.$store.commit('setFocusID', nodeid);
         },
         /**
          * all things to do when you collapse a network node, it will call following methods:
@@ -152,6 +152,7 @@ export default {
          */
         collapseNode: function(nodeid) {
             let queues = [nodeid];
+            const nodeParent = this.layoutNetwork[nodeid].parent;
             while (queues.length > 0) {
                 nodeid = queues.shift();
                 const node = this.layoutNetwork[nodeid];
@@ -159,14 +160,7 @@ export default {
                 queues = queues.concat(node.children);
             }
 
-            [this.nodes, this.edges] = this.getGraphFromNetwork(this.layoutNetwork);
-            this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions, this.nodeRectAttrs);
-            /**
-             * reheight svg
-             * @property {number} height - new height
-             */
-            this.$emit('reheight', this.daggraph.height+this.heightMargin*2);
-            this.draw([this.nodes, this.edges]);
+            this.expandNode(nodeParent);
         },
         /**
          * init this.layoutNetwork based on rawNetwork, should be called when raw network data was changed
