@@ -123,6 +123,7 @@ export default {
             this.expandNode(root.id);
         },
         focusID: function(newFocusID, oldFocusID) {
+            // collapse children
             this.expandNode(newFocusID);
         },
     },
@@ -144,14 +145,6 @@ export default {
                 node.expand = true;
                 node = this.layoutNetwork[node.parent];
             }
-            // collapse children
-            let queues = [].concat(this.layoutNetwork[nodeid].children);
-            while (queues.length > 0) {
-                nodeid = queues.shift();
-                const node = this.layoutNetwork[nodeid];
-                node.expand = false;
-                queues = queues.concat(node.children);
-            }
 
             [this.nodes, this.edges] = this.getGraphFromNetwork(this.layoutNetwork);
             this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions,
@@ -172,6 +165,15 @@ export default {
          */
         collapseNode: function(nodeid) {
             const nodeParent = this.layoutNetwork[nodeid].parent;
+            // collapse children
+            let queues = [nodeid];
+            while (queues.length > 0) {
+                nodeid = queues.shift();
+                const node = this.layoutNetwork[nodeid];
+                node.expand = false;
+                queues = queues.concat(node.children);
+            }
+
             this.expandNode(nodeParent);
         },
         /**
@@ -552,7 +554,6 @@ export default {
                 nodesing.each(function(d) {
                     // eslint-disable-next-line no-invalid-this
                     const ele = d3.select(this);
-                    console.log(d.name, d.attrs);
                     ele.selectAll('.'+that.nodeAttrsClass)
                         .attr('x', that.nodeAttrAttrs['x']-d.width/2)
                         .attr('y', function(d) {
