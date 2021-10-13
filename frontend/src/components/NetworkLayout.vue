@@ -161,7 +161,7 @@ export default {
              * reheight svg
              * @property {number} height - new height
              */
-            this.width = this.daggraph.width+this.nodeBackgroundAttrs['widthMargin'];
+            this.width = this.daggraph.width+this.nodeBackgroundAttrs['widthMargin']*2;
             this.height = this.daggraph.height + this.heightMargin*2;
             this.draw([this.nodes, this.edges]);
             this.$store.commit('setFocusID', nodeid);
