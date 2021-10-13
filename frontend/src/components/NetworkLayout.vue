@@ -1,8 +1,10 @@
 <template>
-<g id="network-layout" :transform="`translate(${width/2},${heightMargin})`">
-    <g id="network-nodes"></g>
-    <g id="network-edges"></g>
-</g>
+    <svg :id="id" class="one-network" :viewBox="`0 0 ${width} ${height}`" :width="width*scale" :height="height*scale">
+        <g id="network-layout" :transform="`translate(${width/2},${heightMargin})`">
+            <g id="network-nodes"></g>
+            <g id="network-edges"></g>
+        </g>
+    </svg>
 </template>
 
 <script>
@@ -16,9 +18,13 @@ export default {
     name: 'network-layout',
     mixins: [Util],
     props: {
-        width: {
+        id: {
+            type: String,
+            default: 'network-all',
+        },
+        scale: {
             type: Number,
-            default: 0,
+            default: 1,
         },
     },
     computed: {
@@ -99,6 +105,8 @@ export default {
                 height: 0,
             },
             heightMargin: 50, // margin-top, margin-bottom of main layout
+            width: 0, // width of dag graph
+            height: 0,
             // layout class
             nodeClass: 'network-node',
             edgeClass: 'network-edge',
@@ -153,7 +161,8 @@ export default {
              * reheight svg
              * @property {number} height - new height
              */
-            this.$emit('reheight', this.daggraph.height+this.heightMargin*2);
+            this.width = this.daggraph.width+this.nodeBackgroundAttrs['widthMargin'];
+            this.height = this.daggraph.height + this.heightMargin*2;
             this.draw([this.nodes, this.edges]);
             this.$store.commit('setFocusID', nodeid);
         },
