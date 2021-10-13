@@ -1,8 +1,11 @@
 <template>
 <svg id="navigation-tree">
-    <g class="container">
+    <g class="container" v-if="network">
         <g class="links"></g>
         <g class="nodes"></g>
+    </g>
+    <g v-else>
+        <text fill="gray" x="50%" y="50%" text-anchor="middle">数据不可用</text>
     </g>
 </svg>
 </template>
@@ -42,20 +45,16 @@ export default {
         },
         focusID:function(val){
             this.focus_ID=val
+        },
+        network:function(val,oldval){
+            if(val)this.initTree()
         }
-    },
-    created() {
-        const that=this
-        window.t=this
-        setTimeout(()=>{
-            that.initTree();
-        },1000)
     },
     methods:{
         initTree()
         {
-            console.log("navigation ready",this.canFocusNode)
             // calc ordering
+            // console.log("navigation ready",this.canFocusNode)
             let items={}
             let ordering=[]
             let n=0
@@ -96,7 +95,6 @@ export default {
             // building tree_list
             window.d3=d3
             window.network=this.network
-            const width=900
             let network_list=[]
             for (let key in this.network)
             {
@@ -116,8 +114,8 @@ export default {
             window.network_list=network_list
             const root = d3.stratify().id(d=>d.name).parentId(d=>d.parent)(network_list)
             this.root=root
-            const dy=width/2
-            root.x0 = dy / 2;
+
+            root.x0 = 0;
             root.y0 = 0;
             root.descendants().forEach((d, i) => {
                 d.id = i;
@@ -170,7 +168,7 @@ export default {
             const width=750
             const dx=20
             const dy=width/3
-            const margin=({top: 10, right: 60, bottom: 10, left: 80})
+            const margin=({top: 10, right: 80, bottom: 10, left: 80})
             const tree=d3.tree().nodeSize([dx, dy])
             const diagonal = d3.linkHorizontal().x(d => d.y).y(d => d.x)
             const svg = d3.select("#navigation-tree")
@@ -248,7 +246,7 @@ export default {
                 .attr("dy", "0.31em")
                 .attr("x", d => d._children ? -6 : 6)
                 .attr("text-anchor", d => d._children ? "end" : "start")
-                .text(d => d.data.type)
+                .text(d => d.data.type.length>=30 ? d.data.type.substr(0,27)+"..."  :  d.data.type)
             .clone(true).lower()
                 .attr("stroke-linejoin", "round")
                 .attr("stroke-width", 3)
