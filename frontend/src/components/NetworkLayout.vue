@@ -157,13 +157,22 @@ export default {
             [this.nodes, this.edges] = this.getGraphFromNetwork(this.layoutNetwork);
             this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions,
                 this.nodeRectAttrs, this.nodeNameAttrs, this.nodeAttrAttrs);
-            /**
-             * reheight svg
-             * @property {number} height - new height
-             */
-            this.width = this.daggraph.width+this.nodeBackgroundAttrs['widthMargin']*2;
-            this.height = this.daggraph.height + this.heightMargin*2;
-            this.draw([this.nodes, this.edges]);
+
+            // if new width/height less than width/height, change width/height after draw to avoid the transition being occluded
+            const newWidth = this.daggraph.width+this.nodeBackgroundAttrs['widthMargin']*2;
+            const newHeight = this.daggraph.height + this.heightMargin*2;
+            if (newWidth> this.width) {
+                this.width = newWidth;
+            }
+            if (newHeight> this.height) {
+                this.height = newHeight;
+            }
+            const that = this;
+            this.draw([this.nodes, this.edges])
+                .then(function() {
+                    that.width = newWidth;
+                    that.height = newHeight;
+                });
             this.$store.commit('setFocusID', nodeid);
         },
         /**
@@ -355,8 +364,11 @@ export default {
                 .data(edges, (d) => d.source.id + ',' + d.target.id);
 
             await this.remove(graph);
+            console.log('remove done');
             await this.update(graph);
+            console.log('update done');
             await this.create(graph);
+            console.log('create done');
         },
         /**
          * a tool function for beautiful edge routing
