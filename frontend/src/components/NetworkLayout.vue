@@ -34,6 +34,9 @@ export default {
         ...mapState([
             'focusID',
         ]),
+        mainG: function() {
+            return d3.select('#network-layout');
+        },
         nodesG: function() {
             return d3.select('g#network-nodes');
         },
@@ -105,6 +108,7 @@ export default {
                 height: 0,
             },
             heightMargin: 50, // margin-top, margin-bottom of main layout
+            widthMargin: 200,
             width: 0, // width of dag graph
             height: 0,
             // layout class
@@ -115,6 +119,8 @@ export default {
             nodeNameClass: 'network-node-name',
             nodeAttrsClass: 'network-node-attrs',
             nodeSepClass: 'network-node-sep',
+            nodeParentGIDPrefix: 'network-node-parent-',
+            nodeParentGClass: 'network-node-parent',
             nodesing: null,
             edgesing: null,
             nodeToolBtnsClass: 'network-node-tools',
@@ -159,7 +165,7 @@ export default {
                 this.nodeRectAttrs, this.nodeNameAttrs, this.nodeAttrAttrs);
 
             // if new width/height less than width/height, change width/height after draw to avoid the transition being occluded
-            const newWidth = this.daggraph.width+this.nodeBackgroundAttrs['widthMargin']*2;
+            const newWidth = this.daggraph.width+this.widthMargin*2;
             const newHeight = this.daggraph.height + this.heightMargin*2;
             if (newWidth> this.width) {
                 this.width = newWidth;
@@ -364,11 +370,8 @@ export default {
                 .data(edges, (d) => d.source.id + ',' + d.target.id);
 
             await this.remove(graph);
-            console.log('remove done');
             await this.update(graph);
-            console.log('update done');
             await this.create(graph);
-            console.log('create done');
         },
         /**
          * a tool function for beautiful edge routing
@@ -441,11 +444,17 @@ export default {
                             collapseNode: that.collapseNode,
                             expandNode: that.expandNode,
                         }, that.layoutNetwork);
+
+                        const parentID = that.nodes[d.id].parent.split('/').join('-');
+                        that.drawNodeParent(d.id, that.layoutNetwork, that.nodes, that.mainG,
+                            that.nodeParentGIDPrefix+parentID, that.nodeParentGClass);
                     })
                     .on('mouseleave', function(e, d) {
                         // eslint-disable-next-line no-invalid-this
                         const ele = d3.select(this);
+                        const parentID = that.nodes[d.id].parent.split('/').join('-');
                         that.removeToolBtns(ele, that.nodeToolBtnsClass);
+                        that.removeNodeParent(that.mainG, that.nodeParentGIDPrefix+parentID);
                     });
 
                 nodesing.transition()
@@ -614,6 +623,9 @@ export default {
                     .remove()
                     .on('end', resolve);
 
+                // remove hover parent
+                that.mainG.selectAll('.'+that.nodeParentGClass).remove();
+
                 // if no exit elements, resolve immediately
                 if ((that.nodesing.exit().size() === 0) && (that.edgesing.exit().size() === 0)) {
                     resolve();
@@ -680,6 +692,90 @@ export default {
          */
         removeToolBtns: function(ele, gClass) {
             ele.select('.'+gClass).remove();
+        },
+        /**
+         * show node parent when hover on a node
+         * @param {string} nodeid - nodeid
+         * @param {Object} allnodes - whole network
+         * @param {Object} shownodes - nodes
+         * @param {Object} container - container group
+         * @param {string} gID - id of group
+         * @param {string} gClass - class of group
+         */
+        drawNodeParent: function(nodeid, allnodes, shownodes, container, gID, gClass) {
+            const nodeParentID = allnodes[nodeid].parent;
+            const nodeParent = allnodes[nodeParentID];
+            if (nodeParent.parent === undefined) {
+                // don't show root nodes
+                return;
+            }
+
+            // first, find all siblings and children
+            let queue = [].concat(nodeParent.children);
+            const allChildren = [];
+            while (queue.length>0) {
+                const nodeID = queue.shift();
+                const node = allnodes[nodeID];
+                if (shownodes[nodeID] !== undefined) {
+                    allChildren.push(shownodes[nodeID]);
+                }
+                queue = queue.concat(node.children);
+            }
+
+            // compute the rect
+            const rect = {
+                minx: Number.MAX_SAFE_INTEGER,
+                miny: Number.MAX_SAFE_INTEGER,
+                maxx: Number.MIN_SAFE_INTEGER,
+                maxy: Number.MIN_SAFE_INTEGER,
+            };
+            for (const child of allChildren) {
+                rect.minx = Math.min(rect.minx, child.x-child.width/2);
+                rect.miny = Math.min(rect.miny, child.y-child.height/2);
+                rect.maxx = Math.max(rect.maxx, child.x+child.width/2);
+                rect.maxy = Math.max(rect.maxy, child.y+child.height/2);
+            }
+            const rectWidthMargin = 25;
+            const rectHeightMargin = 10;
+            rect.minx -= rectWidthMargin;
+            rect.miny -= rectHeightMargin;
+            rect.maxx += rectWidthMargin;
+            rect.maxy += rectHeightMargin;
+
+            // draw
+            const g = container.append('g')
+                .attr('id', gID)
+                .attr('class', gClass)
+                .attr('transform', `translate(${rect.minx},${rect.miny})`);
+
+            g.append('rect')
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('width', rect.maxx-rect.minx)
+                .attr('height', rect.maxy-rect.miny)
+                .attr('fill', 'none')
+                .attr('stroke', 'black')
+                .attr('stroke-width', 1)
+                .attr('stroke-dasharray', '5,5')
+                .attr('rx', 5)
+                .attr('ry', 5);
+
+            g.append('text')
+                .text(nodeParent.type)
+                .attr('x', rect.maxx-rect.minx+5)
+                .attr('y', shownodes[nodeid].y-rect.miny)
+                .attr('text-anchor', 'start')
+                .attr('font-size', '20px')
+                .attr('dy', '10px')
+                .attr('font-family', 'Comic Sans MS');
+        },
+        /**
+         * remove node parent
+         * @param {Object} container - container group
+         * @param {string} gID - id of group
+         */
+        removeNodeParent: function(container, gID) {
+            container.select('#'+gID).remove();
         },
     },
 };
