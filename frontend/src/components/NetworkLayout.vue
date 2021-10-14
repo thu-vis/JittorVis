@@ -374,11 +374,8 @@ export default {
                 .data(edges, (d) => d.source.id + ',' + d.target.id);
 
             await this.remove(graph);
-            console.log('remove done');
             await this.update(graph);
-            console.log('update done');
             await this.create(graph);
-            console.log('create done');
         },
         /**
          * a tool function for beautiful edge routing
