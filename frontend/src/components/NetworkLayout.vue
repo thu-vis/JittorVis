@@ -13,10 +13,11 @@ import dagre from 'dagre';
 import * as d3 from 'd3';
 import clone from 'just-clone';
 import Util from './Util.vue';
+import GlobalVar from './GlovalVar.vue';
 
 export default {
     name: 'network-layout',
-    mixins: [Util],
+    mixins: [Util, GlobalVar],
     props: {
         id: {
             type: String,
@@ -46,11 +47,6 @@ export default {
     },
     data: function() {
         return {
-            // transition duration
-            createDuration: 500,
-            updateDuration: 500,
-            removeDuration: 200,
-            transformDuration: 500,
             // dagre layout options
             dagreLayoutOptions: {
                 rankdir: 'TB',
