@@ -7,7 +7,6 @@ const path = require('path');
 const baseWebpackConfig = require('./webpack.base.conf');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
 const portfinder = require('portfinder');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
@@ -61,4 +60,20 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     ],
 });
 
-module.exports = devWebpackConfig;
+module.exports = new Promise((resolve, reject) => {
+    portfinder.basePort = process.env.PORT || config.dev.port;
+    portfinder.getPort((err, port) => {
+        if (err) {
+            reject(err);
+        } else {
+        // publish the new Port, necessary for e2e tests
+            process.env.PORT = port;
+            // add port to devServer config
+            devWebpackConfig.devServer.port = port;
+
+            resolve(devWebpackConfig);
+        }
+    });
+});
+
+module.exports.staticWebpackConfig = devWebpackConfig;
