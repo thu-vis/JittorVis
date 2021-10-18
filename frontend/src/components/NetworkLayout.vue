@@ -73,7 +73,7 @@ export default {
             },
             nodeAttrAttrs: {
                 'text-anchor': 'start',
-                'font-family': 'Century Gothic',
+                'font-family': 'Goudy Old Style',
                 'font-weight': 'normal',
                 'x': 5,
                 'font-size': '12px',

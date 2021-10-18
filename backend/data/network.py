@@ -188,10 +188,10 @@ class JittorNetworkProcessor(object):
                 assert type(branchNode["children"][0]) == int
                 for childID in branchNode["children"]:
                     if leaf[childID]["attrs"]["name"] == "binary.multiply":
-                        shape = [int(num) for num in leaf[childID]["attrs"]["shape"][1:len(leaf[childID]["attrs"]["shape"])-2].split(',')]
+                        shape = [num for num in leaf[childID]["attrs"]["shape"][1:len(leaf[childID]["attrs"]["shape"])-2].split(',')]
+                        newAttrs["input"] = '×'.join(shape[2:5])
+                        newAttrs["kernal"] = '×'.join(shape[5:7])
                         newAttrs["channels"] = shape[1]
-                        newAttrs["inputSize"] = shape[2:5]
-                        newAttrs["kernalSize"] = shape[5:7]
 
             # add name for sequential layer
             if branchNode["attrs"]["type"] == "Sequential":
