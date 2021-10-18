@@ -14,6 +14,7 @@ export default new Vuex.Store({
                 'recall': [[0, 250], [1, 230], [2, 224], [3, 218], [4, 135], [5, 147], [6, 260]],
             },
         },
+        layoutNetwork: {}, // very similar to allData.network, with some attributes for layout added
         focusID: '_model/', // default focus node is root node
         featureMapNodeID: null, // which node to show feature map
     },

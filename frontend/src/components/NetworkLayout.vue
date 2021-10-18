@@ -163,6 +163,7 @@ export default {
                 node.expand = true;
                 node = this.layoutNetwork[node.parent];
             }
+            this.$store.commit('setLayoutNetwork', this.layoutNetwork);
 
             [this.nodes, this.edges] = this.getGraphFromNetwork(this.layoutNetwork);
             this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions,

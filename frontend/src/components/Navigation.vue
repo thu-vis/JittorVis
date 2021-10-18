@@ -19,7 +19,8 @@ export default {
     name: 'navigation',
     computed: {
         ...mapGetters([
-            'network'
+            'network',
+            'layoutNetwork',
         ]),
         ...mapState([
             'focusID'
