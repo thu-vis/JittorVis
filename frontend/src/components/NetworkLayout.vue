@@ -1,6 +1,7 @@
 <template>
     <svg :id="id" class="one-network" :viewBox="`0 0 ${width} ${height}`" :width="width*scale" :height="height*scale">
         <g id="network-layout" :transform="`translate(${width/2},${heightMargin})`">
+            <g id="background-info"></g>
             <g id="network-nodes"></g>
             <g id="network-edges"></g>
         </g>
@@ -35,6 +36,9 @@ export default {
         ...mapState([
             'focusID',
         ]),
+        backgroundG: function() {
+            return d3.select('#background-info');
+        },
         mainG: function() {
             return d3.select('#network-layout');
         },
@@ -73,7 +77,7 @@ export default {
             },
             nodeAttrAttrs: {
                 'text-anchor': 'start',
-                'font-family': 'Century Gothic',
+                'font-family': 'Goudy Old Style',
                 'font-weight': 'normal',
                 'x': 5,
                 'font-size': '12px',
@@ -94,6 +98,7 @@ export default {
                 'rx': 4,
                 'fill': 'white',
                 'stroke': 'none',
+                'opacity': 0,
             },
             // dagre nodes/edges/graph result
             layoutNetwork: {},
@@ -442,7 +447,7 @@ export default {
                         }, that.layoutNetwork);
 
                         const parentID = that.nodes[d.id].parent.split('/').join('-');
-                        that.drawNodeParent(d.id, that.layoutNetwork, that.nodes, that.mainG,
+                        that.drawNodeParent(d.id, that.layoutNetwork, that.nodes, that.backgroundG,
                             that.nodeParentGIDPrefix+parentID, that.nodeParentGClass);
                     })
                     .on('mouseleave', function(e, d) {
@@ -450,7 +455,7 @@ export default {
                         const ele = d3.select(this);
                         const parentID = that.nodes[d.id].parent.split('/').join('-');
                         that.removeToolBtns(ele, that.nodeToolBtnsClass);
-                        that.removeNodeParent(that.mainG, that.nodeParentGIDPrefix+parentID);
+                        that.removeNodeParent(that.backgroundG, that.nodeParentGIDPrefix+parentID);
                     });
 
                 nodesing.transition()
@@ -465,6 +470,7 @@ export default {
                     .attr('x', (d) => -d.width/2)
                     .attr('y', (d) => -d.height/2)
                     .attr('rx', that.nodeBackgroundAttrs.rx)
+                    .attr('opacity', that.nodeBackgroundAttrs.opacity)
                     .attr('fill', that.nodeBackgroundAttrs.fill)
                     .attr('stroke', that.nodeBackgroundAttrs.stroke);
 
@@ -749,7 +755,7 @@ export default {
                 .attr('y', 0)
                 .attr('width', rect.maxx-rect.minx)
                 .attr('height', rect.maxy-rect.miny)
-                .attr('fill', 'none')
+                .attr('fill', '#F5F5F5')
                 .attr('stroke', 'black')
                 .attr('stroke-width', 1)
                 .attr('stroke-dasharray', '5,5')
