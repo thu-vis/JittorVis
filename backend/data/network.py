@@ -1,3 +1,5 @@
+import numpy as np
+
 class JittorNetworkProcessor(object):
 
     def __init__(self):
@@ -11,6 +13,7 @@ class JittorNetworkProcessor(object):
         self.network = self.constructHierarchy(self.network)
         self.network["branch"] = self.connectBranchNodes(self.network["branch"], self.network["leaf"])
         self.network["branch"] = self.setAttrsForBranchNodes(self.network["branch"], self.network["leaf"])
+        self.network["branch"] = self.topoSortBranchNodes(self.network["branch"], self.network["leaf"])
         return self.network
 
     def mergeVarNode(self, network: dict) -> dict:
@@ -213,6 +216,74 @@ class JittorNetworkProcessor(object):
 
 
             branchNode["attrs"] = newAttrs
+        return branch
+
+    def topoSortBranchNodes(self, branch: dict, leaf: dict) -> dict:
+        """sort branch nodes' children
+
+        Args:
+            branch (dict): branch nodes
+            leaf (dict): leaf nodes
+
+        Returns:
+            dict: new branch nodes
+        """
+        network = {**branch, **leaf}
+        parent2children = {}
+        def sortIter(node):
+            if node in leaf:
+                #if leaf node, return
+                return
+            for childid in network[node]['children']:
+                sortIter(childid)
+
+            inputs = {}
+            children2parent = {}
+            isbottom = len(network[node]['children'])==0 or (network[node]['children'][0] in leaf)
+
+            # init children
+            if isbottom:
+                parent2children[node] = network[node]['children']
+            else:
+                parent2children[node] = []
+                for childid in network[node]['children']:
+                    parent2children[node] += parent2children[childid]
+
+            if isbottom:
+                for id in network[node]['children']:
+                    inputs[id] = network[id]['inputs']
+            else:
+                for id in network[node]['children']:
+                    for cid in parent2children[id]:
+                        children2parent[cid] = id
+                for id in network[node]['children']:
+                    inputs[id] = []
+                    for cid in parent2children[id]:
+                        for lastid in network[cid]['inputs']:
+                            if (lastid in children2parent) and (children2parent[lastid]!=id) and (children2parent[lastid] not in inputs[id]):
+                                inputs[id].append(children2parent[lastid])
+            topos = []
+            childlen = len(network[node]['children'])
+            for i in range(childlen):
+                for id in network[node]['children']:
+                    if id in topos:
+                        continue
+                    flag = True
+                    for inputid in inputs[id]:
+                        if (inputid in network[node]['children']) and (inputid not in topos):
+                            flag = False
+                            break
+                    if flag:
+                        topos.append(id)
+            network[node]['children'] = topos
+
+        # find root
+        root = None
+        for id, node in branch.items():
+            if 'parent' not in node:
+                root = id
+                break
+        sortIter(root)
         return branch
 
 if __name__ == "__main__":
