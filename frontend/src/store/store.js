@@ -28,6 +28,9 @@ export default new Vuex.Store({
             }
             state.focusID = focusID;
         },
+        setLayoutNetwork(state, layoutNetwork) {
+            state.layoutNetwork = layoutNetwork;
+        },
         setFeatureMapNodeID(state, featureMapNodeID) {
             state.featureMapNodeID = featureMapNodeID;
         },
@@ -36,6 +39,7 @@ export default new Vuex.Store({
         network: (state) => state.allData.network,
         statistic: (state) => state.allData.statistic,
         featureMapNodeID: (state) => state.featureMapNodeID,
+        layoutNetwork: (state) => state.layoutNetwork,
         URL_GET_ALL_DATA: (state) => state.APIBASE + '/api/allData',
         URL_GET_FEATURE_INFO: (state) => state.APIBASE + '/api/featureInfo',
         URL_GET_FEATURE: (state) => {
