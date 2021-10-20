@@ -483,7 +483,10 @@ export default {
                     .attr('rx', rectAttrs.rx)
                     .attr('fill', rectAttrs.fill)
                     .attr('stroke', rectAttrs.stroke)
-                    .attr('stroke-width', rectAttrs['stroke-width']);
+                    .attr('stroke-width', rectAttrs['stroke-width'])
+                    .on('click', function(e, d) {
+                        that.$store.commit('setFeatureMapNodeID', d.id);
+                    });
 
                 nodesing.append('text')
                     .attr('class', that.nodeNameClass)
