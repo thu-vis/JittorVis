@@ -1,6 +1,6 @@
 <template>
 <svg id="navigation-tree">
-    <g class="container" v-if="network">
+    <g class="container" v-if="layoutNetwork">
         <g class="links"></g>
         <g class="nodes"></g>
     </g>
@@ -14,17 +14,19 @@
 /* eslint-disable */
 import { mapGetters, mapState } from 'vuex'
 import * as d3 from 'd3'
+import GlobalVar from './GlovalVar.vue';
 
 export default {
     name: 'navigation',
     computed: {
         ...mapGetters([
-            'network'
+            'layoutNetwork',
         ]),
         ...mapState([
             'focusID'
         ])
     },
+    mixins: [GlobalVar],
     props:{
         canFocusNode: {
             type: Boolean,
@@ -40,13 +42,12 @@ export default {
     },
     watch:{
         focus_ID:function(val){
-            //console.log("focus_ID changed",val)
             this.updateTree()
         },
         focusID:function(val){
             this.focus_ID=val
         },
-        network:function(val,oldval){
+        layoutNetwork:function(val,oldval){
             if(val)this.initTree()
         }
     },
@@ -59,12 +60,12 @@ export default {
             let ordering=[]
             let n=0
             this.ordering={}
-            for(let key in this.network)
+            for(let key in this.layoutNetwork)
             {
-                if(this.network[key].children.length==0)
+                if(this.layoutNetwork[key].children.length==0)
                 {
-                    items[key]=this.network[key].inputs.length
-                    if(this.network[key].inputs.length==0)ordering.push(key)
+                    items[key]=this.layoutNetwork[key].inputs.length
+                    if(this.layoutNetwork[key].inputs.length==0)ordering.push(key)
                     n++
                 }
             }
@@ -73,9 +74,9 @@ export default {
                 const key=ordering[i]
                 this.ordering[key]=i+1
                 if(i>=ordering.length)return false
-                for(let j in this.network[key].outputs)
+                for(let j in this.layoutNetwork[key].outputs)
                 {
-                    const chkey=this.network[key].outputs[j]
+                    const chkey=this.layoutNetwork[key].outputs[j]
                     if(--items[chkey]==0)ordering.push(chkey)
                 }
             }
@@ -83,35 +84,35 @@ export default {
             const calcMiddle=(key)=>{
                 if(that.ordering[key])return that.ordering[key]
                 let ans=0
-                for(let ch in that.network[key].children){
-                    if(calcMiddle(that.network[key].children[ch]) >ans)
-                        ans=that.ordering[that.network[key].children[ch]]
+                for(let ch in that.layoutNetwork[key].children){
+                    if(calcMiddle(that.layoutNetwork[key].children[ch]) >ans)
+                        ans=that.ordering[that.layoutNetwork[key].children[ch]]
                 }
                 that.ordering[key]=ans
                 return ans
             }
-            for(let key in this.network)calcMiddle(key)
+            for(let key in this.layoutNetwork)calcMiddle(key)
 
             // building tree_list
             window.d3=d3
-            window.network=this.network
+            window.layoutNetwork=this.layoutNetwork
             let network_list=[]
-            for (let key in this.network)
+            for (let key in this.layoutNetwork)
             {
-                const id=this.network[key].id
-                const fa=this.network[key].parent
+                const id=this.layoutNetwork[key].id
+                const fa=this.layoutNetwork[key].parent
                 network_list.push({
                     "name":id,
                     "parent":fa,
-                    //"attrs":this.network[key].attrs,
-                    "type":this.network[key].type,
+                    //"attrs":this.layoutNetwork[key].attrs,
+                    "type":this.layoutNetwork[key].type,
                     "ordering":this.ordering[id]
                 })
             }
             network_list.sort((i,j)=>{
                 return i.ordering-j.ordering
             })
-            window.network_list=network_list
+            window.layoutNetwork_list=network_list
             const root = d3.stratify().id(d=>d.name).parentId(d=>d.parent)(network_list)
             this.root=root
 
@@ -120,50 +121,41 @@ export default {
             root.descendants().forEach((d, i) => {
                 d.id = i;
                 d._children = d.children;
-                if (d.depth) d.children = null;
+                if (!that.layoutNetwork[d.data.name].expand) d.children = null;
             });
-            
             this.updateTree(root)
         },
-        updateTree(source=undefined)
+        updateTree()
         {
             //console.log("update...",this.focus_ID)
             window.source=source
+            const that=this
             // rendering
-            if(!this.focus_ID){
-                for(let key in this.network)
-                {
-                    if(!this.network[key].parent)this.focus_ID=key
-                }
-            }
-            let root=this.root
+            if(!this.focus_ID)this.focus_ID=this.root.data.name
+            
+            let source=this.root
             let found=1
-            // find root
-            while(root.data.name!=this.focus_ID && found)
+            // find source
+            while(source.data.name!=this.focus_ID && found)
             {
                 found=0
-                for(let i in root._children)
+                for(let i in source._children)
                 {
-                    const ch=root._children[i]
-                    if(this.focus_ID.startsWith(ch.data.name)){root=ch;found=1;break}
+                    const ch=source._children[i]
+                    if(this.focus_ID.startsWith(ch.data.name)){source=ch;found=1;break}
                 }
             }
 
-            if(!source)source=root
-            root.descendants().forEach(d=>{
-                if(this.focus_ID.startsWith(d.data.name))d.children=d._children
-                else d.children=null
-            })
-            root = root.parent || root
+            source.children=source._children
+            source.descendants().forEach((d, i) => {
+                if (!that.layoutNetwork[d.data.name].expand) d.children = null;
+                else d.children=d._children
+            });
             
-            root.descendants().forEach(d=>{
-                if(this.focus_ID.startsWith(d.data.name))d.children=d._children
-                else d.children=null
-            })
             
             window.root=root
-
-            //console.log("source: ",source)
+            const root=this.root
+            window.source=source
             
             const width=750
             const dx=20
@@ -175,6 +167,9 @@ export default {
                 //.attr("viewBox", [-margin.left, -margin.top, width, dx])
                 .style("font", "10px sans-serif")
                 .style("user-select", "none");
+
+            
+            
             const gLink = svg.select("g.links")
                 .attr("fill", "none")
                 .attr("stroke", "#555")
@@ -182,8 +177,7 @@ export default {
                 .attr("stroke-width", 1.5);
             const gNode = svg.select("g.nodes")
             window.root=root
-            
-            const duration = 500;
+
             const nodes = root.descendants().reverse();
             const links = root.links();
             window.nodes=nodes
@@ -202,19 +196,29 @@ export default {
 
             const height = right.x - left.x + margin.top + margin.bottom;
 
+            const container=svg.select("g.container")
+            function zoomed({transform}) {
+                container.attr("transform", transform);
+            }
+            svg.call(d3.zoom()
+                .extent([[0, 0], [width, height]])
+                .scaleExtent([0.3, 3.3])
+                .on("zoom", zoomed));
+
             const transition = svg.transition()
-                .duration(duration)
+                .delay(this.delay)
+                .duration(this.updateDuration)
+                .attr("viewBox", [-margin.left+source.y-this.root.y-dy, left.x +source.x-this.root.x - margin.top, width, height])
                 //.tween("resize",null)
-                .attr("viewBox", [-margin.left+root.y-this.root.y, left.x - margin.top, width, height])
-                //.tween("resize", window.ResizeObserver ? null : () => () => svg.dispatch("toggle"));
-                
+            
+            container.transition(transition).attr("transform","translate(0,0)")
+
 
             // Update the nodes…
             const node = gNode.selectAll("g")
                 .data(nodes, d => d.id);
 
             // Enter any new nodes at the parent's previous position.
-            const that=this
             const nodeEnter = node.enter().append("g")
                 .attr("transform", d => `translate(${source.y0},${source.x0})`)
                 .attr("fill-opacity", 0)
@@ -224,17 +228,22 @@ export default {
             {
                 nodeEnter.attr("cursor", d=>d._children? "pointer":"default")
                 .on("click", (e,d)=> {
-                    //console.log(event,d,that,that.focus_ID)
+                    // console.log(event,d,that,that.focus_ID)
                     if(d._children)
                     {
-                        if(d.data.name==that.focus_ID)
+                        var new_layout=that.layoutNetwork
+                        new_layout[d.data.name].expand=!new_layout[d.data.name].expand
+                        if(!new_layout[d.data.name].expand)
                         {
-                            that.$store.commit('setFocusID',d.parent.data.name || that.focus_ID)
+                            for(let key in new_layout)
+                            {
+                                if(key.startsWith(d.data.name))
+                                new_layout[key].expand=false
+                            }
                         }
-                        else
-                        {
-                            that.$store.commit('setFocusID',d.data.name)
-                        }
+                        that.$store.commit('setLayoutNetwork',new_layout)
+                        that.$store.commit('setFocusID',d.data.name)
+                        if(d.data.name==that.focus_ID)that.updateTree()
                     }
                 });
             }
@@ -253,7 +262,7 @@ export default {
                 .attr("stroke", "white");
 
             // Transition nodes to their new position.
-            const nodeUpdate = node.merge(nodeEnter).transition(transition)
+            const nodeUpdate = node.merge(nodeEnter).transition(transition).delay(this.updateDuration)
                 .attr("transform", d => `translate(${d.y},${d.x})`)
                 .attr("fill-opacity", 1)
                 .attr("stroke-opacity", 1)
@@ -267,7 +276,7 @@ export default {
                 //.attr("font-weight", d => d.data.name==this.focus_ID ? "800" : "400")
 
             // Transition exiting nodes to the parent's new position.
-            const nodeExit = node.exit().transition(transition).remove()
+            const nodeExit = node.exit().transition(transition).delay(this.updateDuration).remove()
                 .attr("transform", d => d.parent ? 
                     `translate(${d.parent.y},${d.parent.x})`:
                     `translate(${-dy},${0})`
@@ -287,11 +296,11 @@ export default {
                 });
 
             // Transition links to their new position.
-            link.merge(linkEnter).transition(transition)
+            link.merge(linkEnter).transition(transition).delay(this.updateDuration)
                 .attr("d", diagonal);
 
             // Transition exiting nodes to the parent's new position.
-            link.exit().transition(transition).remove()
+            link.exit().transition(transition).delay(this.updateDuration).remove()
                 .attr("d", d => {
                 const o = {x: d.source.x, y: d.source.y};
                 return diagonal({source: o, target: o});
@@ -313,7 +322,7 @@ export default {
 #navigation-tree {
   width: 100%;
   height: 100%;
-  margin:10px;
+  margin:10px 0px;
 }
 g.container
 {

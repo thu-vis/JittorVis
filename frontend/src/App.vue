@@ -90,6 +90,7 @@ html, body, #app {
   display: flex;
   overflow: hidden;
   border-left: 1px solid gray;
+  margin-left: 3px;
 }
 
 #navi-container {
