@@ -65,6 +65,7 @@ export default {
                 'fill': 'white',
                 'stroke': 'black',
                 'stroke-width': 2,
+                'cursor': 'pointer',
             },
             nodeNameAttrs: {
                 'text-anchor': 'middle',
@@ -72,6 +73,7 @@ export default {
                 'font-weight': 'normal',
                 'x': 100,
                 'y': 20,
+                'cursor': 'pointer',
                 'font-size': '20px',
                 'dy': 25,
             },
@@ -82,6 +84,7 @@ export default {
                 'x': 5,
                 'font-size': '12px',
                 'dy': 15,
+                'cursor': 'pointer',
             },
             nodeSepAttrs: {
                 'stroke': 'black',
@@ -484,6 +487,7 @@ export default {
                     .attr('fill', rectAttrs.fill)
                     .attr('stroke', rectAttrs.stroke)
                     .attr('stroke-width', rectAttrs['stroke-width'])
+                    .attr('cursor', rectAttrs.cursor)
                     .on('click', function(e, d) {
                         that.$store.commit('setFeatureMapNodeID', d.id);
                     });
@@ -495,8 +499,12 @@ export default {
                     .attr('y', (d) => -d.height/2)
                     .attr('text-anchor', that.nodeNameAttrs['text-anchor'])
                     .attr('font-size', that.nodeNameAttrs['font-size'])
+                    .attr('cursor', that.nodeNameAttrs.cursor)
                     .attr('dy', that.nodeNameAttrs.dy)
-                    .attr('font-family', that.nodeNameAttrs['font-family']);
+                    .attr('font-family', that.nodeNameAttrs['font-family'])
+                    .on('click', function(e, d) {
+                        that.$store.commit('setFeatureMapNodeID', d.id);
+                    });
 
                 nodesing.append('line')
                     .attr('class', that.nodeSepClass)
@@ -521,7 +529,11 @@ export default {
                             .attr('text-anchor', that.nodeAttrAttrs['text-anchor'])
                             .attr('font-size', that.nodeAttrAttrs['font-size'])
                             .attr('dy', that.nodeAttrAttrs.dy)
-                            .attr('font-family', that.nodeAttrAttrs['font-family']);
+                            .attr('cursor', that.nodeAttrAttrs.cursor)
+                            .attr('font-family', that.nodeAttrAttrs['font-family'])
+                            .on('click', function() {
+                                that.$store.commit('setFeatureMapNodeID', d.id);
+                            });
                         i++;
                     }
                 });

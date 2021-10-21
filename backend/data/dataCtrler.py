@@ -60,7 +60,10 @@ class DataCtrler(object):
                         outputnode = childOutput
             return outputnode
         outputnode = visitTree(self.network["branch"][branchID])
-
+        if outputnode is None:
+            return {
+                "leafID": -1
+            }
         # second, compute the data
         if type(outputnode["attrs"]["data"]) == str:
             shape = [int(num) for num in outputnode['attrs']['shape'][1:len(outputnode['attrs']['shape'])-2].split(',')]

@@ -24,6 +24,10 @@ export default {
                     'branch': newNodeID,
                 }).then(function(response) {
                     that.leafNode = response.data.leafID;
+                    if (that.leafNode === -1) {
+                        that.featureImages = [];
+                        return;
+                    }
                     that.leafNodeShape =response.data.shape;
                     const getFeature = store.getters.URL_GET_FEATURE;
                     if (that.leafNodeShape.length===1) {
