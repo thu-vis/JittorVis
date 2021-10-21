@@ -5,9 +5,16 @@
     </div>
     <div id="content">
       <div id="left">
-        <div id="statistic-container"><statistic></statistic></div>
-        <div id="navi-container"><navigation v-bind:canFocusNode="true"></navigation></div>
+        <div id="statistic-container">
+          <span>—— Statistic ——</span>
+          <statistic></statistic>
+        </div>
+        <div id="navi-container">
+          <span>—— Navigation ——</span>
+          <navigation v-bind:canFocusNode="true"></navigation>
+        </div>
         <div id="featuremap-container">
+            <span>—— Features ——</span>
             <vue-scroll :ops="scrollOptions">
               <feature-map></feature-map>
             </vue-scroll>
@@ -81,7 +88,7 @@ html, body, #app {
 
 #statistic-container {
   width: 100%;
-  height: 20%;
+  height: 25%;
 }
 
 #tree-container {
@@ -89,18 +96,18 @@ html, body, #app {
   height: 100%;
   display: flex;
   overflow: hidden;
-  border-left: 1px solid gray;
   margin-left: 3px;
+  border-left: 1px solid lightgray;
 }
 
 #navi-container {
   width: 100%;
-  height: 40%;
+  height: 25%;
 }
 
 #featuremap-container {
   width: 100%;
-  height: 40%;
+  height: 50%;
 }
 
 #content {
@@ -111,13 +118,25 @@ html, body, #app {
 }
 
 #left {
-  width: 30%;
+  width: 20%;
   height: 100%;
 }
 
 #network-container {
   width: 100%;
   height: 100%;
+}
+
+#statistic-container, #navi-container, #featuremap-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#statistic-container > span, #navi-container > span, #featuremap-container > span {
+  font-family: Lucida Sans Typewriter;
+  font-weight: 400;
+  margin: 5px 0 5px 0;
 }
 
 </style>
