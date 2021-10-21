@@ -62,8 +62,8 @@ export default {
 }
 
 .featuremap {
-    width: 50px;
-    height: 50px;
-    margin: 5px 5px 5px 5px;
+    width: 80px;
+    height: 80px;
+    margin: 3px 3px 3px 3px;
 }
 </style>
