@@ -15,6 +15,7 @@ export default new Vuex.Store({
             },
         },
         focusID: '_model/', // default focus node is root node
+        featureMapNodeID: null, // which node to show feature map
     },
     mutations: {
         setAllData(state, allData) {
@@ -26,10 +27,18 @@ export default new Vuex.Store({
             }
             state.focusID = focusID;
         },
+        setFeatureMapNodeID(state, featureMapNodeID) {
+            state.featureMapNodeID = featureMapNodeID;
+        },
     },
     getters: {
         network: (state) => state.allData.network,
         statistic: (state) => state.allData.statistic,
+        featureMapNodeID: (state) => state.featureMapNodeID,
         URL_GET_ALL_DATA: (state) => state.APIBASE + '/api/allData',
+        URL_GET_FEATURE_INFO: (state) => state.APIBASE + '/api/featureInfo',
+        URL_GET_FEATURE: (state) => {
+            return (leafID, index) => state.APIBASE + `/api/feature?leafID=${leafID}&index=${index}`;
+        },
     },
 });

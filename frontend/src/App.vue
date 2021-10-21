@@ -7,9 +7,14 @@
       <div id="left">
         <div id="statistic-container"><statistic></statistic></div>
         <div id="navi-container"><navigation v-bind:canFocusNode="true"></navigation></div>
+        <div id="featuremap-container">
+            <vue-scroll :ops="scrollOptions">
+              <feature-map></feature-map>
+            </vue-scroll>
+        </div>
       </div>
       <div id="tree-container">
-        <div id="network-container"><network></network></div>
+          <div id="network-container"><network></network></div>
       </div>
     </div>
   </div>
@@ -19,11 +24,12 @@
 import Navigation from './components/Navigation.vue';
 import Network from './components/Network.vue';
 import Statistic from './components/Statistic.vue';
+import FeatureMap from './components/FeatureMap.vue';
 import axios from 'axios';
 
 // main vue component
 export default {
-    components: {Network, Navigation, Statistic},
+    components: {Network, Navigation, Statistic, FeatureMap},
     name: 'App',
     mounted: function() {
         const store = this.$store;
@@ -32,6 +38,15 @@ export default {
                 store.commit('setAllData', response.data);
                 console.log('network data', store.getters.network);
             });
+    },
+    data: function() {
+        return {
+            scrollOptions: {
+                bar: {
+                    background: '#c6bebe',
+                },
+            },
+        };
     },
 };
 </script>
@@ -79,7 +94,12 @@ html, body, #app {
 
 #navi-container {
   width: 100%;
-  height: 100%;
+  height: 40%;
+}
+
+#featuremap-container {
+  width: 100%;
+  height: 40%;
 }
 
 #content {
