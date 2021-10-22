@@ -31,7 +31,7 @@ export default {
     },
     computed: {
         ...mapGetters([
-            'network',
+            'layoutNetwork',
         ]),
         ...mapState([
             'focusID',
@@ -104,7 +104,7 @@ export default {
                 'opacity': 0,
             },
             // dagre nodes/edges/graph result
-            layoutNetwork: {},
+            localLayoutNetwork: {},
             nodes: {},
             edges: [],
             daggraph: {
@@ -131,18 +131,9 @@ export default {
         };
     },
     watch: {
-        network: function(newNetwork, oldNetwork) {
-            this.initGraphNetwork(newNetwork);
-            // find root
-            let root = Object.values(this.layoutNetwork)[0];
-            while (root.parent !== undefined) {
-                root = this.layoutNetwork[root.parent];
-            }
-            this.expandNode(root.id);
-        },
-        focusID: function(newFocusID, oldFocusID) {
-            // collapse children
-            this.expandNode(newFocusID);
+        layoutNetwork: function(newNetwork, oldNetwork) {
+            this.localLayoutNetwork = clone(newNetwork);
+            this.drawAllLayout();
         },
     },
     methods: {
@@ -157,15 +148,19 @@ export default {
          * @public
          */
         expandNode: function(nodeid) {
-            let node = this.layoutNetwork[nodeid];
+            let node = this.localLayoutNetwork[nodeid];
             // expand parent
             while (node !== undefined) {
                 node.expand = true;
-                node = this.layoutNetwork[node.parent];
+                node = this.localLayoutNetwork[node.parent];
             }
-            this.$store.commit('setLayoutNetwork', this.layoutNetwork);
+            this.$store.commit('setLayoutNetwork', this.localLayoutNetwork);
+            this.drawAllLayout();
 
-            [this.nodes, this.edges] = this.getGraphFromNetwork(this.layoutNetwork);
+            this.$store.commit('setFocusID', nodeid);
+        },
+        drawAllLayout: function() {
+            [this.nodes, this.edges] = this.getGraphFromNetwork(this.localLayoutNetwork);
             this.computeDAGLayout(this.nodes, this.edges, this.daggraph, this.dagreLayoutOptions,
                 this.nodeRectAttrs, this.nodeNameAttrs, this.nodeAttrAttrs);
 
@@ -184,7 +179,6 @@ export default {
                     that.width = newWidth;
                     that.height = newHeight;
                 });
-            this.$store.commit('setFocusID', nodeid);
         },
         /**
          * call expand(node.parent) to collapse a network node
@@ -193,12 +187,12 @@ export default {
          * @public
          */
         collapseNode: function(nodeid) {
-            const nodeParent = this.layoutNetwork[nodeid].parent;
+            const nodeParent = this.localLayoutNetwork[nodeid].parent;
             // collapse children
             let queues = [nodeid];
             while (queues.length > 0) {
                 nodeid = queues.shift();
-                const node = this.layoutNetwork[nodeid];
+                const node = this.localLayoutNetwork[nodeid];
                 node.expand = false;
                 queues = queues.concat(node.children);
             }
@@ -206,17 +200,17 @@ export default {
             this.expandNode(nodeParent);
         },
         /**
-         * init this.layoutNetwork based on rawNetwork, should be called when raw network data was changed
+         * init this.localLayoutNetwork based on rawNetwork, should be called when raw network data was changed
          * @param {Object} rawNetwork - raw network data
          * @public
          */
         initGraphNetwork: function(rawNetwork) {
-            this.layoutNetwork = clone(rawNetwork);
-            if (this.layoutNetwork==={}) {
+            this.localLayoutNetwork = clone(rawNetwork);
+            if (this.localLayoutNetwork==={}) {
                 return;
             }
             // init extent
-            Object.values(this.layoutNetwork).forEach((d) => {
+            Object.values(this.localLayoutNetwork).forEach((d) => {
                 d.expand = false;
             });
         },
@@ -448,10 +442,10 @@ export default {
                         that.drawToolBtns(d, ele, that.nodeToolBtnsClass, {
                             collapseNode: that.collapseNode,
                             expandNode: that.expandNode,
-                        }, that.layoutNetwork);
+                        }, that.localLayoutNetwork);
 
                         const parentID = that.nodes[d.id].parent.split('/').join('-');
-                        that.drawNodeParent(d.id, that.layoutNetwork, that.nodes, that.backgroundG,
+                        that.drawNodeParent(d.id, that.localLayoutNetwork, that.nodes, that.backgroundG,
                             that.nodeParentGIDPrefix+parentID, that.nodeParentGClass);
                     })
                     .on('mouseleave', function(e, d) {

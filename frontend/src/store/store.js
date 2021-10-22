@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import clone from 'just-clone';
 
 Vue.use(Vuex);
 
@@ -21,6 +22,20 @@ export default new Vuex.Store({
     mutations: {
         setAllData(state, allData) {
             state.allData.network = allData.network;
+            state.layoutNetwork = clone(state.allData.network);
+            if (state.layoutNetwork==={}) {
+                return;
+            }
+            // init extent
+            Object.values(state.layoutNetwork).forEach((d) => {
+                d.expand = false;
+            });
+            // find root
+            let root = Object.values(state.layoutNetwork)[0];
+            while (root.parent !== undefined) {
+                root = state.layoutNetwork[root.parent];
+            }
+            root.expand = true;
         },
         setFocusID(state, focusID) {
             if ((state.allData.network[focusID] === undefined) || (state.allData.network[focusID].children.length===0)) {
