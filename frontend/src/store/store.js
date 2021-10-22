@@ -15,36 +15,38 @@ export default new Vuex.Store({
                 'recall': [[0, 250], [1, 230], [2, 224], [3, 218], [4, 135], [5, 147], [6, 260]],
             },
         },
-        layoutNetwork: {}, // very similar to allData.network, with some attributes for layout added
-        focusID: '_model/', // default focus node is root node
+        layoutInfo: {
+            layoutNetwork: {}, // very similar to allData.network, with some attributes for layout added
+            focusID: '_model/', // default focus node is root node
+            t: -1, // a timestamp
+        },
         featureMapNodeID: null, // which node to show feature map
     },
     mutations: {
         setAllData(state, allData) {
             state.allData.network = allData.network;
-            state.layoutNetwork = clone(state.allData.network);
-            if (state.layoutNetwork==={}) {
+            const newLayoutNetwork = clone(state.allData.network);
+            if (newLayoutNetwork==={}) {
                 return;
             }
             // init extent
-            Object.values(state.layoutNetwork).forEach((d) => {
+            Object.values(newLayoutNetwork).forEach((d) => {
                 d.expand = false;
             });
             // find root
-            let root = Object.values(state.layoutNetwork)[0];
+            let root = Object.values(newLayoutNetwork)[0];
             while (root.parent !== undefined) {
-                root = state.layoutNetwork[root.parent];
+                root = newLayoutNetwork[root.parent];
             }
             root.expand = true;
+            state.layoutInfo = {
+                layoutNetwork: newLayoutNetwork,
+                focusID: root.id,
+                t: Date.now(),
+            };
         },
-        setFocusID(state, focusID) {
-            if ((state.allData.network[focusID] === undefined) || (state.allData.network[focusID].children.length===0)) {
-                return;
-            }
-            state.focusID = focusID;
-        },
-        setLayoutNetwork(state, layoutNetwork) {
-            state.layoutNetwork = layoutNetwork;
+        setLayoutInfo(state, layoutInfo) {
+            state.layoutInfo = layoutInfo;
         },
         setFeatureMapNodeID(state, featureMapNodeID) {
             state.featureMapNodeID = featureMapNodeID;
@@ -54,7 +56,7 @@ export default new Vuex.Store({
         network: (state) => state.allData.network,
         statistic: (state) => state.allData.statistic,
         featureMapNodeID: (state) => state.featureMapNodeID,
-        layoutNetwork: (state) => state.layoutNetwork,
+        layoutInfo: (state) => state.layoutInfo,
         URL_GET_ALL_DATA: (state) => state.APIBASE + '/api/allData',
         URL_GET_FEATURE_INFO: (state) => state.APIBASE + '/api/featureInfo',
         URL_GET_FEATURE: (state) => {

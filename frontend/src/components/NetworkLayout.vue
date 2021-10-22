@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import {mapGetters, mapState} from 'vuex';
+import {mapGetters} from 'vuex';
 import dagre from 'dagre';
 import * as d3 from 'd3';
 import clone from 'just-clone';
@@ -31,10 +31,7 @@ export default {
     },
     computed: {
         ...mapGetters([
-            'layoutNetwork',
-        ]),
-        ...mapState([
-            'focusID',
+            'layoutInfo',
         ]),
         backgroundG: function() {
             return d3.select('#background-info');
@@ -47,6 +44,12 @@ export default {
         },
         edgesG: function() {
             return d3.select('g#network-edges');
+        },
+        localLayoutNetwork: function() {
+            return this.localLayoutInfo.layoutNetwork;
+        },
+        localFocusID: function() {
+            return this.localLayoutInfo.focusID;
         },
     },
     data: function() {
@@ -104,7 +107,7 @@ export default {
                 'opacity': 0,
             },
             // dagre nodes/edges/graph result
-            localLayoutNetwork: {},
+            localLayoutInfo: {},
             nodes: {},
             edges: [],
             daggraph: {
@@ -131,8 +134,8 @@ export default {
         };
     },
     watch: {
-        layoutNetwork: function(newNetwork, oldNetwork) {
-            this.localLayoutNetwork = clone(newNetwork);
+        layoutInfo: function(newInfo, oldInfo) {
+            this.localLayoutInfo = clone(newInfo);
             this.drawAllLayout();
         },
     },
@@ -154,10 +157,12 @@ export default {
                 node.expand = true;
                 node = this.localLayoutNetwork[node.parent];
             }
-            this.$store.commit('setLayoutNetwork', this.localLayoutNetwork);
+            this.$store.commit('setLayoutInfo', {
+                layoutNetwork: this.localLayoutNetwork,
+                focusID: this.localFocusID,
+                t: Date.now(),
+            });
             this.drawAllLayout();
-
-            this.$store.commit('setFocusID', nodeid);
         },
         drawAllLayout: function() {
             [this.nodes, this.edges] = this.getGraphFromNetwork(this.localLayoutNetwork);
