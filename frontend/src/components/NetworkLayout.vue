@@ -159,7 +159,7 @@ export default {
             }
             this.$store.commit('setLayoutInfo', {
                 layoutNetwork: this.localLayoutNetwork,
-                focusID: this.localFocusID,
+                focusID: nodeid,
                 t: Date.now(),
             });
             this.drawAllLayout();

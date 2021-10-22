@@ -20,11 +20,14 @@ export default {
     name: 'navigation',
     computed: {
         ...mapGetters([
-            'layoutNetwork',
+            'layoutInfo',
         ]),
-        ...mapState([
-            'focusID'
-        ])
+        layoutNetwork: function() {
+            return this.layoutInfo.layoutNetwork;
+        },
+        focus_ID: function() {
+            return this.layoutInfo.focusID || (this.root && this.root.data.name);
+        }
     },
     mixins: [GlobalVar],
     props:{
@@ -35,20 +38,21 @@ export default {
     },
     data(){
         return {
-            focus_ID:"" ,
             root:undefined,
             ordering:{},
         }
     },
     watch:{
-        focus_ID:function(val){
-            this.updateTree()
+        'layoutInfo.layoutNetwork': function(val, oldval) {
+            if(Object.keys(oldval).length===0){
+                this.initTree();
+            }
+            else {
+                this.updateTree();
+            }
         },
-        focusID:function(val){
-            this.focus_ID=val
-        },
-        layoutNetwork:function(val,oldval){
-            if(val)this.initTree()
+        'layoutInfo.t': function(val) {
+            this.updateTree();
         }
     },
     methods:{
@@ -138,6 +142,7 @@ export default {
             // find source
             while(source.data.name!=this.focus_ID && found)
             {
+                source.children=source._children
                 found=0
                 for(let i in source._children)
                 {
@@ -212,6 +217,9 @@ export default {
                 //.tween("resize",null)
             
             container.transition(transition).attr("transform","translate(0,0)")
+            d3.zoomTransform(container.node()).k=1;
+            d3.zoomTransform(container.node()).x=0;
+            d3.zoomTransform(container.node()).y=0;
 
 
             // Update the nodes…
@@ -241,9 +249,12 @@ export default {
                                 new_layout[key].expand=false
                             }
                         }
-                        that.$store.commit('setLayoutNetwork',new_layout)
-                        that.$store.commit('setFocusID',d.data.name)
-                        if(d.data.name==that.focus_ID)that.updateTree()
+                        that.$store.commit('setLayoutInfo', {
+                            layoutNetwork: new_layout,
+                            focusID: d.data.name,
+                            t: Date.now(),
+                        });
+                        // if(d.data.name==that.focus_ID)that.updateTree()
                     }
                 });
             }
