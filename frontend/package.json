@@ -5,10 +5,10 @@
   "author": "ThuWangzw <wangzw834@163.com>",
   "private": true,
   "scripts": {
-    "dev": "webpack serve --mode=development --config build/webpack.dev.conf.js --progress",
+    "dev": "cross-env NODE_ENV=development webpack serve --mode=development --config build/webpack.dev.conf.js --progress",
     "start": "npm run dev",
     "lint": "eslint --ext .js,.vue src",
-    "build": "node build/build.js",
+    "build": "cross-env NODE_ENV=production webpack build --mode=production --config build/webpack.prod.conf.js",
     "styleguide": "vue-styleguidist server",
     "styleguide:build": "vue-styleguidist build"
   },
@@ -19,6 +19,7 @@
     "babel-eslint": "8.0.1",
     "babel-plugin-component": "^1.1.1",
     "babel-preset-es2015": "^6.24.1",
+    "cross-env": "^7.0.3",
     "d3": "^7.0.4",
     "dagre": "^0.8.5",
     "echarts": "^5.1.2",
@@ -43,6 +44,7 @@
   },
   "devDependencies": {
     "@webpack-cli/serve": "^1.5.2",
+    "add-asset-html-webpack-plugin": "^3.2.0",
     "autoprefixer": "^7.1.2",
     "babel-core": "^6.22.1",
     "babel-helper-vue-jsx-merge-props": "^2.0.3",

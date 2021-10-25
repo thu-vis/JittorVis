@@ -6,7 +6,7 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
     state: {
-        APIBASE: '//166.111.80.25:5005',
+        APIBASE: BACKEND_BASE_URL,
         allData: {
             network: {},
             statistic: {

@@ -14,6 +14,6 @@ Vue.config.productionTip = false;
 new Vue({
     el: '#app',
     store: store,
+    render: (h) => h(App),
     components: {App},
-    template: '<App/>',
 });

@@ -1,5 +1,6 @@
 'use strict';
 const path = require('path');
+const webpack = require('webpack');
 const utils = require('./utils');
 const config = require('../config');
 const vueLoaderConfig = require('./vue-loader.conf');
@@ -82,4 +83,9 @@ module.exports = {
         __filename: false,
         __dirname: false,
     },
+    plugins: [
+        new webpack.DefinePlugin({
+            'BACKEND_BASE_URL': process.env.NODE_ENV === 'production' ? '\'\'' : '\'//166.111.80.25:5005\'',
+        }),
+    ],
 };
