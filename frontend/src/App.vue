@@ -6,19 +6,18 @@
     <div id="content">
       <div id="left">
         <div id="statistic-container">
-          <span>—— Statistic ——</span>
           <statistic></statistic>
         </div>
-        <div id="featuremap-container">
+        <div id="tree-container">
+          <div id="network-container"><network></network></div>
+        </div>
+      </div>
+      <div id="featuremap-container">
             <span>—— Features ——</span>
             <vue-scroll :ops="scrollOptions">
               <feature-map></feature-map>
             </vue-scroll>
         </div>
-      </div>
-      <div id="tree-container">
-          <div id="network-container"><network></network></div>
-      </div>
     </div>
   </div>
 </template>
@@ -83,21 +82,22 @@ html, body, #app {
 
 #statistic-container {
   width: 100%;
-  height: 25%;
+  height: 20%;
 }
 
 #tree-container {
-  width: 70%;
-  height: 100%;
+  width: 100%;
+  height: 80%;
   display: flex;
   overflow: hidden;
-  margin-left: 3px;
-  border-left: 1px solid lightgray;
+  margin: 5px 5px 0 0;
+  border-top: 1px solid lightgray;
 }
 
 #featuremap-container {
-  width: 100%;
-  height: 75%;
+  width: 20%;
+  height: 100%;
+  border-left: 1px solid lightgray;
 }
 
 #content {
@@ -108,7 +108,7 @@ html, body, #app {
 }
 
 #left {
-  width: 20%;
+  width: 80%;
   height: 100%;
 }
 
@@ -117,13 +117,13 @@ html, body, #app {
   height: 100%;
 }
 
-#statistic-container, #navi-container, #featuremap-container {
+#featuremap-container {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-#statistic-container > span, #navi-container > span, #featuremap-container > span {
+#featuremap-container > span {
   font-family: Lucida Sans Typewriter;
   font-weight: 400;
   margin: 5px 0 5px 0;
