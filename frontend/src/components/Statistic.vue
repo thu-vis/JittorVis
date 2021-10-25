@@ -63,6 +63,8 @@ export default {
                     },
                 },
                 tooltip: {
+                    show: true,
+                    trigger: 'axis',
                 },
                 xAxis: {
                     type: 'value',
@@ -79,6 +81,7 @@ export default {
                 series: [{
                     data: this.statisticData,
                     type: 'line',
+                    showSymbol: false,
                     encode: {
                         x: 0,
                         y: 1,
