@@ -29,6 +29,28 @@ or
 pip3 install jittorvis
 ```
 
+## How to Develop
+1. run backend
+```bash
+cd backend
+python server.py
+```
+2. run frontend
+```bash
+cd frontend
+yarn
+yarn start
+```
+3. generate doc
+```bash
+# frontend
+cd frontend
+yarn styleguide:build
+# backend
+cd ..
+pdoc backend/ -o doc --html --force
+```
+
 ## Usage
 There are several ways to use JittorVis.
 

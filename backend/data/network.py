@@ -1,3 +1,5 @@
+import numpy as np
+
 class JittorNetworkProcessor(object):
 
     def __init__(self):
@@ -7,12 +9,14 @@ class JittorNetworkProcessor(object):
     def process(self, rawData: dict) -> dict:
         """main process function"""
         self.network = rawData
-        self.network = self.__mergeVarNode(self.network)
-        self.network = self.__constructHierarchy(self.network)
-        self.network["branch"] = self.__connectBranchNodes(self.network["branch"], self.network["leaf"])
+        self.network = self.mergeVarNode(self.network)
+        self.network = self.constructHierarchy(self.network)
+        self.network["branch"] = self.connectBranchNodes(self.network["branch"], self.network["leaf"])
+        self.network["branch"] = self.setAttrsForBranchNodes(self.network["branch"], self.network["leaf"])
+        self.network["branch"] = self.topoSortBranchNodes(self.network["branch"], self.network["leaf"])
         return self.network
 
-    def __mergeVarNode(self, network: dict) -> dict:
+    def mergeVarNode(self, network: dict) -> dict:
         """Merge variable node into operation node
 
         Args:
@@ -56,7 +60,7 @@ class JittorNetworkProcessor(object):
 
         return newNetwork
 
-    def __constructHierarchy(self, network: dict) -> dict:
+    def constructHierarchy(self, network: dict) -> dict:
         """Construct hierarchy from leaf nodes
 
         Args:
@@ -133,7 +137,7 @@ class JittorNetworkProcessor(object):
             "branch": {**branchNetwork, **newBranchNodes}
         }
 
-    def __connectBranchNodes(self, branch: dict, leaf: dict) -> dict:
+    def connectBranchNodes(self, branch: dict, leaf: dict) -> dict:
         """connect branch nodes
 
         Args:
@@ -168,7 +172,119 @@ class JittorNetworkProcessor(object):
 
         return branch
 
+    def setAttrsForBranchNodes(self, branch: dict, leaf: dict) -> dict:
+        """As branch nodes are created with lots of attrs hidden in leaf nodes, set attributes for branch nodes
 
+        Args:
+            branch (dict): branch nodes
+            leaf (dict): leaf nodes
+
+        Returns:
+            dict: new branch nodes
+        """   
+        for branchNodeID, branchNode in branch.items():
+            branchNode["name"] = branchNode["attrs"]["name"]
+            branchNode["type"] = branchNode["attrs"]["type"]
+            newAttrs = {}
+            # add conv kernal size and channel num for conv layer     
+            if branchNode["attrs"]["type"] == "Conv":
+                assert type(branchNode["children"][0]) == int
+                for childID in branchNode["children"]:
+                    if leaf[childID]["attrs"]["name"] == "binary.multiply":
+                        shape = [num for num in leaf[childID]["attrs"]["shape"][1:len(leaf[childID]["attrs"]["shape"])-2].split(',')]
+                        newAttrs["input"] = '×'.join(shape[2:5])
+                        newAttrs["kernal"] = '×'.join(shape[5:7])
+                        newAttrs["channels"] = shape[1]
+
+            # add name for sequential layer
+            if branchNode["attrs"]["type"] == "Sequential":
+                newAttrs["name"] = branchNode["attrs"]["name"]
+
+            # add size for fc layer
+            if branchNode["attrs"]["type"] == "Linear":
+                assert type(branchNode["children"][0]) == int
+                for childID in branchNode["children"]:
+                    if leaf[childID]["attrs"]["name"] == "binary.multiply":
+                        inputDim = int(leaf[childID]["attrs"]["shape"].split(',')[2])
+                        newAttrs['inputDim'] = inputDim
+                    if leaf[childID]["attrs"]["name"] == "binary.add":
+                        outputDim = int(leaf[childID]["attrs"]["shape"].split(',')[1])
+                        newAttrs['outputDim'] = outputDim
+
+            if branchNode["attrs"]["type"].startswith('float'):
+                branchNode["type"] = branchNode["name"]
+
+
+            branchNode["attrs"] = newAttrs
+        return branch
+
+    def topoSortBranchNodes(self, branch: dict, leaf: dict) -> dict:
+        """sort branch nodes' children
+
+        Args:
+            branch (dict): branch nodes
+            leaf (dict): leaf nodes
+
+        Returns:
+            dict: new branch nodes
+        """
+        network = {**branch, **leaf}
+        parent2children = {}
+        def sortIter(node):
+            if node in leaf:
+                #if leaf node, return
+                return
+            for childid in network[node]['children']:
+                sortIter(childid)
+
+            inputs = {}
+            children2parent = {}
+            isbottom = len(network[node]['children'])==0 or (network[node]['children'][0] in leaf)
+
+            # init children
+            if isbottom:
+                parent2children[node] = network[node]['children']
+            else:
+                parent2children[node] = []
+                for childid in network[node]['children']:
+                    parent2children[node] += parent2children[childid]
+
+            if isbottom:
+                for id in network[node]['children']:
+                    inputs[id] = network[id]['inputs']
+            else:
+                for id in network[node]['children']:
+                    for cid in parent2children[id]:
+                        children2parent[cid] = id
+                for id in network[node]['children']:
+                    inputs[id] = []
+                    for cid in parent2children[id]:
+                        for lastid in network[cid]['inputs']:
+                            if (lastid in children2parent) and (children2parent[lastid]!=id) and (children2parent[lastid] not in inputs[id]):
+                                inputs[id].append(children2parent[lastid])
+            topos = []
+            childlen = len(network[node]['children'])
+            for i in range(childlen):
+                for id in network[node]['children']:
+                    if id in topos:
+                        continue
+                    flag = True
+                    for inputid in inputs[id]:
+                        if (inputid in network[node]['children']) and (inputid not in topos):
+                            flag = False
+                            break
+                    if flag:
+                        topos.append(id)
+            network[node]['children'] = topos
+
+        # find root
+        root = None
+        for id, node in branch.items():
+            if 'parent' not in node:
+                root = id
+                break
+        sortIter(root)
+        return branch
 
 if __name__ == "__main__":
     import pickle
