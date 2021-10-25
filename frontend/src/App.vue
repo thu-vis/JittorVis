@@ -94,7 +94,7 @@ html, body, #app {
 
 #tree-container {
   width: 100%;
-  height: 80%;
+  height: 79%;
   display: flex;
   overflow: hidden;
   margin: 5px 5px 0 0;

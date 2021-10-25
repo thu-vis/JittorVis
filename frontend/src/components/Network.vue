@@ -1,5 +1,5 @@
 <template>
-<div id="network-all">
+<div id="network-all" ref="AllNetwork" @resize="setsize">
     <div id="network-tools-bar">
         <svg class="network-tools-bar-icon" @mouseenter="zoomInOpacity=hoverOpacity"
             @mouseleave="zoomInOpacity=iconOpacity" :width="iconSize" :height="iconSize">
@@ -9,13 +9,25 @@
             @mouseleave="zoomOutOpacity=iconOpacity" :width="iconSize" :height="iconSize">
             <image xlink:href="/static/images/zoomout.svg" @click="zoomOut" :width="iconSize" :height="iconSize" :opacity="zoomOutOpacity"></image>
         </svg>
+        <svg class="network-tools-bar-icon" @mouseenter="splitOpacity=hoverOpacity"
+            @mouseleave="splitOpacity=iconOpacity" :width="iconSize" :height="iconSize">
+            <image xlink:href="/static/images/split-screen.png"
+                @click="splitPage" :width="iconSize" :height="iconSize" :opacity="splitOpacity"></image>
+        </svg>
     </div>
     <div id="network-main-container">
-        <vue-scroll :ops="scrollOptions">
-            <div class="network-view-all">
-                <network-layout :scale="scale"></network-layout>
-            </div>
-        </vue-scroll>
+        <div class="each-network" v-for="networkid in displayNetworkID" :key="networkid" :style="`width: ${width/displayNetworkID.length}px`">
+            <svg class="network-tools-bar-icon close-btn" @mouseenter="networkCloseBtnOpacity[networkid]=hoverOpacity"
+                @mouseleave="networkCloseBtnOpacity[networkid]=iconOpacity" :width="iconSize" :height="iconSize" v-if="displayNetworkID.length>1">
+                <image xlink:href="/static/images/close.png"
+                    @click="closePage(networkid)" :width="iconSize" :height="iconSize" :opacity="networkCloseBtnOpacity[networkid]"></image>
+            </svg>
+            <vue-scroll :ops="scrollOptions" >
+                <div class="network-view-all">
+                    <network-layout :scale="scale" :id="networkBaseID+networkid"></network-layout>
+                </div>
+            </vue-scroll>
+        </div>
     </div>
 </div>
 </template>
@@ -40,12 +52,20 @@ export default {
                     background: '#c6bebe',
                 },
             },
+            networkBaseID: 'network-all-',
+            displayNetworkID: [0],
+            networkCloseBtnOpacity: {0: 0.5},
             hoverOpacity: 1,
             iconOpacity: 0.5,
             zoomInOpacity: 0.5,
             zoomOutOpacity: 0.5,
+            splitOpacity: 0.5,
             scale: 1,
+            width: 0,
         };
+    },
+    mounted: function() {
+        this.setsize();
     },
     methods: {
         zoomIn: function() {
@@ -53,6 +73,21 @@ export default {
         },
         zoomOut: function() {
             this.scale = Math.max(0.5, this.scale-0.1);
+        },
+        splitPage: function() {
+            const id = Date.now();
+            this.displayNetworkID.push(id);
+            this.networkCloseBtnOpacity[id] = 0.5;
+        },
+        closePage: function(id) {
+            const idx = this.displayNetworkID.indexOf(id);
+            if (idx!==-1) {
+                this.displayNetworkID.splice(idx, 1);
+                this.networkCloseBtnOpacity[id] = undefined;
+            }
+        },
+        setsize: function() {
+            this.width = this.$refs.AllNetwork.clientWidth;
         },
     },
 };
@@ -77,6 +112,8 @@ export default {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    display: flex;
+    justify-content: center;
 }
 
 .network-tools-bar-icon {
@@ -87,5 +124,17 @@ export default {
 .network-view-all {
     display: flex;
     justify-content: center;
+}
+
+.each-network {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.close-btn {
+    align-self: center;
 }
 </style>
