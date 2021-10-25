@@ -9,10 +9,6 @@
           <span>—— Statistic ——</span>
           <statistic></statistic>
         </div>
-        <div id="navi-container">
-          <span>—— Navigation ——</span>
-          <navigation v-bind:canFocusNode="true"></navigation>
-        </div>
         <div id="featuremap-container">
             <span>—— Features ——</span>
             <vue-scroll :ops="scrollOptions">
@@ -28,7 +24,6 @@
 </template>
 
 <script>
-import Navigation from './components/Navigation.vue';
 import Network from './components/Network.vue';
 import Statistic from './components/Statistic.vue';
 import FeatureMap from './components/FeatureMap.vue';
@@ -36,7 +31,7 @@ import axios from 'axios';
 
 // main vue component
 export default {
-    components: {Network, Navigation, Statistic, FeatureMap},
+    components: {Network, Statistic, FeatureMap},
     name: 'App',
     mounted: function() {
         const store = this.$store;
@@ -100,14 +95,9 @@ html, body, #app {
   border-left: 1px solid lightgray;
 }
 
-#navi-container {
-  width: 100%;
-  height: 25%;
-}
-
 #featuremap-container {
   width: 100%;
-  height: 50%;
+  height: 75%;
 }
 
 #content {
