@@ -1,14 +1,6 @@
 <template>
     <div style="width: 100%; height: 100%;">
-        <el-select id="statistic-select" :popper-append-to-body="false" v-on:change="changeKey" v-model="curKey" placeholder="请选择">
-            <el-option
-                v-for="item in selectOptions"
-                :key="item"
-                :label="item"
-                :value="item">
-            </el-option>
-        </el-select>
-        <div id="statistic-chart"></div>
+        <div :id="'statistic-chart-'+dataName" class="statistic-chart"></div>
     </div>
 </template>
 
@@ -20,8 +12,8 @@ import {
     LegendComponent,
     GridComponent,
     TooltipComponent,
+    TitleComponent,
 } from 'echarts/components';
-import {mapGetters} from 'vuex';
 import {Select, Option} from 'element-ui';
 import Vue from 'vue';
 
@@ -34,32 +26,42 @@ echarts.use([
     LegendComponent,
     GridComponent,
     TooltipComponent,
+    TitleComponent,
 ]);
 
 export default {
     name: 'statistic',
     components: {
     },
+    props: {
+        statisticData: {
+            default: [],
+        },
+        dataName: {
+            default: '',
+        },
+    },
     data: function() {
         return {
-            curKey: '',
             statisticChart: null,
         };
     },
     mounted: function() {
-        this.statisticChart = echarts.init(document.getElementById('statistic-chart'));
-        this.curKey = Object.keys(this.statistic)[0];
+        this.statisticChart = echarts.init(document.getElementById('statistic-chart-'+this.dataName));
         this.statisticChart.setOption(this.chartOptions);
     },
     computed: {
-        ...mapGetters([
-            'statistic',
-        ]),
-        selectOptions: function() {
-            return Object.keys(this.statistic);
-        },
         chartOptions: function() {
             const option = {
+                title: {
+                    text: this.dataName,
+                    top: 0,
+                    left: '50%',
+                    textStyle: {
+                        fontWeight: 'normal',
+                        fontFamily: 'Lucida Sans Typewriter',
+                    },
+                },
                 tooltip: {
                 },
                 xAxis: {
@@ -71,11 +73,11 @@ export default {
                 grid: {
                     left: '35px',
                     right: '10px',
-                    top: '10px',
+                    top: '40px',
                     bottom: '20px',
                 },
                 series: [{
-                    data: this.statistic[this.curKey],
+                    data: this.statisticData,
                     type: 'line',
                     encode: {
                         x: 0,
@@ -117,7 +119,7 @@ export default {
 .el-select >>> .el-input__suffix {
     right: 3px;
 }
-#statistic-chart {
+.statistic-chart {
     width: 100%;
     height: calc(100% - 20px);
 }

@@ -6,7 +6,7 @@
     <div id="content">
       <div id="left">
         <div id="statistic-container">
-          <statistic></statistic>
+          <statistic v-for="item in Object.keys(statistic)" :key="item" :dataName="item" :statisticData="statistic[item]"></statistic>
         </div>
         <div id="tree-container">
           <div id="network-container"><network></network></div>
@@ -26,6 +26,7 @@
 import Network from './components/Network.vue';
 import Statistic from './components/Statistic.vue';
 import FeatureMap from './components/FeatureMap.vue';
+import {mapGetters} from 'vuex';
 import axios from 'axios';
 
 // main vue component
@@ -39,6 +40,11 @@ export default {
                 store.commit('setAllData', response.data);
                 console.log('network data', store.getters.network);
             });
+    },
+    computed: {
+        ...mapGetters([
+            'statistic',
+        ]),
     },
     data: function() {
         return {
@@ -83,6 +89,7 @@ html, body, #app {
 #statistic-container {
   width: 100%;
   height: 20%;
+  display: flex;
 }
 
 #tree-container {
