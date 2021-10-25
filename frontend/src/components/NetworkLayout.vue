@@ -33,17 +33,20 @@ export default {
         ...mapGetters([
             'network',
         ]),
+        svg: function() {
+            return d3.select('#'+this.id);
+        },
         backgroundG: function() {
-            return d3.select('#background-info');
+            return this.svg.select('#background-info');
         },
         mainG: function() {
-            return d3.select('#network-layout');
+            return this.svg.select('#network-layout');
         },
         nodesG: function() {
-            return d3.select('g#network-nodes');
+            return this.svg.select('g#network-nodes');
         },
         edgesG: function() {
-            return d3.select('g#network-edges');
+            return this.svg.select('g#network-edges');
         },
     },
     data: function() {
@@ -130,7 +133,7 @@ export default {
     watch: {
         network: function(newnetwork, oldnetwork) {
             const newLayoutNetwork = clone(newnetwork);
-            if (newLayoutNetwork==={}) {
+            if (Object.keys(newLayoutNetwork).length===0) {
                 return;
             }
             // init extent
@@ -146,6 +149,24 @@ export default {
             this.localLayoutNetwork = newLayoutNetwork;
             this.drawAllLayout();
         },
+    },
+    mounted: function() {
+        const newLayoutNetwork = clone(this.network);
+        if (Object.keys(newLayoutNetwork).length===0) {
+            return;
+        }
+        // init extent
+        Object.values(newLayoutNetwork).forEach((d) => {
+            d.expand = false;
+        });
+        // find root
+        let root = Object.values(newLayoutNetwork)[0];
+        while (root.parent !== undefined) {
+            root = newLayoutNetwork[root.parent];
+        }
+        root.expand = true;
+        this.localLayoutNetwork = newLayoutNetwork;
+        this.drawAllLayout();
     },
     methods: {
         /**
