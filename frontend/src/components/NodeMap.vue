@@ -19,8 +19,8 @@
             </div>
         </div>
         <vue-scroll :ops="scrollOptions">
-            <div class="featuremaps">
-                <img class="featuremap" v-for="url in featureImages" :key="url" :src="url" />
+            <div id="featuremaps">
+                <img class="featuremap" v-for="(image, index) in featureImages" :key="index" :src="image" />
             </div>
         </vue-scroll>
     </div>
@@ -53,15 +53,45 @@ export default {
             leafNode: null,
             leafNodeShape: [],
             featureImages: [],
+            featureMaxActivations: [],
+            featureMinActivations: [],
             scrollOptions: {
                 bar: {
                     background: '#c6bebe',
                 },
             },
+            featureMapSize: 50,
         };
     },
     methods: {
         changeKey: function() {
+        },
+        getFeatureImage: function(featureURL) {
+            const that = this;
+            axios.get(featureURL)
+                .then(function(response) {
+                    const featureImage = that.featureMapToImage(response.data);
+                    that.featureImages[featureURL] = featureImage;
+                });
+        },
+        featureMapToImage: function(feature, maxv, minv) {
+            const canvas = this.featureMapToImage.canvas || (this.featureMapToImage.canvas = document.createElement('canvas'));
+            const context = canvas.getContext('2d');
+            const height = feature.length;
+            const width = feature[0].length;
+            canvas.width = width;
+            canvas.height = height;
+            const image = context.createImageData(width, height);
+            const data = image.data;
+            for (let i=0; i<data.length; i+=4) {
+                const v = feature[Math.floor(i/4/width)][(i/4)%width];
+                data[i] = v>0?(255-Math.floor(v/maxv*255)):255;
+                data[i+1] = v>0?(255-Math.floor(v/maxv*255)):(255-Math.floor(v/minv*255));
+                data[i+2] = v>0?255:(255-Math.floor(v/minv*255));
+                data[i+3] = 255;
+            }
+            context.putImageData(image, 0, 0);
+            return canvas.toDataURL();
         },
     },
     mounted: function() {
@@ -71,23 +101,33 @@ export default {
             axios.post(store.getters.URL_GET_FEATURE_INFO, {
                 'branch': this.nodeId,
             }).then(function(response) {
-                window.response = response;
                 that.leafNode = response.data.leafID;
                 if (that.leafNode === -1) {
                     that.featureImages = [];
                     return;
                 }
-                that.leafNodeShape =response.data.shape;
-                const getFeature = store.getters.URL_GET_FEATURE;
+                that.leafNodeShape = response.data.shape;
+                that.featureMaxActivations = response.data.maxActivations;
+                that.featureMinActivations = response.data.minActivations;
                 if (that.leafNodeShape.length===1) {
-                    // linear layer
-                    that.featureImages = [getFeature(that.leafNode, -1)];
+                    that.featureImages = [];
                 } else {
                     // other layer
-                    that.featureImages = [];
-                    for (let i=0; i<that.leafNodeShape[0]; i++) {
-                        that.featureImages.push(getFeature(that.leafNode, i));
-                    }
+                    const featureMatrixs = response.data.features;
+                    // get max/min value to compute d3-scale
+                    let maxv = 0.00001;
+                    let minv = -0.0001;
+                    that.featureMaxActivations.forEach((d) => {
+                        maxv = Math.max(maxv, d);
+                    });
+                    that.featureMinActivations.forEach((d) => {
+                        minv = Math.min(minv, d);
+                    });
+                    console.log(`Feature map max: ${maxv}, min: ${minv}`);
+
+                    that.featureImages = featureMatrixs.map((d) => {
+                        return that.featureMapToImage(d, maxv, minv);
+                    });
                 }
             });
         }
