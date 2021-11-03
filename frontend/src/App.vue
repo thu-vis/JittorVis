@@ -102,7 +102,7 @@ html, body, #app {
 }
 
 #featuremap-container {
-  width: 20%;
+  width: 50%;
   height: 100%;
   border-left: 1px solid lightgray;
 }
@@ -115,7 +115,7 @@ html, body, #app {
 }
 
 #left {
-  width: 80%;
+  width: 50%;
   height: 100%;
 }
 

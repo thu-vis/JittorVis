@@ -98,7 +98,7 @@ export default {
 <style scoped>
 .featurenode {
     width: 100%;
-    max-height: 240px;
+    max-height: 480px;
     overflow: hidden;
     border-top: 1px solid #aaaaaa;
     border-radius: 2px;
@@ -109,10 +109,10 @@ export default {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    max-height: 240px;
+    max-height: 480px;
 }
 .featuremap {
-    width: 46%;
+    width: 19%;
     margin: 3px 3px 3px 3px;
 }
 .el-select >>> .el-input__inner {
