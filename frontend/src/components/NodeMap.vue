@@ -1,13 +1,12 @@
 <template>
     <div class="featurenode">
-        <div style="margin-bottom:3px; margin-top:3px">
+        <div class="featurenode-header" style="margin-bottom:3px; margin-top:3px">
             <span style="font-size:10px; cursor:pointer; font-family:Comic Sans MS;
                 margin-left:3px;">{{ nodeId }}</span>
-            <span style="font-size:10px; cursor:pointer; display:inline-flex; float:right;
-                margin-right:10px; margin-top:3px;" v-on:click="$emit('delete-id', nodeId)">
-                <i class="el-icon-close"></i>
-            </span>
-            <div style="display:inline-flex; width:50px; float:right; margin-right:10px">
+            <el-slider v-model="actThreshold" :min="0" :max="maxActivation" input-size="mini"
+                :step="0.001" style="width: 150px; margin: 0 20px 0 20px;"></el-slider>
+            <div style="width: 50px; flex-grow: 100;"></div>
+            <div style="display:inline-flex; width:50px; margin-right:10px">
                 <el-select class="visselect" :popper-append-to-body="false" v-on:change="changeKey" v-model="curVis" placeholder="origin">
                     <el-option
                         v-for="item in visOptions"
@@ -17,10 +16,13 @@
                     </el-option>
                 </el-select>
             </div>
+            <span style="font-size:10px; cursor:pointer; margin-right:10px; margin-top:3px;" v-on:click="$emit('delete-id', nodeId)">
+                <i class="el-icon-close"></i>
+            </span>
         </div>
         <vue-scroll :ops="scrollOptions">
             <div id="featuremaps">
-                <img class="featuremap" v-for="(image, index) in featureImages" :key="index" :src="image" />
+                <img class="featuremap" v-for="(image, index) in filteredFeatureImage" :key="index" :src="image" />
             </div>
         </vue-scroll>
     </div>
@@ -29,12 +31,13 @@
 <script>
 
 import axios from 'axios';
-import {Select, Option} from 'element-ui';
+import {Select, Option, Slider} from 'element-ui';
 import Vue from 'vue';
 import {mapGetters} from 'vuex';
 
 Vue.use(Select);
 Vue.use(Option);
+Vue.use(Slider);
 
 export default {
     name: 'nodemap',
@@ -45,6 +48,12 @@ export default {
         ...mapGetters([
             'layoutInfo',
         ]),
+        filteredFeatureImage: function() {
+            const that = this;
+            return this.featureImages.filter((image, index) => {
+                return that.featureMaxActivations[index]>=that.actThreshold;
+            });
+        },
     },
     data: function() {
         return {
@@ -55,12 +64,14 @@ export default {
             featureImages: [],
             featureMaxActivations: [],
             featureMinActivations: [],
+            maxActivation: 1,
             scrollOptions: {
                 bar: {
                     background: '#c6bebe',
                 },
             },
             featureMapSize: 50,
+            actThreshold: 0,
         };
     },
     methods: {
@@ -120,6 +131,7 @@ export default {
                     that.featureMaxActivations.forEach((d) => {
                         maxv = Math.max(maxv, d);
                     });
+                    that.maxActivation = maxv;
                     that.featureMinActivations.forEach((d) => {
                         minv = Math.min(minv, d);
                     });
@@ -145,6 +157,13 @@ export default {
     padding: 3px;
     margin: 5px 10px 5px 2px;
 }
+
+.featurenode-header {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
 #featuremaps {
     display: flex;
     flex-wrap: wrap;
