@@ -74,11 +74,23 @@ class DataCtrler(object):
                 shape = shape[1:]
             outputnode["attrs"]["data"] = data
             outputnode["attrs"]["shape"] = shape
-        
+
+        # third, get all 
+        if len(outputnode["attrs"]["shape"])==1:
+            features = [self.getFeature(outputnode["id"], -1)]
+            maxActivations = []
+            minActivations = []
+        else:
+            features = [self.getFeature(outputnode["id"], featureIndex) for featureIndex in range(outputnode["attrs"]["shape"][0])]
+            maxActivations = [float(np.max(feature)) for feature in features]
+            minActivations = [float(np.min(feature)) for feature in features]
 
         return {
             "leafID": outputnode["id"],
-            "shape": outputnode["attrs"]["shape"]
+            "shape": outputnode["attrs"]["shape"],
+            "features": features,
+            "maxActivations": maxActivations,
+            "minActivations": minActivations
         }
 
     def getFeature(self, leafID, featureIndex: int) -> str:
@@ -116,19 +128,7 @@ class DataCtrler(object):
                 feature = np.concatenate((feature, zeroPad))
             feature = feature.reshape((width, width))
         
-        # feature process from https://www.analyticsvidhya.com/blog/2020/11/tutorial-how-to-visualize-feature-maps-directly-from-cnn-layers/
-        feature-= feature.mean()
-        feature/= feature.std ()
-        feature*=  64
-        feature+= 128
-        feature= np.clip(feature, 0, 255).astype('uint8')
-
-        # return image
-        img = Image.fromarray(feature).convert("RGB")
-        tmpfile = NamedTemporaryFile(suffix=".png", delete=False)
-        imagePath = tmpfile.name
-        img.save(imagePath)
-        return imagePath
+        return feature.tolist()
 
     def getStatisticData(self):
         """get statistic data

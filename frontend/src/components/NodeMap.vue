@@ -1,13 +1,12 @@
 <template>
     <div class="featurenode">
-        <div style="margin-bottom:3px; margin-top:3px">
+        <div class="featurenode-header" style="margin-bottom:3px; margin-top:3px">
             <span style="font-size:10px; cursor:pointer; font-family:Comic Sans MS;
                 margin-left:3px;">{{ nodeId }}</span>
-            <span style="font-size:10px; cursor:pointer; display:inline-flex; float:right;
-                margin-right:10px; margin-top:3px;" v-on:click="$emit('delete-id', nodeId)">
-                <i class="el-icon-close"></i>
-            </span>
-            <div style="display:inline-flex; width:50px; float:right; margin-right:10px">
+            <el-slider v-model="actThreshold" :min="0" :max="maxActivation" input-size="mini"
+                :step="0.001" style="width: 150px; margin: 0 20px 0 20px;"></el-slider>
+            <div style="width: 50px; flex-grow: 100;"></div>
+            <div style="display:inline-flex; width:50px; margin-right:10px">
                 <el-select class="visselect" :popper-append-to-body="false" v-on:change="changeKey" v-model="curVis" placeholder="origin">
                     <el-option
                         v-for="item in visOptions"
@@ -17,10 +16,13 @@
                     </el-option>
                 </el-select>
             </div>
+            <span style="font-size:10px; cursor:pointer; margin-right:10px; margin-top:3px;" v-on:click="$emit('delete-id', nodeId)">
+                <i class="el-icon-close"></i>
+            </span>
         </div>
         <vue-scroll :ops="scrollOptions">
-            <div class="featuremaps">
-                <img class="featuremap" v-for="url in featureImages" :key="url" :src="url" />
+            <div id="featuremaps">
+                <img class="featuremap" v-for="(image, index) in filteredFeatureImage" :key="index" :src="image" />
             </div>
         </vue-scroll>
     </div>
@@ -29,12 +31,13 @@
 <script>
 
 import axios from 'axios';
-import {Select, Option} from 'element-ui';
+import {Select, Option, Slider} from 'element-ui';
 import Vue from 'vue';
 import {mapGetters} from 'vuex';
 
 Vue.use(Select);
 Vue.use(Option);
+Vue.use(Slider);
 
 export default {
     name: 'nodemap',
@@ -45,6 +48,12 @@ export default {
         ...mapGetters([
             'layoutInfo',
         ]),
+        filteredFeatureImage: function() {
+            const that = this;
+            return this.featureImages.filter((image, index) => {
+                return that.featureMaxActivations[index]>=that.actThreshold;
+            });
+        },
     },
     data: function() {
         return {
@@ -53,15 +62,47 @@ export default {
             leafNode: null,
             leafNodeShape: [],
             featureImages: [],
+            featureMaxActivations: [],
+            featureMinActivations: [],
+            maxActivation: 1,
             scrollOptions: {
                 bar: {
                     background: '#c6bebe',
                 },
             },
+            featureMapSize: 50,
+            actThreshold: 0,
         };
     },
     methods: {
         changeKey: function() {
+        },
+        getFeatureImage: function(featureURL) {
+            const that = this;
+            axios.get(featureURL)
+                .then(function(response) {
+                    const featureImage = that.featureMapToImage(response.data);
+                    that.featureImages[featureURL] = featureImage;
+                });
+        },
+        featureMapToImage: function(feature, maxv, minv) {
+            const canvas = this.featureMapToImage.canvas || (this.featureMapToImage.canvas = document.createElement('canvas'));
+            const context = canvas.getContext('2d');
+            const height = feature.length;
+            const width = feature[0].length;
+            canvas.width = width;
+            canvas.height = height;
+            const image = context.createImageData(width, height);
+            const data = image.data;
+            for (let i=0; i<data.length; i+=4) {
+                const v = feature[Math.floor(i/4/width)][(i/4)%width];
+                data[i] = v>0?(255-Math.floor(v/maxv*255)):255;
+                data[i+1] = v>0?(255-Math.floor(v/maxv*255)):(255-Math.floor(v/minv*255));
+                data[i+2] = v>0?255:(255-Math.floor(v/minv*255));
+                data[i+3] = 255;
+            }
+            context.putImageData(image, 0, 0);
+            return canvas.toDataURL();
         },
     },
     mounted: function() {
@@ -71,23 +112,34 @@ export default {
             axios.post(store.getters.URL_GET_FEATURE_INFO, {
                 'branch': this.nodeId,
             }).then(function(response) {
-                window.response = response;
                 that.leafNode = response.data.leafID;
                 if (that.leafNode === -1) {
                     that.featureImages = [];
                     return;
                 }
-                that.leafNodeShape =response.data.shape;
-                const getFeature = store.getters.URL_GET_FEATURE;
+                that.leafNodeShape = response.data.shape;
+                that.featureMaxActivations = response.data.maxActivations;
+                that.featureMinActivations = response.data.minActivations;
                 if (that.leafNodeShape.length===1) {
-                    // linear layer
-                    that.featureImages = [getFeature(that.leafNode, -1)];
+                    that.featureImages = [];
                 } else {
                     // other layer
-                    that.featureImages = [];
-                    for (let i=0; i<that.leafNodeShape[0]; i++) {
-                        that.featureImages.push(getFeature(that.leafNode, i));
-                    }
+                    const featureMatrixs = response.data.features;
+                    // get max/min value to compute d3-scale
+                    let maxv = 0.00001;
+                    let minv = -0.0001;
+                    that.featureMaxActivations.forEach((d) => {
+                        maxv = Math.max(maxv, d);
+                    });
+                    that.maxActivation = maxv;
+                    that.featureMinActivations.forEach((d) => {
+                        minv = Math.min(minv, d);
+                    });
+                    console.log(`Feature map max: ${maxv}, min: ${minv}`);
+
+                    that.featureImages = featureMatrixs.map((d) => {
+                        return that.featureMapToImage(d, maxv, minv);
+                    });
                 }
             });
         }
@@ -98,21 +150,28 @@ export default {
 <style scoped>
 .featurenode {
     width: 100%;
-    max-height: 240px;
+    max-height: 480px;
     overflow: hidden;
     border-top: 1px solid #aaaaaa;
     border-radius: 2px;
     padding: 3px;
     margin: 5px 10px 5px 2px;
 }
+
+.featurenode-header {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
 #featuremaps {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    max-height: 240px;
+    max-height: 480px;
 }
 .featuremap {
-    width: 46%;
+    width: 19%;
     margin: 3px 3px 3px 3px;
 }
 .el-select >>> .el-input__inner {
