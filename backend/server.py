@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 import os
 import pickle
+import json
 import argparse
 from flask import Flask, jsonify, request, send_file, render_template
 from data.dataCtrler import dataCtrler
@@ -34,14 +35,17 @@ def feature():
 
 def main():
     parser = argparse.ArgumentParser(description='manual to this script')
-    parser.add_argument("--data_path", type=str, default='/home/zhaowei/JittorModels/Jittor-Image-Models/resnet26.pkl')
-    parser.add_argument("--host", type=str, default="0.0.0.0")
+    parser.add_argument("--data_path", type=str, default='D:/2021/JittorVis/data/')
+    parser.add_argument("--host", type=str, default="localhost")
     parser.add_argument("--port", type=int, default=5005)
     args = parser.parse_args()
     if not os.path.exists(args.data_path):
         raise Exception("The path does not exist.")
-    rawdata = pickle.load(open(args.data_path, 'rb'))
-    dataCtrler.process(rawdata)
+    networkPath = os.path.join(args.data_path, "network.pkl")
+    evaluationPath = os.path.join(args.data_path, "evaluation.json")
+    networkdata = pickle.load(open(networkPath, 'rb'))
+    statisticData = json.load(open(evaluationPath, 'r'))
+    dataCtrler.process(networkdata, statisticData)
     app.run(port=args.port, host=args.host, threaded=True, debug=False)
 
 if __name__ == "__main__":

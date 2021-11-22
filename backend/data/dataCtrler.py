@@ -10,7 +10,7 @@ class DataCtrler(object):
 
     def __init__(self):
         super().__init__()
-        self.rawdata = {}
+        self.networkRawdata = {}
         self.network = {}
         self.statistic = {}
 
@@ -19,14 +19,14 @@ class DataCtrler(object):
         return processor.process(network)
 
     def processStatisticData(self, data):
-        return {}
+        return data
 
-    def process(self, rawdata, modeltype='jittor', attrs = {}):
+    def process(self, networkRawdata, statisticData, modeltype='jittor', attrs = {}):
         """process raw data
         """        
-        self.rawdata = rawdata
-        self.network = self.processNetworkData(self.rawdata["node_data"])
-        self.statistic = self.processStatisticData(self.rawdata)
+        self.networkRawdata = networkRawdata
+        self.network = self.processNetworkData(self.networkRawdata["node_data"])
+        self.statistic = self.processStatisticData(statisticData)
 
     def getBranchTree(self) -> dict:
         """get tree of network
@@ -135,4 +135,8 @@ class DataCtrler(object):
         """
         return self.statistic        
 
+    def getConfusionMatrix(self):
+        """ confusion matrix
+        """        
+        return self.statistic["confusion"]
 dataCtrler = DataCtrler()
