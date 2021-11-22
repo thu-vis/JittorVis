@@ -5,9 +5,14 @@
     </div>
     <div id="content">
       <div id="left">
+        <div id="confusion-matrix-container">
+          <confusion-matrix></confusion-matrix>
+        </div>
         <div id="statistic-container">
           <statistic v-for="item in Object.keys(statistic)" :key="item" :dataName="item" :statisticData="statistic[item]"></statistic>
         </div>
+      </div>
+      <div id="middle">
         <div id="tree-container">
           <div id="network-container"><network></network></div>
         </div>
@@ -26,12 +31,13 @@
 import Network from './components/Network.vue';
 import Statistic from './components/Statistic.vue';
 import FeatureMap from './components/FeatureMap.vue';
+import ConfusionMatrix from './components/ConfusionMatrix.vue';
 import {mapGetters} from 'vuex';
 import axios from 'axios';
 
 // main vue component
 export default {
-    components: {Network, Statistic, FeatureMap},
+    components: {Network, Statistic, FeatureMap, ConfusionMatrix},
     name: 'App',
     mounted: function() {
         const store = this.$store;
@@ -39,6 +45,11 @@ export default {
             .then(function(response) {
                 store.commit('setAllData', response.data);
                 console.log('network data', store.getters.network);
+            });
+        axios.post(store.getters.URL_GET_CONFUSION_MATRIX)
+            .then(function(response) {
+                store.commit('setConfusionMatrix', response.data);
+                console.log('confusion matrix data', store.getters.confusionMatrix);
             });
     },
     computed: {
@@ -88,8 +99,9 @@ html, body, #app {
 
 #statistic-container {
   width: 100%;
-  height: 20%;
+  height: 100%;
   display: flex;
+  flex-direction: column;
 }
 
 #tree-container {
@@ -102,7 +114,7 @@ html, body, #app {
 }
 
 #featuremap-container {
-  width: 50%;
+  width: 40%;
   height: 100%;
   border-left: 1px solid lightgray;
 }
@@ -115,7 +127,15 @@ html, body, #app {
 }
 
 #left {
-  width: 50%;
+  width: 20%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid lightgray;
+}
+
+#middle {
+  width: 40%;
   height: 100%;
 }
 
@@ -134,6 +154,13 @@ html, body, #app {
   font-family: Lucida Sans Typewriter;
   font-weight: 400;
   margin: 5px 0 5px 0;
+}
+
+#confusion-matrix-container {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%;
 }
 
 </style>

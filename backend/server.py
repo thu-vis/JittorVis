@@ -33,6 +33,10 @@ def feature():
     index = int(request.args['index'])
     return send_file(dataCtrler.getFeature(leafID, index))
 
+@app.route('/api/confusionMatrix', methods=["POST"])
+def confusionMatrix():
+    return jsonify(dataCtrler.getConfusionMatrix())
+
 def main():
     parser = argparse.ArgumentParser(description='manual to this script')
     parser.add_argument("--data_path", type=str, default='D:/2021/JittorVis/data/')
