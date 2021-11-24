@@ -154,6 +154,8 @@ export default {
                 'size': 30,
                 'stroke-width': '1px',
                 'stroke': 'gray',
+                'text-fill': '#DCDCDC',
+                'font-size': 25,
             },
             // buffer
             maxCellValue: 0,
@@ -191,8 +193,8 @@ export default {
                         column: j,
                     };
                     this.cells.push(cell);
-                    if (!this.isHideCell(cell)) {
-                        this.maxCellValue = Math.max(this.maxCellValue, cell.value);
+                    if (!this.isHideCell(cell) && i!=j) {
+                        this.maxCellValue = Math.max(this.maxCellValue, cell.value*2);
                     }
                 }
             }
@@ -307,6 +309,15 @@ export default {
                     .attr('stroke', that.cellAttrs['stroke'])
                     .attr('stroke-width', that.cellAttrs['stroke-width'])
                     .attr('fill', (d)=>that.colorScale(d.value));
+
+                matrixCellsinG.filter((d) => d.value===0)
+                    .append('text')
+                    .attr('x', that.cellAttrs['size']/2)
+                    .attr('y', (that.cellAttrs['size']+that.cellAttrs['font-size'])/2)
+                    .attr('fill', that.cellAttrs['text-fill'])
+                    .attr('text-anchor', 'middle')
+                    .attr('font-size', that.cellAttrs['font-size'])
+                    .text('\\');
 
 
                 if ((that.horizonTextinG.enter().size() === 0) && (that.verticalTextinG.enter().size() === 0) &&
