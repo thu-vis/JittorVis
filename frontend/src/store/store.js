@@ -35,7 +35,7 @@ export default new Vuex.Store({
             state.featureMapNodeID = featureMapNodeID;
         },
         setConfusionMatrix(state, confusionMatrix) {
-            state.confusionMatrix = confusionMatrix;
+            state.allData.confusionMatrix = confusionMatrix;
         },
     },
     getters: {

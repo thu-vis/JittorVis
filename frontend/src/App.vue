@@ -6,7 +6,9 @@
     <div id="content">
       <div id="left">
         <div id="confusion-matrix-container">
-          <confusion-matrix></confusion-matrix>
+          <div class="dummy-container">
+            <confusion-matrix id="confusion-matrix"></confusion-matrix>
+          </div>
         </div>
         <div id="statistic-container">
           <statistic v-for="item in Object.keys(statistic)" :key="item" :dataName="item" :statisticData="statistic[item]"></statistic>
@@ -159,8 +161,20 @@ html, body, #app {
 #confusion-matrix-container {
   position: relative;
   width: 100%;
-  height: 0;
-  padding-bottom: 100%;
+  padding-top: 100%;
+}
+
+.dummy-container {
+  position:  absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 </style>
