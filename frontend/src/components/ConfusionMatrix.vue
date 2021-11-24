@@ -1,7 +1,7 @@
 <template>
     <svg id="confusion-svg" width="100%" height="100%" ref="svg">
         <g id="main-g" transform="translate(0,0)">
-            <g id="legend-g" transform="translate(5,0)"></g>
+            <g id="legend-g" :transform="`translate(5,${leftCornerSize/2-25})`"></g>
             <g id="horizon-text-g" :transform="`translate(${leftCornerSize-maxHorizonTextWidth}, ${leftCornerSize+textMatrixMargin})`"></g>
             <g id="vertical-text-g" :transform="`translate(${leftCornerSize+textMatrixMargin}, ${leftCornerSize}) rotate(-90)`"></g>
             <g id="matrix-cells-g" :transform="`translate(${leftCornerSize+textMatrixMargin}, ${leftCornerSize+textMatrixMargin})`"></g>

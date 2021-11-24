@@ -6,6 +6,7 @@
     <div id="content">
       <div id="left">
         <div id="confusion-matrix-container">
+          <span>—— Confusion Matrix ——</span>
           <div class="dummy-container">
             <confusion-matrix id="confusion-matrix"></confusion-matrix>
           </div>
@@ -134,6 +135,7 @@ html, body, #app {
   display: flex;
   flex-direction: column;
   border-right: 1px solid lightgray;
+  padding: 0 10px 0 0;
 }
 
 #middle {
@@ -152,7 +154,7 @@ html, body, #app {
   align-items: center;
 }
 
-#featuremap-container > span {
+#featuremap-container > span, #confusion-matrix-container > span {
   font-family: Lucida Sans Typewriter;
   font-weight: 400;
   margin: 5px 0 5px 0;
@@ -162,6 +164,15 @@ html, body, #app {
   position: relative;
   width: 100%;
   padding-top: 100%;
+}
+
+#confusion-matrix-container > span {
+  position:  absolute;
+  text-align: center;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
 }
 
 .dummy-container {

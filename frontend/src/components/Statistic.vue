@@ -54,11 +54,11 @@ export default {
         chartOptions: function() {
             const option = {
                 title: {
-                    text: this.dataName,
+                    text: '—— '+this.dataName+' ——',
                     top: 0,
-                    left: '50%',
+                    left: 'center',
                     textStyle: {
-                        fontWeight: 'normal',
+                        fontWeight: 400,
                         fontFamily: 'Lucida Sans Typewriter',
                     },
                 },
