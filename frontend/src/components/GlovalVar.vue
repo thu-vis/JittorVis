@@ -5,6 +5,7 @@ export default {
             // transition duration
             createDuration: 500,
             updateDuration: 500,
+            transformDuration: 500,
             removeDuration: 500,
             delay: 100,
         };
