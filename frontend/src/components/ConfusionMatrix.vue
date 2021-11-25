@@ -14,6 +14,7 @@ import {mapGetters} from 'vuex';
 import * as d3 from 'd3';
 import Util from './Util.vue';
 import GlobalVar from './GlovalVar.vue';
+import clone from 'just-clone';
 
 export default {
     name: 'ConfusionMatrix',
@@ -80,39 +81,13 @@ export default {
             return d3.scaleSequential([0, this.maxCellValue], d3.interpolateBlues);
         },
     },
+    mounted: function() {
+        this.hierarchy = this.getHierarchy(this.confusionMatrix);
+        this.getDataAndRender();
+    },
     watch: {
         confusionMatrix: function(newConfusionMatrix, oldConfusionMatrix) {
-            // init hierarchy value
-            const hierarchy = newConfusionMatrix.hierarchy;
-            const postorder = function(root, depth) {
-                if (typeof(root) !== 'object') {
-                    return {
-                        name: root,
-                        expand: false,
-                        leafs: [root],
-                        children: [],
-                        depth: depth,
-                    };
-                }
-                root.expand = false;
-                root.depth = depth;
-                let leafs = [];
-                const newChildren = [];
-                for (const child of root.children) {
-                    const newChild = postorder(child, depth+1);
-                    leafs = leafs.concat(newChild.leafs);
-                    newChildren.push(newChild);
-                }
-                root.children = newChildren;
-                root.leafs = leafs;
-                return root;
-            };
-            for (const root of Object.values(hierarchy)) {
-                postorder(root, 0);
-            }
-            this.hierarchy = hierarchy;
-
-            // render
+            this.hierarchy = this.getHierarchy(newConfusionMatrix);
             this.getDataAndRender();
         },
     },
@@ -167,6 +142,36 @@ export default {
         };
     },
     methods: {
+        getHierarchy: function(confusionMatrix) {
+            const hierarchy = clone(confusionMatrix.hierarchy);
+            const postorder = function(root, depth) {
+                if (typeof(root) !== 'object') {
+                    return {
+                        name: root,
+                        expand: false,
+                        leafs: [root],
+                        children: [],
+                        depth: depth,
+                    };
+                }
+                root.expand = false;
+                root.depth = depth;
+                let leafs = [];
+                const newChildren = [];
+                for (const child of root.children) {
+                    const newChild = postorder(child, depth+1);
+                    leafs = leafs.concat(newChild.leafs);
+                    newChildren.push(newChild);
+                }
+                root.children = newChildren;
+                root.leafs = leafs;
+                return root;
+            };
+            for (const root of Object.values(hierarchy)) {
+                postorder(root, 0);
+            }
+            return hierarchy;
+        },
         getShowNodes: function(hierarchy) {
             const showNodes = [];
             const stack = Object.values(hierarchy).reverse();

@@ -67,7 +67,6 @@ export default {
   display: flex;
   overflow: hidden;
   margin: 5px 5px 0 0;
-  border-top: 1px solid lightgray;
 }
 
 #featuremap-container {
