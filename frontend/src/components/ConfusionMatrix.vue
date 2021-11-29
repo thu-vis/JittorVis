@@ -78,7 +78,7 @@ export default {
             return this.legendWidth;
         },
         colorScale: function() {
-            return d3.scaleSequential([0, this.maxCellValue], d3.interpolateBlues);
+            return d3.scaleSequential([0, this.maxCellValue], ['rgb(255, 255, 255)', 'rgb(8, 48, 107)']).clamp(true);
         },
     },
     mounted: function() {
