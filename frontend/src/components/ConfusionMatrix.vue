@@ -129,13 +129,12 @@ export default {
                 'size': 30,
                 'stroke-width': '1px',
                 'stroke': 'gray',
-                'slash-text-fill': '#DCDCDC',
+                'slash-text-stroke': 'gray',
                 'text-fill': '#FF6A6A',
                 'text-anchor': 'start',
                 'font-family': 'Comic Sans MS',
                 'font-weight': 'normal',
                 'font-size': 15,
-                'slash-font-size': 25,
             },
             // buffer
             maxCellValue: 0,
@@ -343,13 +342,10 @@ export default {
                     .attr('fill', (d)=>that.colorScale(d.value));
 
                 matrixCellsinG.filter((d) => d.value===0)
-                    .append('text')
-                    .attr('x', that.cellAttrs['size']/2)
-                    .attr('y', (that.cellAttrs['size']+that.cellAttrs['font-size'])/2)
-                    .attr('fill', that.cellAttrs['slash-text-fill'])
-                    .attr('text-anchor', 'middle')
-                    .attr('font-size', that.cellAttrs['slash-font-size'])
-                    .text('\\');
+                    .append('path')
+                    .attr('d', `M ${that.cellAttrs['size']*0.25} ${that.cellAttrs['size']*0.25} 
+                        L ${that.cellAttrs['size']*0.75} ${that.cellAttrs['size']*0.75}`)
+                    .attr('stroke', that.cellAttrs['slash-text-stroke']);
 
                 matrixCellsinG.filter((d) => d.value>0)
                     .append('text')
