@@ -114,6 +114,8 @@ export default {
                 'font-size': 15,
                 'iconMargin': 5,
                 'iconDy': 3,
+                'indent-line-stroke': 'gray',
+                'indent-line-stroke-width': 2,
             },
             verticalTextAttrs: {
                 'gClass': 'vertical-one-line-g',
@@ -123,6 +125,8 @@ export default {
                 'font-weight': 'normal',
                 'font-size': 15,
                 'iconMargin': 5,
+                'indent-line-stroke': 'gray',
+                'indent-line-stroke-width': 2,
             },
             cellAttrs: {
                 'gClass': 'one-cell-g',
@@ -272,6 +276,30 @@ export default {
                         that.getDataAndRender();
                     });
 
+                horizonTextinG.filter((d) => d.children.length>0)
+                    .append('path')
+                    .attr('stroke', that.horizonTextAttrs['indent-line-stroke'])
+                    .attr('stroke-width', that.horizonTextAttrs['indent-line-stroke-width'])
+                    .attr('d', (d)=>{
+                        // find expand child length
+                        const stack = [d];
+                        let expandlen = 0;
+                        if (d.expand) {
+                            while (stack.length > 0) {
+                                const top = stack.pop();
+                                for (const child of top.children) {
+                                    if (child.children.length>0 && child.expand===true) {
+                                        stack.push(child);
+                                    }
+                                    expandlen++;
+                                }
+                            }
+                        }
+                        const linelen = that.cellAttrs['size']*expandlen;
+                        const x = that.horizonTextAttrs['font-size']/2;
+                        return `M ${x} ${that.cellAttrs['size']} L ${x} ${that.cellAttrs['size']+linelen}`;
+                    });
+
                 const verticalTextinG = that.verticalTextinG.enter()
                     .append('g')
                     .attr('class', that.verticalTextAttrs['gClass'])
@@ -318,6 +346,30 @@ export default {
                     .on('click', function(e, d) {
                         d.expand = !d.expand;
                         that.getDataAndRender();
+                    });
+
+                verticalTextinG.filter((d) => d.children.length>0)
+                    .append('path')
+                    .attr('stroke', that.verticalTextAttrs['indent-line-stroke'])
+                    .attr('stroke-width', that.verticalTextAttrs['indent-line-stroke-width'])
+                    .attr('d', (d)=>{
+                        // find expand child length
+                        const stack = [d];
+                        let expandlen = 0;
+                        if (d.expand) {
+                            while (stack.length > 0) {
+                                const top = stack.pop();
+                                for (const child of top.children) {
+                                    if (child.children.length>0 && child.expand===true) {
+                                        stack.push(child);
+                                    }
+                                    expandlen++;
+                                }
+                            }
+                        }
+                        const linelen = that.cellAttrs['size']*expandlen;
+                        const x = that.verticalTextAttrs['font-size']/2;
+                        return `M ${x} ${that.cellAttrs['size']} L ${x} ${that.cellAttrs['size']+linelen}`;
                     });
 
                 const matrixCellsinG = that.matrixCellsinG.enter()
@@ -392,6 +444,32 @@ export default {
                     .attr('transform', (d) => `rotate(${d.expand?90:0} 
                         ${that.horizonTextAttrs['font-size']/2} ${icony+that.horizonTextAttrs['font-size']/2})`);
 
+                that.horizonTextinG.filter((d) => d.children.length>0)
+                    .selectAll('path')
+                    .attr('stroke', that.horizonTextAttrs['indent-line-stroke'])
+                    .attr('stroke-width', that.horizonTextAttrs['indent-line-stroke-width'])
+                    .transition()
+                    .duration(that.updateDuration)
+                    .attr('d', (d)=>{
+                        // find expand child length
+                        const stack = [d];
+                        let expandlen = 0;
+                        if (d.expand) {
+                            while (stack.length > 0) {
+                                const top = stack.pop();
+                                for (const child of top.children) {
+                                    if (child.children.length>0 && child.expand===true) {
+                                        stack.push(child);
+                                    }
+                                    expandlen++;
+                                }
+                            }
+                        }
+                        const linelen = that.cellAttrs['size']*expandlen;
+                        const x = that.horizonTextAttrs['font-size']/2;
+                        return `M ${x} ${that.cellAttrs['size']} L ${x} ${that.cellAttrs['size']+linelen}`;
+                    });
+
                 that.verticalTextinG
                     .transition()
                     .duration(that.updateDuration)
@@ -403,6 +481,32 @@ export default {
                     .selectAll('image')
                     .attr('transform', (d) => `rotate(${d.expand?90:0} 
                         ${that.verticalTextAttrs['font-size']/2} ${icony+that.verticalTextAttrs['font-size']/2})`);
+
+                that.verticalTextinG.filter((d) => d.children.length>0)
+                    .selectAll('path')
+                    .attr('stroke', that.verticalTextAttrs['indent-line-stroke'])
+                    .attr('stroke-width', that.verticalTextAttrs['indent-line-stroke-width'])
+                    .transition()
+                    .duration(that.updateDuration)
+                    .attr('d', (d)=>{
+                        // find expand child length
+                        const stack = [d];
+                        let expandlen = 0;
+                        if (d.expand) {
+                            while (stack.length > 0) {
+                                const top = stack.pop();
+                                for (const child of top.children) {
+                                    if (child.children.length>0 && child.expand===true) {
+                                        stack.push(child);
+                                    }
+                                    expandlen++;
+                                }
+                            }
+                        }
+                        const linelen = that.cellAttrs['size']*expandlen;
+                        const x = that.verticalTextAttrs['font-size']/2;
+                        return `M ${x} ${that.cellAttrs['size']} L ${x} ${that.cellAttrs['size']+linelen}`;
+                    });
 
                 that.matrixCellsinG
                     .transition()
