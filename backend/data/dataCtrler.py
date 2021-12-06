@@ -25,7 +25,7 @@ class DataCtrler(object):
     def processStatisticData(self, data):     
         return data
 
-    def process(self, networkRawdata, statisticData, predictData = None, trainImages = None, modeltype='jittor', attrs = {}):
+    def process(self, networkRawdata, statisticData, predictData = None, modeltype='jittor', attrs = {}):
         """process raw data
         """        
         self.networkRawdata = networkRawdata
@@ -37,6 +37,7 @@ class DataCtrler(object):
             self.preds = predictData["preds"].tolist()
             self.features = predictData["features"]
         self.trainImages = trainImages
+
 
     def getBranchTree(self) -> dict:
         """get tree of network
@@ -144,6 +145,8 @@ class DataCtrler(object):
         """get statistic data
         """
         return self.statistic        
+
+
 
     def getConfusionMatrix(self):
         """ confusion matrix

@@ -107,7 +107,7 @@ export default {
             // render attrs
             horizonTextAttrs: {
                 'gClass': 'horizon-one-line-g',
-                'leftMargin': 20,
+                'leftMargin': 30,
                 'text-anchor': 'start',
                 'font-family': 'Comic Sans MS',
                 'font-weight': 'normal',
@@ -119,7 +119,7 @@ export default {
             },
             verticalTextAttrs: {
                 'gClass': 'vertical-one-line-g',
-                'leftMargin': 20,
+                'leftMargin': 30,
                 'text-anchor': 'start',
                 'font-family': 'Comic Sans MS',
                 'font-weight': 'normal',
