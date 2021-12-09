@@ -64,7 +64,7 @@ export default {
             let maxwidth = 0;
             for (const node of this.showNodes) {
                 const textwidth = this.getTextWidth(node.name,
-                    `${this.horizonTextAttrs['font-weight']} ${this.horizonTextAttrs['font-size']} ${this.horizonTextAttrs['font-family']}`);
+                    `${this.horizonTextAttrs['font-weight']} ${this.horizonTextAttrs['font-size']}px ${this.horizonTextAttrs['font-family']}`);
                 const arrowIconNum = node.children.length===0?node.depth:node.depth+1;
                 maxwidth = Math.max(maxwidth, this.horizonTextAttrs['leftMargin']*node.depth + textwidth +
                     arrowIconNum*(this.horizonTextAttrs['font-size'] + this.horizonTextAttrs['iconMargin']));
