@@ -3,9 +3,7 @@
       <div id="left">
         <div id="confusion-matrix-container">
           <span>—— Confusion Matrix ——</span>
-          <div class="dummy-container">
             <confusion-matrix id="confusion-matrix"></confusion-matrix>
-          </div>
         </div>
         <div id="statistic-container">
           <statistic v-for="item in Object.keys(statistic)" :key="item" :dataName="item" :statisticData="statistic[item]"></statistic>
@@ -107,7 +105,7 @@ export default {
   align-items: center;
 }
 
-#featuremap-container > span, #confusion-matrix-container > span {
+#featuremap-container > span, #confusion-matrix-container > span, #confusion-matrix-container > span {
   font-family: Lucida Sans Typewriter;
   font-weight: 400;
   margin: 5px 0 5px 0;
@@ -116,27 +114,9 @@ export default {
 #confusion-matrix-container {
   width: 100%;
   height: 100%;
-}
-
-#confusion-matrix-container > span {
-  position:  absolute;
-  text-align: center;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-}
-
-.dummy-container {
-  position:  absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
   display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
 }
+
 </style>
