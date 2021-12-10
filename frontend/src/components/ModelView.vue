@@ -114,9 +114,8 @@ export default {
 }
 
 #confusion-matrix-container {
-  position: relative;
   width: 100%;
-  padding-top: 100%;
+  height: 100%;
 }
 
 #confusion-matrix-container > span {
