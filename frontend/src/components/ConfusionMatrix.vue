@@ -64,7 +64,7 @@ export default {
             let maxwidth = 0;
             for (const node of this.showNodes) {
                 const textwidth = this.getTextWidth(node.name,
-                    `${this.horizonTextAttrs['font-weight']} ${this.horizonTextAttrs['font-size']} ${this.horizonTextAttrs['font-family']}`);
+                    `${this.horizonTextAttrs['font-weight']} ${this.horizonTextAttrs['font-size']}px ${this.horizonTextAttrs['font-family']}`);
                 const arrowIconNum = node.children.length===0?node.depth:node.depth+1;
                 maxwidth = Math.max(maxwidth, this.horizonTextAttrs['leftMargin']*node.depth + textwidth +
                     arrowIconNum*(this.horizonTextAttrs['font-size'] + this.horizonTextAttrs['iconMargin']));
@@ -563,18 +563,21 @@ export default {
             return new Promise((resolve, reject) => {
                 // compute transform
                 const svgRealWidth = that.$refs.svg.clientWidth;
-                let shift = 0;
+                const svgRealHeight = that.$refs.svg.clientHeight;
+                const realSize = Math.min(svgRealWidth, svgRealHeight);
+                let shiftx = 0;
+                let shifty = 0;
                 let scale = 1;
-                if (that.svgWidth > svgRealWidth) {
-                    shift = 0;
-                    scale = svgRealWidth/that.svgWidth;
+                if (that.svgWidth > realSize) {
+                    scale = realSize/that.svgWidth;
                 } else {
                     scale = 1;
-                    shift = (svgRealWidth-that.svgWidth)/2;
                 }
+                shiftx = (svgRealWidth-scale*that.svgWidth)/2;
+                shifty = (svgRealHeight-scale*that.svgWidth)/2;
                 that.mainG.transition()
                     .duration(that.transformDuration)
-                    .attr('transform', `translate(${shift} ${shift}) scale(${scale})`)
+                    .attr('transform', `translate(${shiftx} ${shifty}) scale(${scale})`)
                     .on('end', resolve);
             });
         },
