@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 import math
 from tempfile import NamedTemporaryFile
+from data.feature_vis import FeatureVis
 
 class DataCtrler(object):
 
@@ -13,10 +14,14 @@ class DataCtrler(object):
         self.networkRawdata = {}
         self.network = {}
         self.statistic = {}
+<<<<<<< HEAD
         self.labels = None
         self.preds = None
         self.features = None
         self.trainImages = None
+=======
+        self.featureVis = None
+>>>>>>> feat: add featurevis
 
     def processNetworkData(self, network: dict) -> dict:
         processor = JittorNetworkProcessor()
@@ -25,12 +30,13 @@ class DataCtrler(object):
     def processStatisticData(self, data):     
         return data
 
-    def process(self, networkRawdata, statisticData, predictData = None, trainImages = None, modeltype='jittor', attrs = {}):
+    def process(self, networkRawdata, statisticData, model, predictData = None, trainImages = None, modeltype='jittor', attrs = {}):
         """process raw data
         """        
         self.networkRawdata = networkRawdata
         self.network = self.processNetworkData(self.networkRawdata["node_data"])
         self.statistic = self.processStatisticData(statisticData)
+        self.featureVis = FeatureVis(model)
 
         if predictData is not None:
             self.labels = predictData["labels"].tolist()
@@ -149,7 +155,7 @@ class DataCtrler(object):
         """ confusion matrix
         """        
         return self.statistic["confusion"]
-    
+
     def getImagesInConsuionMatrixCell(self, labels: list, preds: list) -> list:
         """return images in a cell of confusionmatrix
 
@@ -196,5 +202,18 @@ class DataCtrler(object):
             return self.trainImages[imageID].tolist()
         else:
             return []
-        
+
+    def getFeatureVis(self, inputImage, method="vanilla_bp"):
+        """get feature visualization of an image
+
+        Args:
+            inputImage (numpy): RGB image
+            method (str): vanilla_bp, guided_bp, grad_cam, layer_cam, integrated_gradients, grad_times_image ...
+
+        Returns:
+            numpy
+        """
+        return self.featureVis.get_feature_vis(inputImage, method)
+
+
 dataCtrler = DataCtrler()

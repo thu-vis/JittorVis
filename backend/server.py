@@ -4,6 +4,8 @@ import pickle
 import json
 import argparse
 import numpy as np
+import jittor
+from data.jimm import resnet26
 from flask import Flask, jsonify, request, send_file, render_template
 from data.dataCtrler import dataCtrler
 from flask_cors import CORS
@@ -59,6 +61,7 @@ def main():
         raise Exception("The path does not exist.")
     networkPath = os.path.join(args.data_path, "network.pkl")
     evaluationPath = os.path.join(args.data_path, "evaluation.json")
+
     predictPath = os.path.join(args.data_path, "predict_info.pkl")
     trainImagePath = os.path.join(args.data_path, "trainImages.npy")
     with open(predictPath, 'rb') as f:
@@ -68,7 +71,14 @@ def main():
     with open(evaluationPath, 'r') as f:
         statisticData = json.load(f)
     trainImages = np.load(trainImagePath)
-    dataCtrler.process(networkData, statisticData, predictData = predictData, trainImages = trainImages)
+    
+    model_dict_path = '/home/zhaowei/JittorModels/trained-models/restnet-14-0.98.pkl'
+    model = resnet26(pretrained=False, num_classes=10)
+    model.load_state_dict(jittor.load(model_dict_path))
+    
+    dataCtrler.process(networkData, statisticData, model, predictData = predictData, trainImages = trainImages)
+    
+
     app.run(port=args.port, host=args.host, threaded=True, debug=False)
 
 if __name__ == "__main__":
