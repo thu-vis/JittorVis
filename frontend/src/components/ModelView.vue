@@ -25,12 +25,20 @@
           <div id="network-container"><network ref="network"></network></div>
         </div>
       </div>
-      <div id="featuremap-container">
+      <div id="right">
+        <div id="featuremap-container">
             <span>—— Features ——</span>
             <vue-scroll :ops="scrollOptions">
               <feature-map></feature-map>
             </vue-scroll>
         </div>
+        <div id="confusion-featuremap-container">
+            <span>——  Confusion Features ——</span>
+            <vue-scroll :ops="scrollOptions">
+              <confusion-feature-map></confusion-feature-map>
+            </vue-scroll>
+        </div>
+      </div>
     </div>
 </template>
 
@@ -38,13 +46,14 @@
 import Network from './Network.vue';
 import Statistic from './Statistic.vue';
 import FeatureMap from './FeatureMap.vue';
+import ConfusionFeatureMap from './ConfusionFeatureMap.vue';
 import ConfusionMatrix from './ConfusionMatrix.vue';
 import {mapGetters} from 'vuex';
 import axios from 'axios';
 
 
 export default {
-    components: {Network, Statistic, FeatureMap, ConfusionMatrix},
+    components: {Network, Statistic, FeatureMap, ConfusionFeatureMap, ConfusionMatrix},
     name: 'ModelView',
     data: function() {
         return {
@@ -141,6 +150,11 @@ export default {
   height: 100%;
 }
 
+#right {
+  width: 40%;
+  height: 100%;
+}
+
 #network-container {
   width: 100%;
   height: 100%;
@@ -150,9 +164,23 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  height: 50%;
+  width: 100%;
 }
 
+#confusion-featuremap-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 50%;
+  width: 100%;
+}
+
+<<<<<<< HEAD
 #featuremap-container > span, #confusion-matrix-container > span, #confusion-matrix-container > span {
+=======
+#confusion-featuremap-container > span, #featuremap-container > span, #confusion-matrix-container > span {
+>>>>>>> feat: add featurevis
   font-family: Lucida Sans Typewriter;
   font-weight: 400;
   margin: 5px 0 5px 0;

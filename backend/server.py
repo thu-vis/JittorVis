@@ -81,6 +81,7 @@ def main():
         raise Exception("The path does not exist.")
     networkPath = os.path.join(args.data_path, "network.pkl")
     evaluationPath = os.path.join(args.data_path, "evaluation.json")
+
     predictPath = os.path.join(args.data_path, "predict_info.pkl")
     trainImagePath = os.path.join(args.data_path, "trainImages.npy")
     bufferPath = os.path.join(args.data_path, "buffer")
@@ -92,11 +93,14 @@ def main():
     with open(evaluationPath, 'r') as f:
         statisticData = json.load(f)
     trainImages = np.load(trainImagePath)
+
     model = resnet26(pretrained=False, num_classes=100)
-    model.load_state_dict(jt.load(modelPath))
+    model_dict_path = '/home/zhaowei/JittorModels/trained-models/restnet-14-0.98.pkl'
+    model.load_state_dict(jt.load(model_dict_path))
     model.eval()
     sampling_buffer_path = os.path.join(bufferPath, "hierarchy.pkl")
     dataCtrler.process(networkData, statisticData, model = model, predictData = predictData, trainImages = trainImages, sampling_buffer_path = sampling_buffer_path)
+
     app.run(port=args.port, host=args.host, threaded=True, debug=False)
 
 if __name__ == "__main__":
