@@ -9,6 +9,7 @@ from data.sampling import HierarchySampling
 from data.gridLayout import GridLayout
 import jittor as jt
 from jittor import transform
+from data.feature_vis import FeatureVis
 
 class DataCtrler(object):
 
@@ -21,9 +22,10 @@ class DataCtrler(object):
         self.preds = None
         self.model = None
         self.features = None
-        
         self.grider = GridLayout()
         self.sampler = HierarchySampling()
+        self.trainImages = None
+        self.featureVis = None
 
     def processNetworkData(self, network: dict) -> dict:
         processor = JittorNetworkProcessor()
@@ -56,6 +58,7 @@ class DataCtrler(object):
         self.network = self.processNetworkData(self.networkRawdata["node_data"])
         self.statistic = self.processStatisticData(statisticData)
         self.model = model
+        self.featureVis = FeatureVis(model)
 
         if predictData is not None:
             self.labels = predictData["labels"].astype(int)
@@ -181,7 +184,7 @@ class DataCtrler(object):
         """ confusion matrix
         """        
         return self.statistic["confusion"]
-    
+
     def getImagesInConsuionMatrixCell(self, labels: list, preds: list) -> list:
         """return images in a cell of confusionmatrix
 
@@ -215,17 +218,22 @@ class DataCtrler(object):
         # limit length of images
         return imageids[:50]
     
-    def getImageGradient(self, imageID: int) -> list:
+    def getImageGradient(self, imageID: int, method: str) -> list:
         """ get gradient of image
 
         Args:
             imageID (int): image id
+            method (str): method for feature visualization
 
         Returns:
             list: gradient
         """        
         if self.trainImages is not None:
-            return self.trainImages[imageID].tolist()
+            image = self.trainImages[imageID]
+            if method=='origin': return image.tolist()
+            label = int(self.labels[imageID])
+            grad = self.getFeatureVis(image, label, method)
+            return grad.tolist()
         else:
             return []
         
@@ -301,4 +309,32 @@ class DataCtrler(object):
             self.network = self.processNetworkData(self.networkRawdata["node_data"])
             return self.getBranchTree()
     
+
+    def getFeatureVis(self, inputImage, label, method="vanilla_bp"):
+        """get feature visualization of an image
+
+        Args:
+            inputImage (numpy, (w,h,3)): RGB image
+            label (int): true class label
+            method (str): vanilla_bp, guided_bp, grad_cam, layer_cam, integrated_gradients, grad_times_image ...
+
+        Returns:
+            numpy (w, h, 3)
+        """
+        return self.featureVis.get_feature_vis(inputImage, label, method)
+
+    def getFeatureVis(self, inputImage, label, method="vanilla_bp"):
+        """get feature visualization of an image
+
+        Args:
+            inputImage (numpy, (w,h,3)): RGB image
+            label (int): true class label
+            method (str): vanilla_bp, guided_bp, grad_cam, layer_cam, integrated_gradients, grad_times_image ...
+
+        Returns:
+            numpy (w, h, 3)
+        """
+        return self.featureVis.get_feature_vis(inputImage, label, method)
+
+
 dataCtrler = DataCtrler()

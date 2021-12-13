@@ -9,11 +9,11 @@
             @mouseleave="zoomOutOpacity=iconOpacity" :width="iconSize" :height="iconSize">
             <image xlink:href="/static/images/zoomout.svg" @click="zoomOut" :width="iconSize" :height="iconSize" :opacity="zoomOutOpacity"></image>
         </svg>
-        <svg class="network-tools-bar-icon" @mouseenter="splitOpacity=hoverOpacity"
+        <!--<svg class="network-tools-bar-icon" @mouseenter="splitOpacity=hoverOpacity"
             @mouseleave="splitOpacity=iconOpacity" :width="iconSize" :height="iconSize">
             <image xlink:href="/static/images/split-screen.png"
                 @click="splitPage" :width="iconSize" :height="iconSize" :opacity="splitOpacity"></image>
-        </svg>
+        </svg>-->
     </div>
     <div id="network-main-container">
         <div class="each-network" v-for="networkid in displayNetworkID" :key="networkid" :style="`width: ${width/displayNetworkID.length}px`">
@@ -22,11 +22,9 @@
                 <image xlink:href="/static/images/close.png"
                     @click="closePage(networkid)" :width="iconSize" :height="iconSize" :opacity="networkCloseBtnOpacity[networkid]"></image>
             </svg>
-            <vue-scroll :ops="scrollOptions" >
-                <div class="network-view-all">
-                    <network-layout :scale="scale" :id="networkBaseID+networkid"></network-layout>
-                </div>
-            </vue-scroll>
+            <div class="network-view-all">
+                <network-layout :scale="scale" :id="networkBaseID+networkid"></network-layout>
+            </div>
         </div>
     </div>
     <waiting-icon v-if="rendering"></waiting-icon>
@@ -133,6 +131,8 @@ export default {
 .network-view-all {
     display: flex;
     justify-content: center;
+    height: 100%;
+    width:100%;
 }
 
 .each-network {
