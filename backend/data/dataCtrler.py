@@ -13,20 +13,30 @@ class DataCtrler(object):
         self.networkRawdata = {}
         self.network = {}
         self.statistic = {}
+        self.labels = None
+        self.preds = None
+        self.features = None
+        self.trainImages = None
 
     def processNetworkData(self, network: dict) -> dict:
         processor = JittorNetworkProcessor()
         return processor.process(network)
 
-    def processStatisticData(self, data):
+    def processStatisticData(self, data):     
         return data
 
-    def process(self, networkRawdata, statisticData, modeltype='jittor', attrs = {}):
+    def process(self, networkRawdata, statisticData, predictData = None, trainImages = None, modeltype='jittor', attrs = {}):
         """process raw data
         """        
         self.networkRawdata = networkRawdata
         self.network = self.processNetworkData(self.networkRawdata["node_data"])
         self.statistic = self.processStatisticData(statisticData)
+
+        if predictData is not None:
+            self.labels = predictData["labels"].tolist()
+            self.preds = predictData["preds"].tolist()
+            self.features = predictData["features"]
+        self.trainImages = trainImages
 
     def getBranchTree(self) -> dict:
         """get tree of network
@@ -139,4 +149,52 @@ class DataCtrler(object):
         """ confusion matrix
         """        
         return self.statistic["confusion"]
+    
+    def getImagesInConsuionMatrixCell(self, labels: list, preds: list) -> list:
+        """return images in a cell of confusionmatrix
+
+        Args:
+            labels (list): true labels of corresponding cell
+            preds (list): predicted labels of corresponding cell
+
+        Returns:
+            list: images' id
+        """ 
+        # convert list of label names to dict
+        labelNames = self.statistic['confusion']['names']
+        name2idx = {}
+        for i in range(len(labelNames)):
+            name2idx[labelNames[i]]=i
+        
+        # find images
+        labelSet = set()
+        for label in labels:
+            labelSet.add(name2idx[label])
+        predSet = set()
+        for label in preds:
+            predSet.add(name2idx[label])
+        imageids = []
+        if self.labels is not None and self.preds is not None:
+            n = len(self.labels)
+            for i in range(n):
+                if self.labels[i] in labelSet and self.preds[i] in predSet:
+                    imageids.append(i)
+                    
+        # limit length of images
+        return imageids[:50]
+    
+    def getImageGradient(self, imageID: int) -> list:
+        """ get gradient of image
+
+        Args:
+            imageID (int): image id
+
+        Returns:
+            list: gradient
+        """        
+        if self.trainImages is not None:
+            return self.trainImages[imageID].tolist()
+        else:
+            return []
+        
 dataCtrler = DataCtrler()
