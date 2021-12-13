@@ -50,5 +50,9 @@ export default new Vuex.Store({
         URL_GET_FEATURE: (state) => {
             return (leafID, index) => state.APIBASE + `/api/feature?leafID=${leafID}&index=${index}`;
         },
+        URL_GET_IMAGES_IN_MATRIX_CELL: (state) => state.APIBASE+'/api/confusionMatrixCell',
+        URL_GET_IMAGE_GRADIENT: (state) => {
+            return (imageID) => state.APIBASE + `/api/imageGradient?imageID=${imageID}`;
+        },
     },
 });

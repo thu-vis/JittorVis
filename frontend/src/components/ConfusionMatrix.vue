@@ -204,6 +204,8 @@ export default {
                         value: this.getTwoCellConfusion(nodea, nodeb),
                         row: i,
                         column: j,
+                        rowNode: nodea,
+                        colNode: nodeb,
                     };
                     this.cells.push(cell);
                     if (!this.isHideCell(cell) && i!=j) {
@@ -377,7 +379,10 @@ export default {
                     .attr('class', that.cellAttrs['gClass'])
                     .attr('opacity', 0)
                     .attr('transform', (d) => `translate(${d.column*that.cellAttrs['size']}, 
-                        ${d.row*that.cellAttrs['size']})`);
+                        ${d.row*that.cellAttrs['size']})`)
+                    .on('click', function(e, d) {
+                        that.$emit('clickCell', d);
+                    });
 
                 matrixCellsinG.transition()
                     .duration(that.createDuration)

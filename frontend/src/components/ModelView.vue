@@ -3,7 +3,7 @@
       <div id="left">
         <div id="confusion-matrix-container">
           <span>—— Confusion Matrix ——</span>
-            <confusion-matrix id="confusion-matrix"></confusion-matrix>
+            <confusion-matrix id="confusion-matrix" @clickCell="clickConfusionCell"></confusion-matrix>
         </div>
         <div id="statistic-container">
           <statistic v-for="item in Object.keys(statistic)" :key="item" :dataName="item" :statisticData="statistic[item]"></statistic>
@@ -29,6 +29,7 @@ import Statistic from './Statistic.vue';
 import FeatureMap from './FeatureMap.vue';
 import ConfusionMatrix from './ConfusionMatrix.vue';
 import {mapGetters} from 'vuex';
+import axios from 'axios';
 
 
 export default {
@@ -47,6 +48,25 @@ export default {
         ...mapGetters([
             'statistic',
         ]),
+    },
+    methods: {
+        clickConfusionCell: function(d) {
+            const store = this.$store;
+            axios.post(store.getters.URL_GET_IMAGES_IN_MATRIX_CELL, {
+                labels: d.rowNode.leafs,
+                preds: d.colNode.leafs,
+            }).then(function(response) {
+                const images = response.data;
+                console.log(`confusion matrix cell ${d.key}`, images);
+                if (images.length>0) {
+                    const getImageGradientURL = store.getters.URL_GET_IMAGE_GRADIENT;
+                    axios.get(getImageGradientURL(images[0]))
+                        .then(function(response) {
+                            console.log('get gradient', response.data);
+                        });
+                }
+            });
+        },
     },
 };
 </script>
