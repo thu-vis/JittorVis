@@ -8,43 +8,22 @@ from fastlapjv import fastlapjv
 import math
 from time import time
 
-from data.sampling import OutlierBiasedBlueNoiseSamplingFAISS
-
 class GridLayout(object):
     def __init__(self):
         super().__init__()
 
-    def fit(self, X: np.ndarray, labels: np.ndarray):
+    def fit(self, X: np.ndarray, labels: np.ndarray = None, constraintX: np.ndarray = None):
         """main fit function
 
         Args:
             X (np.ndarray): n * d, n is the number of samples, d is the dimension of a sample
             labels (np.ndarray): label of each sample in X
         """        
-        n = X.shape[0]
-        if n>1600:
-            sampledIndeces = self.sample(X, labels, 1600)
-            X = X[sampledIndeces]
-            labels = labels[sampledIndeces]
         X_embedded = self.tsne(X)
         # self._draw_tsne(X_embedded, labels)
         grid_ass, grid_size = self.grid(X_embedded)
+        return X_embedded, grid_ass, grid_size
         
-    def sample(self, X: np.ndarray, labels: np.ndarray, sampleNumber: int) -> np.ndarray:
-        """sample from X
-
-        Args:
-            X (np.ndarray): n * d, n is the number of samples, d is the dimension of a sample
-            labels (np.ndarray): label of each sample in X
-            sampleNumber (int): number to be sampled
-
-        Returns:
-            np.ndarray: indices of sampled result
-        """
-        sampler = OutlierBiasedBlueNoiseSamplingFAISS(1600)
-        indices = sampler.fit(X, labels)
-        return indices
-    
     def tsne(self, X: np.ndarray, perplexity: int = 15, learning_rate: int = 3) -> np.ndarray:
         X_embedded = TSNE(n_components=2, perplexity=perplexity, learning_rate=learning_rate).fit_transform(X)
         return X_embedded
@@ -77,3 +56,9 @@ class GridLayout(object):
         plt.figure()
         plt.scatter(X[:, 0], X[:, 1], s=2, c=colors)
         plt.savefig('tsne.png')
+        
+if __name__ == "__main__":
+    X = np.random.rand(500, 128)
+    labels = np.random.randint(10, size=500)
+    grid = GridLayout()
+    grid.fit(X, labels)

@@ -6,7 +6,7 @@ import logging
 from sklearn.neighbors import NearestNeighbors
 from sklearn.decomposition import PCA
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 # for efficient add, remove, and random select
 # modified from https://stackoverflow.com/questions/15993447/python-data-structure-for-efficient-add-remove-and-random-choice
@@ -131,8 +131,8 @@ class HierarchySampling(object):
         selected_indexes = np.arange(n)
         while len(selected_indexes)>top_nodes_count:
             sampling_number = int(max(top_nodes_count, len(selected_indexes)*sampling_rate))
-            logging.debug("hierarchy sampling from {} to {}, depth = {}".format(len(selected_indexes), sampling_number, self.max_depth))
-            faiss_sampler = OutlierBiasedBlueNoiseSamplingFAISS(sampling_rate)
+            logging.info("hierarchy sampling from {} to {}, depth = {}".format(len(selected_indexes), sampling_number, self.max_depth))
+            faiss_sampler = OutlierBiasedBlueNoiseSamplingFAISS(sampling_rate=sampling_number)
             new_selected_indexes, neighbors = faiss_sampler.fit(data[selected_indexes], category[selected_indexes])
             new_selected_indexes = selected_indexes[new_selected_indexes].tolist()
             neighbors = selected_indexes[neighbors].tolist()
@@ -147,14 +147,14 @@ class HierarchySampling(object):
         
     def zoomin(self, indexes, depth):
         if depth==0:
-            return self.top_nodes
+            return self.top_nodes, 1
         else:
-            selected_indexes = []
+            selected_indexes = {}
             depth += 1
             assert depth<=self.max_depth
             for index in indexes:
-                selected_indexes += self.hierarchy[index][self.max_depth-depth]
-            return selected_indexes
+                selected_indexes[index] = self.hierarchy[index][self.max_depth-depth]
+            return selected_indexes, depth
         
     def dump(self, path):
         with open(path, "wb") as file:
@@ -171,18 +171,3 @@ class HierarchySampling(object):
             self.max_depth = hierarchyInfo["max_depth"]
             self.top_nodes = hierarchyInfo["top_nodes"]
             
-if __name__ == "__main__":
-    from matplotlib import pyplot as plt
-    from sklearn.manifold import TSNE
-    import os
-    import pickle
-    import time
-
-    n = 5000
-    features = np.random.rand(n, 2048)
-    labels = np.random.randint(10, size=n)
-    t0 = time.time()
-    sampler = HierarchySampling()
-    sampler.fit(features, labels, 0.5, 1000)
-    print("sampling time", time.time()-t0)
-    sampler.dump('/data/zhaowei/jittor-data/buffer/faiss_sample.pkl')
