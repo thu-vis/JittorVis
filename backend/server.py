@@ -49,6 +49,15 @@ def imageGradient():
     imageID = int(request.args['imageID'])
     return jsonify(dataCtrler.getImageGradient(imageID))
 
+@app.route('/api/grid', methods=["POST"])
+def grid():
+    nodes = request.json['nodes']
+    constraints = None
+    if 'constraints' in request.json:
+        constraints = request.json['constraints']
+    depth = request.json['depth']
+    return jsonify(dataCtrler.gridZoomIn(nodes, constraints, depth))
+
 def main():
     parser = argparse.ArgumentParser(description='manual to this script')
     parser.add_argument("--data_path", type=str, default='/data/zhaowei/jittor-data/')
@@ -61,6 +70,7 @@ def main():
     evaluationPath = os.path.join(args.data_path, "evaluation.json")
     predictPath = os.path.join(args.data_path, "predict_info.pkl")
     trainImagePath = os.path.join(args.data_path, "trainImages.npy")
+    bufferPath = os.path.join(args.data_path, "buffer")
     with open(predictPath, 'rb') as f:
         predictData = pickle.load(f)
     with open(networkPath, 'rb') as f:
@@ -68,7 +78,8 @@ def main():
     with open(evaluationPath, 'r') as f:
         statisticData = json.load(f)
     trainImages = np.load(trainImagePath)
-    dataCtrler.process(networkData, statisticData, predictData = predictData, trainImages = trainImages)
+    sampling_buffer_path = os.path.join(bufferPath, "hierarchy.pkl")
+    dataCtrler.process(networkData, statisticData, predictData = predictData, trainImages = trainImages, sampling_buffer_path = sampling_buffer_path)
     app.run(port=args.port, host=args.host, threaded=True, debug=False)
 
 if __name__ == "__main__":

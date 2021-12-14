@@ -5,6 +5,8 @@ import numpy as np
 from PIL import Image
 import math
 from tempfile import NamedTemporaryFile
+from data.sampling import HierarchySampling
+from data.gridLayout import GridLayout
 
 class DataCtrler(object):
 
@@ -16,7 +18,9 @@ class DataCtrler(object):
         self.labels = None
         self.preds = None
         self.features = None
-        self.trainImages = None
+        
+        self.grider = GridLayout()
+        self.sampler = HierarchySampling()
 
     def processNetworkData(self, network: dict) -> dict:
         processor = JittorNetworkProcessor()
@@ -24,8 +28,25 @@ class DataCtrler(object):
 
     def processStatisticData(self, data):     
         return data
+    
+    def processSamplingData(self, samplingPath):
+        self.sampling_buffer_path = samplingPath
+        
+        if os.path.exists(self.sampling_buffer_path):
+            self.sampler.load(self.sampling_buffer_path)
+        else:
+            data = self.features
+            n = data.shape[0]
+            d = 1
+            for dx in data.shape[1:]:
+                d *= dx
+            data = data.reshape((n, d))
+            
+            labels = self.labels
+            self.sampler.fit(data, labels, 0.25, 1600)
+            self.sampler.dump(self.sampling_buffer_path)
 
-    def process(self, networkRawdata, statisticData, predictData = None, trainImages = None, modeltype='jittor', attrs = {}):
+    def process(self, networkRawdata, statisticData, predictData = None, modeltype='jittor', trainImages = None, sampling_buffer_path="/tmp/hierarchy.pkl", attrs = {}):
         """process raw data
         """        
         self.networkRawdata = networkRawdata
@@ -33,11 +54,12 @@ class DataCtrler(object):
         self.statistic = self.processStatisticData(statisticData)
 
         if predictData is not None:
-            self.labels = predictData["labels"].tolist()
-            self.preds = predictData["preds"].tolist()
+            self.labels = predictData["labels"].astype(int)
+            self.preds = predictData["preds"].astype(int)
             self.features = predictData["features"]
+            self.sampling = self.processSamplingData(sampling_buffer_path)
         self.trainImages = trainImages
-
+        
     def getBranchTree(self) -> dict:
         """get tree of network
         """        
@@ -197,4 +219,40 @@ class DataCtrler(object):
         else:
             return []
         
+    def gridZoomIn(self, nodes, constraints, depth):
+        neighbors, newDepth = self.sampler.zoomin(nodes, depth)
+        zoomInConstraints = None
+        if constraints is not None:
+            zoomInConstraints = []
+        zoomInNodes = []
+        if type(neighbors)==list:
+            zoomInNodes = neighbors
+        else:
+            for i in range(len(nodes)):
+                parent = nodes[i]
+                for child in neighbors[parent]:
+                    zoomInNodes.append(child)
+                    if constraints is not None:
+                        zoomInConstraints.append(constraints[i])
+        zoomInLabels = self.labels[zoomInNodes]
+        
+        tsne, grid, gridsize = self.grider.fit(self.features[zoomInNodes], labels = zoomInLabels, constraintX = zoomInConstraints)
+        tsne = tsne.tolist()
+        grid = grid.tolist()
+        zoomInLabels = zoomInLabels.tolist()
+        n = len(zoomInNodes)
+        nodes = [{
+            "index": zoomInNodes[i],
+            "tsne": tsne[i],
+            "grid": grid[i],
+            "label": zoomInLabels[i]
+        } for i in range(n)]
+        return {
+            "nodes": nodes,
+            "grid": {
+                "width": gridsize,
+                "height": gridsize,
+            },
+            "depth": newDepth
+        }
 dataCtrler = DataCtrler()
