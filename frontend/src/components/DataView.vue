@@ -6,16 +6,17 @@
             </div>
         </div>
         <div id="right">
-
+            <gird-layout></gird-layout>
         </div>
     </div>
 </template>
 
 <script>
 import ConfusionMatrix from './ConfusionMatrix.vue';
+import GirdLayout from './GridLayout.vue';
 
 export default {
-    components: {ConfusionMatrix},
+    components: {ConfusionMatrix, GirdLayout},
     name: 'DataView',
 };
 </script>

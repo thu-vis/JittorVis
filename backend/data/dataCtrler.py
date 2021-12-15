@@ -231,7 +231,7 @@ class DataCtrler(object):
             for i in range(len(nodes)):
                 parent = nodes[i]
                 for child in neighbors[parent]:
-                    zoomInNodes.append(child)
+                    zoomInNodes.append(int(child))
                     if constraints is not None:
                         zoomInConstraints.append(constraints[i])
         zoomInLabels = self.labels[zoomInNodes]
