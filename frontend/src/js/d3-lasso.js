@@ -828,8 +828,8 @@ return d[d.length-1];};return ", funcName].join("")
                 
 
                 // Get mouse position within drawing area, used for rendering
-                var tx = e.x;
-                var ty = e.y;
+                var tx = e.sourceEvent.offsetX;
+                var ty = e.sourceEvent.offsetY;
 
                 // Initialize the path or add the latest point to it
                 if (tpath==="") {

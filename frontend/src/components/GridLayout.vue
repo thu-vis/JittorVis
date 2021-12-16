@@ -1,6 +1,10 @@
 <template>
-    <div id="grid-layout" ref="gridsvg">
-        <svg id="grid-drawer">
+    <div id="grid-layout">
+        <div id="grid-icons">
+            <img id="grid-zoomin-icon" class="grid-icon" src="/static/images/zoomin.svg" @click="initlasso">
+            <img id="grid-home-icon" class="grid-icon" src="/static/images/home.png" @click="zoomin()">
+        </div>
+        <svg id="grid-drawer" ref="gridsvg">
             <g id="grid-main-g" transform="translate(0,0)">
                 <g id="grid-g"></g>
                 <g id="lasso-g"></g>
@@ -84,8 +88,9 @@ export default {
             gridCellAttrs: {
                 'gClass': 'grid-cell-in-g',
                 'size': 30,
-                'stroke-width': '1px',
+                'stroke-width': 0,
                 'stroke': 'gray',
+                'rectOpacity': 1,
                 'centerR': 3,
                 'centerClass': 'lasso-node',
                 'centerClassNotSelect': 'lasso-not-possible',
@@ -120,8 +125,8 @@ export default {
             this.lassoNodesInG = this.lassoG.selectAll('.'+this.gridCellAttrs['centerClass']).data(this.nodes, (d)=>d.index);
 
             await this.remove();
+            this.transform();
             await this.update();
-            await this.transform();
             await this.create();
 
             this.gridCellsInG = this.girdG.selectAll('.'+this.gridCellAttrs['gClass']);
@@ -149,7 +154,8 @@ export default {
                     .attr('height', that.gridCellAttrs['size'])
                     .attr('stroke', that.gridCellAttrs['stroke'])
                     .attr('stroke-width', that.gridCellAttrs['stroke-width'])
-                    .attr('fill', (d)=>that.colors[that.labelnames[d.label]]);
+                    .attr('fill', (d)=>that.colors[that.labelnames[d.label]])
+                    .attr('opacity', that.gridCellAttrs['rectOpacity']);
 
                 that.lassoNodesInG.enter().append('circle')
                     .attr('class', that.gridCellAttrs['centerClass'])
@@ -247,8 +253,10 @@ export default {
                 lasso.items()
                     .classed('lasso-not-possible', false)
                     .classed('lasso-possible', false);
-
-                that.zoomin(lasso.selectedItems().data());
+                const selectednodes = lasso.selectedItems().data();
+                if (selectednodes.length>0) {
+                    that.zoomin(selectednodes);
+                }
                 that.stoplasso();
             };
 
@@ -283,11 +291,32 @@ export default {
     height: calc(100% - 20px);
     margin: 10px 10px 10px 10px;
     display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 #grid-drawer {
     width: 100%;
     height: 100%;
+    flex-shrink: 100;
+}
+
+#grid-icons {
+    width: 100%;
+    height: 50px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0 0 0 50px;
+    flex-shrink: 0;
+}
+
+.grid-icon {
+    width: 20px;
+    height: 20px;
+    margin: 0 5px 0 5px;
+    cursor: pointer;
 }
 
 .lasso-not-possible, .lasso-node {
@@ -297,22 +326,23 @@ export default {
 .lasso-possible {
     fill: rgb(200,200,200);
 }
+
 .lasso path {
-            stroke: rgb(80,80,80);
-            stroke-width:2px;
-        }
+    stroke: rgb(80,80,80);
+    stroke-width:2px;
+}
 
-        .lasso .drawn {
-            fill-opacity:.05 ;
-        }
+.lasso .drawn {
+    fill-opacity:.05 ;
+}
 
-        .lasso .loop_close {
-            fill:none;
-            stroke-dasharray: 4,4;
-        }
+.lasso .loop_close {
+    fill:none;
+    stroke-dasharray: 4,4;
+}
 
-        .lasso .origin {
-            fill:#3399FF;
-            fill-opacity:.5;
-        }
+.lasso .origin {
+    fill:#3399FF;
+    fill-opacity:.5;
+}
 </style>
