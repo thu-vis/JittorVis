@@ -3,6 +3,7 @@
         <svg id="grid-drawer">
             <g id="grid-main-g" transform="translate(0,0)">
                 <g id="grid-g"></g>
+                <g id="lasso-g"></g>
             </g>
         </svg>
     </div>
@@ -12,6 +13,8 @@
 import {mapGetters} from 'vuex';
 import axios from 'axios';
 import * as d3 from 'd3';
+window.d3 = d3;
+require('../js/d3-lasso.js');
 import Util from './Util.vue';
 import GlobalVar from './GlovalVar.vue';
 
@@ -35,6 +38,9 @@ export default {
         girdG: function() {
             return this.mainG.select('#grid-g');
         },
+        lassoG: function() {
+            return this.mainG.select('#lasso-g');
+        },
         svgWidth: function() {
             return this.gridCellAttrs['size'] * this.gridInfo['width'];
         },
@@ -44,6 +50,9 @@ export default {
                 nodesDict[node.index] = node;
             }
             return nodesDict;
+        },
+        lasso: function() {
+            return d3.lasso;
         },
     },
     watch: {
@@ -69,6 +78,7 @@ export default {
 
             //
             gridCellsInG: undefined,
+            lassoNodesInG: undefined,
 
             //
             gridCellAttrs: {
@@ -76,11 +86,19 @@ export default {
                 'size': 30,
                 'stroke-width': '1px',
                 'stroke': 'gray',
+                'centerR': 3,
+                'centerClass': 'lasso-node',
+                'centerClassNotSelect': 'lasso-not-possible',
+                'centerClassSelect': 'lasso-possible',
             },
         };
     },
     methods: {
         zoomin: function(nodes) {
+            if (nodes===undefined) {
+                nodes = [];
+                this.depth = 0;
+            }
             if (nodes.length>0 && typeof(nodes[0])!=='number') {
                 nodes = nodes.map((d) => d.index);
             }
@@ -99,11 +117,15 @@ export default {
         },
         render: async function() {
             this.gridCellsInG = this.girdG.selectAll('.'+this.gridCellAttrs['gClass']).data(this.nodes, (d)=>d.index);
+            this.lassoNodesInG = this.lassoG.selectAll('.'+this.gridCellAttrs['centerClass']).data(this.nodes, (d)=>d.index);
 
             await this.remove();
             await this.update();
             await this.transform();
             await this.create();
+
+            this.gridCellsInG = this.girdG.selectAll('.'+this.gridCellAttrs['gClass']);
+            this.lassoNodesInG = this.lassoG.selectAll('.'+this.gridCellAttrs['centerClass']);
         },
         create: async function() {
             const that = this;
@@ -128,6 +150,13 @@ export default {
                     .attr('stroke', that.gridCellAttrs['stroke'])
                     .attr('stroke-width', that.gridCellAttrs['stroke-width'])
                     .attr('fill', (d)=>that.colors[that.labelnames[d.label]]);
+
+                that.lassoNodesInG.enter().append('circle')
+                    .attr('class', that.gridCellAttrs['centerClass'])
+                    .attr('r', that.gridCellAttrs['centerR'])
+                    .attr('cx', (d)=>that.gridCellAttrs['size']/2+(d.grid%that.gridInfo.width)*that.gridCellAttrs['size'])
+                    .attr('cy', (d)=>that.gridCellAttrs['size']/2+Math.floor(d.grid/that.gridInfo.width)*that.gridCellAttrs['size']);
+
 
                 if ((that.gridCellsInG.enter().size() === 0)) {
                     resolve();
@@ -192,6 +221,52 @@ export default {
                     .on('end', resolve);
             });
         },
+        initlasso: function() {
+            // Lasso functions
+            const that = this;
+            const lassoStart = function() {
+                lasso.items()
+                    .classed('lasso-not-possible', true)
+                    .classed('lasso-possible', false);
+            };
+
+            const lassoDraw = function() {
+                // Style the possible dots
+                lasso.possibleItems()
+                    .classed('lasso-not-possible', false)
+                    .classed('lasso-possible', true);
+
+                // Style the not possible dot
+                lasso.notPossibleItems()
+                    .classed('lasso-not-possible', true)
+                    .classed('lasso-possible', false);
+            };
+
+            const lassoEnd = function() {
+            // Reset the color of all dots
+                lasso.items()
+                    .classed('lasso-not-possible', false)
+                    .classed('lasso-possible', false);
+
+                that.zoomin(lasso.selectedItems().data());
+                that.stoplasso();
+            };
+
+            const lasso = d3.lasso()
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(this.lassoNodesInG)
+                .targetArea(this.svg)
+                .on('start', lassoStart)
+                .on('draw', lassoDraw)
+                .on('end', lassoEnd);
+
+            this.svg.call(lasso);
+        },
+        stoplasso: function() {
+            this.svg.select('.lasso').remove();
+            this.svg.on('.drag', null);
+        },
     },
 };
 </script>
@@ -214,4 +289,30 @@ export default {
     width: 100%;
     height: 100%;
 }
+
+.lasso-not-possible, .lasso-node {
+    fill: none
+}
+
+.lasso-possible {
+    fill: rgb(200,200,200);
+}
+.lasso path {
+            stroke: rgb(80,80,80);
+            stroke-width:2px;
+        }
+
+        .lasso .drawn {
+            fill-opacity:.05 ;
+        }
+
+        .lasso .loop_close {
+            fill:none;
+            stroke-dasharray: 4,4;
+        }
+
+        .lasso .origin {
+            fill:#3399FF;
+            fill-opacity:.5;
+        }
 </style>
