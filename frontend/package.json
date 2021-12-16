@@ -20,7 +20,7 @@
     "babel-plugin-component": "^1.1.1",
     "babel-preset-es2015": "^6.24.1",
     "cross-env": "^7.0.3",
-    "d3": "^7.0.4",
+    "d3": "7.0.4",
     "dagre": "^0.8.5",
     "echarts": "^5.1.2",
     "element-ui": "^2.15.6",

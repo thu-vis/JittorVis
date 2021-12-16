@@ -22,12 +22,17 @@ export default {
     computed: {
         ...mapGetters([
             'confusionMatrix',
+            'labelHierarchy',
+            'labelnames',
         ]),
         baseMatrix: function() {
-            return this.confusionMatrix.matrix;
+            return this.confusionMatrix;
         },
         indexNames: function() {
-            return this.confusionMatrix.names;
+            return this.labelnames;
+        },
+        rawHierarchy: function() {
+            return this.labelHierarchy;
         },
         name2index: function() {
             const result = {};
@@ -82,12 +87,12 @@ export default {
         },
     },
     mounted: function() {
-        this.hierarchy = this.getHierarchy(this.confusionMatrix);
+        this.hierarchy = this.getHierarchy(this.rawHierarchy);
         this.getDataAndRender();
     },
     watch: {
-        confusionMatrix: function(newConfusionMatrix, oldConfusionMatrix) {
-            this.hierarchy = this.getHierarchy(newConfusionMatrix);
+        labelHierarchy: function(newLabelHierarchy, oldLabelHierarchy) {
+            this.hierarchy = this.getHierarchy(newLabelHierarchy);
             this.getDataAndRender();
         },
     },
@@ -145,8 +150,8 @@ export default {
         };
     },
     methods: {
-        getHierarchy: function(confusionMatrix) {
-            const hierarchy = clone(confusionMatrix.hierarchy);
+        getHierarchy: function(hierarchy) {
+            hierarchy = clone(hierarchy);
             const postorder = function(root, depth) {
                 if (typeof(root) !== 'object') {
                     return {

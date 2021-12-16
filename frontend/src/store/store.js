@@ -15,13 +15,16 @@ export default new Vuex.Store({
                 // eslint-disable-next-line max-len
                 'recall': [[0, 0.45726755261421204], [1, 0.6428136229515076], [2, 0.7362971901893616], [3, 0.8121193647384644], [4, 0.8686560988426208], [5, 0.8884490728378296], [6, 0.9469143152236938], [7, 0.9762485027313232], [8, 0.9739139080047607], [9, 0.9846731424331665], [10, 0.9996954798698425], [11, 1], [12, 1], [13, 1], [14, 1], [15, 1], [16, 1], [17, 1], [18, 1], [19, 1], [20, 1], [21, 1], [22, 1], [23, 1], [24, 1], [25, 1], [26, 1], [27, 1], [28, 1], [29, 1], [30, 1], [31, 1], [32, 1], [33, 1], [34, 1], [35, 1], [36, 1], [37, 1], [38, 1], [39, 1], [40, 1], [41, 1], [42, 1], [43, 1], [44, 1], [45, 1], [46, 1], [47, 1], [48, 1], [49, 1]],
             },
-            confusionMatrix: {},
         },
+        confusionMatrix: [],
+        labelHierarchy: [],
+        labelnames: [],
         layoutInfo: {
             layoutNetwork: {}, // very similar to allData.network, with some attributes for layout added
             focusID: '_model/', // default focus node is root node
             t: -1, // a timestamp
         },
+        colors: {},
         featureMapNodeID: null, // which node to show feature map
     },
     mutations: {
@@ -35,7 +38,12 @@ export default new Vuex.Store({
             state.featureMapNodeID = featureMapNodeID;
         },
         setConfusionMatrix(state, confusionMatrix) {
-            state.allData.confusionMatrix = confusionMatrix;
+            state.confusionMatrix = confusionMatrix.matrix;
+            state.labelHierarchy = confusionMatrix.hierarchy;
+            state.labelnames = confusionMatrix.names;
+        },
+        setColors(state, colors) {
+            state.colors = colors;
         },
     },
     getters: {
@@ -43,7 +51,11 @@ export default new Vuex.Store({
         statistic: (state) => state.allData.statistic,
         featureMapNodeID: (state) => state.featureMapNodeID,
         layoutInfo: (state) => state.layoutInfo,
-        confusionMatrix: (state) => state.allData.confusionMatrix,
+        confusionMatrix: (state) => state.confusionMatrix,
+        labelHierarchy: (state) => state.labelHierarchy,
+        labelnames: (state) => state.labelnames,
+        colors: (state) => state.colors,
+
         URL_GET_ALL_DATA: (state) => state.APIBASE + '/api/allData',
         URL_GET_CONFUSION_MATRIX: (state) => state.APIBASE + '/api/confusionMatrix',
         URL_GET_FEATURE_INFO: (state) => state.APIBASE + '/api/featureInfo',
@@ -54,5 +66,6 @@ export default new Vuex.Store({
         URL_GET_IMAGE_GRADIENT: (state) => {
             return (imageID) => state.APIBASE + `/api/imageGradient?imageID=${imageID}`;
         },
+        URL_GET_GRID: (state) => state.APIBASE + '/api/grid',
     },
 });

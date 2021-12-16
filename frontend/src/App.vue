@@ -44,6 +44,7 @@ export default {
     },
     mounted: function() {
         const store = this.$store;
+        const that = this;
         axios.get(store.getters.URL_GET_ALL_DATA)
             .then(function(response) {
                 store.commit('setAllData', response.data);
@@ -52,7 +53,10 @@ export default {
         axios.post(store.getters.URL_GET_CONFUSION_MATRIX)
             .then(function(response) {
                 store.commit('setConfusionMatrix', response.data);
-                console.log('confusion matrix data', store.getters.confusionMatrix);
+                console.log('confusion matrix data', response.data);
+                const colors = that.initColor(store.getters.labelHierarchy);
+                store.commit('setColors', colors);
+                console.log('colors', store.getters.colors);
             });
         if (this.$route.path === '/') {
             this.$router.push('/modelview');
@@ -60,6 +64,37 @@ export default {
         } else {
             this.activeRoute = this.$route.path;
         }
+    },
+    methods: {
+        initColor(hierarchy) {
+            const basecolors = ['#8c564b',
+                '#ff7f0e',
+                '#9467bd',
+                '#d62728',
+                '#1f77b4',
+                '#2ca02c',
+                '#e377c2',
+                '#ffdb45',
+                '#bcbd22',
+                '#17becf',
+                '#a6cee3'];
+            const colors = {};
+            for (let i=0; i<hierarchy.length; i++) {
+                const queue = [hierarchy[i]];
+                while (queue.length>0) {
+                    const top = queue.pop();
+                    if (typeof(top)==='string') {
+                        colors[top] = basecolors[i];
+                    } else {
+                        colors[top.name] = basecolors[i];
+                        for (const child of top.children) {
+                            queue.push(child);
+                        }
+                    }
+                }
+            }
+            return colors;
+        },
     },
     router: router,
 };
