@@ -86,6 +86,7 @@ export default {
                 });
         },
         featureMapToImage: function(feature, maxv, minv) {
+            window.data = feature;
             const canvas = this.featureMapToImage.canvas || (this.featureMapToImage.canvas = document.createElement('canvas'));
             const context = canvas.getContext('2d');
             const height = feature.length;
@@ -94,6 +95,7 @@ export default {
             canvas.height = height;
             const image = context.createImageData(width, height);
             const data = image.data;
+            window.image = data;
             for (let i=0; i<data.length; i+=4) {
                 const v = feature[Math.floor(i/4/width)][(i/4)%width];
                 data[i] = v>0?(255-Math.floor(v/maxv*255)):255;
@@ -136,6 +138,7 @@ export default {
                         minv = Math.min(minv, d);
                     });
                     console.log(`Feature map max: ${maxv}, min: ${minv}`);
+                    console.log('Feature matrix', featureMatrixs);
 
                     that.featureImages = featureMatrixs.map((d) => {
                         return that.featureMapToImage(d, maxv, minv);

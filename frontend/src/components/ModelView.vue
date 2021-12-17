@@ -38,7 +38,7 @@ import FeatureMap from './FeatureMap.vue';
 import ConfusionFeatureMap from './ConfusionFeatureMap.vue';
 import ConfusionMatrix from './ConfusionMatrix.vue';
 import {mapGetters} from 'vuex';
-import axios from 'axios';
+// import axios from 'axios';
 
 
 export default {
@@ -60,21 +60,25 @@ export default {
     },
     methods: {
         clickConfusionCell: function(d) {
-            const store = this.$store;
-            axios.post(store.getters.URL_GET_IMAGES_IN_MATRIX_CELL, {
-                labels: d.rowNode.leafs,
-                preds: d.colNode.leafs,
-            }).then(function(response) {
-                const images = response.data;
-                console.log(`confusion matrix cell ${d.key}`, images);
-                if (images.length>0) {
-                    const getImageGradientURL = store.getters.URL_GET_IMAGE_GRADIENT;
-                    axios.get(getImageGradientURL(images[0]))
-                        .then(function(response) {
-                            console.log('get gradient', response.data);
-                        });
-                }
-            });
+            // const store = this.$store;
+            const that = this;
+            console.log(d.rowNode.leafs, d.colNode.leafs);
+            that.$store.commit('setConfusionCellID', {labels: d.rowNode.leafs, preds: d.colNode.leafs});
+            // console.log(that.$store.state.confusionCellID);
+            // axios.post(store.getters.URL_GET_IMAGES_IN_MATRIX_CELL, {
+            //     labels: d.rowNode.leafs,
+            //     preds: d.colNode.leafs,
+            // }).then(function(response) {
+            //     const images = response.data;
+            //     console.log(`confusion matrix cell ${d.key}`, images);
+            //     if (images.length>0) {
+            //         const getImageGradientURL = store.getters.URL_GET_IMAGE_GRADIENT;
+            //         axios.get(getImageGradientURL(images[0]))
+            //             .then(function(response) {
+            //                 console.log('get gradient', response.data);
+            //             });
+            //     }
+            // });
         },
     },
 };
@@ -94,12 +98,6 @@ export default {
   display: flex;
   overflow: hidden;
   margin: 5px 5px 0 0;
-}
-
-#featuremap-container {
-  width: 40%;
-  height: 100%;
-  border-left: 1px solid lightgray;
 }
 
 #model-content {
@@ -139,6 +137,7 @@ export default {
   align-items: center;
   height: 50%;
   width: 100%;
+  border-left: 1px solid lightgray;
 }
 
 #confusion-featuremap-container {
@@ -147,13 +146,10 @@ export default {
   align-items: center;
   height: 50%;
   width: 100%;
+  border-left: 1px solid lightgray;
 }
 
-<<<<<<< HEAD
-#featuremap-container > span, #confusion-matrix-container > span, #confusion-matrix-container > span {
-=======
 #confusion-featuremap-container > span, #featuremap-container > span, #confusion-matrix-container > span {
->>>>>>> feat: add featurevis
   font-family: Lucida Sans Typewriter;
   font-weight: 400;
   margin: 5px 0 5px 0;

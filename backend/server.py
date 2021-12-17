@@ -49,13 +49,14 @@ def confusionMatrixCell():
 @app.route('/api/imageGradient', methods=["GET"])
 def imageGradient():
     imageID = int(request.args['imageID'])
-    return jsonify(dataCtrler.getImageGradient(imageID))
+    method = request.args['method']
+    return jsonify(dataCtrler.getImageGradient(imageID, method))
 
 def main():
     parser = argparse.ArgumentParser(description='manual to this script')
     parser.add_argument("--data_path", type=str, default='/data/zhaowei/jittor-data/')
     parser.add_argument("--host", type=str, default="0.0.0.0")
-    parser.add_argument("--port", type=int, default=5005)
+    parser.add_argument("--port", type=int, default=5008)
     args = parser.parse_args()
     if not os.path.exists(args.data_path):
         raise Exception("The path does not exist.")
@@ -72,8 +73,8 @@ def main():
         statisticData = json.load(f)
     trainImages = np.load(trainImagePath)
     
-    model_dict_path = '/home/zhaowei/JittorModels/trained-models/restnet-14-0.98.pkl'
-    model = resnet26(pretrained=False, num_classes=10)
+    model_dict_path = '/data/zhaowei/cifar-100/models/resnet26-48-0.75.pkl'
+    model = resnet26(pretrained=False, num_classes=100)
     model.load_state_dict(jittor.load(model_dict_path))
     
     dataCtrler.process(networkData, statisticData, model, predictData = predictData, trainImages = trainImages)

@@ -23,6 +23,7 @@ export default new Vuex.Store({
             t: -1, // a timestamp
         },
         featureMapNodeID: null, // which node to show feature map
+        confusionCellID: null, // which cell clicked ({labels, preds})
     },
     mutations: {
         setAllData(state, allData) {
@@ -37,11 +38,15 @@ export default new Vuex.Store({
         setConfusionMatrix(state, confusionMatrix) {
             state.allData.confusionMatrix = confusionMatrix;
         },
+        setConfusionCellID(state, confusionCellID) {
+            state.confusionCellID = confusionCellID;
+        },
     },
     getters: {
         network: (state) => state.allData.network,
         statistic: (state) => state.allData.statistic,
         featureMapNodeID: (state) => state.featureMapNodeID,
+        confusionCellID: (state) => state.confusionCellID,
         layoutInfo: (state) => state.layoutInfo,
         confusionMatrix: (state) => state.allData.confusionMatrix,
         URL_GET_ALL_DATA: (state) => state.APIBASE + '/api/allData',
@@ -52,7 +57,7 @@ export default new Vuex.Store({
         },
         URL_GET_IMAGES_IN_MATRIX_CELL: (state) => state.APIBASE+'/api/confusionMatrixCell',
         URL_GET_IMAGE_GRADIENT: (state) => {
-            return (imageID) => state.APIBASE + `/api/imageGradient?imageID=${imageID}`;
+            return (imageID, method) => state.APIBASE + `/api/imageGradient?imageID=${imageID}&method=${method}`;
         },
     },
 });

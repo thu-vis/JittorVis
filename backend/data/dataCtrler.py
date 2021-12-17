@@ -14,14 +14,11 @@ class DataCtrler(object):
         self.networkRawdata = {}
         self.network = {}
         self.statistic = {}
-<<<<<<< HEAD
         self.labels = None
         self.preds = None
         self.features = None
         self.trainImages = None
-=======
         self.featureVis = None
->>>>>>> feat: add featurevis
 
     def processNetworkData(self, network: dict) -> dict:
         processor = JittorNetworkProcessor()
@@ -189,31 +186,37 @@ class DataCtrler(object):
         # limit length of images
         return imageids[:50]
     
-    def getImageGradient(self, imageID: int) -> list:
+    def getImageGradient(self, imageID: int, method: str) -> list:
         """ get gradient of image
 
         Args:
             imageID (int): image id
+            method (str): method for feature visualization
 
         Returns:
             list: gradient
         """        
         if self.trainImages is not None:
-            return self.trainImages[imageID].tolist()
+            image = self.trainImages[imageID]
+            if method=='origin': return image.tolist()
+            label = int(self.labels[imageID])
+            grad = self.getFeatureVis(image, label, method)
+            return grad.tolist()
         else:
             return []
 
-    def getFeatureVis(self, inputImage, method="vanilla_bp"):
+    def getFeatureVis(self, inputImage, label, method="vanilla_bp"):
         """get feature visualization of an image
 
         Args:
-            inputImage (numpy): RGB image
+            inputImage (numpy, (w,h,3)): RGB image
+            label (int): true class label
             method (str): vanilla_bp, guided_bp, grad_cam, layer_cam, integrated_gradients, grad_times_image ...
 
         Returns:
-            numpy
+            numpy (w, h, 3)
         """
-        return self.featureVis.get_feature_vis(inputImage, method)
+        return self.featureVis.get_feature_vis(inputImage, label, method)
 
 
 dataCtrler = DataCtrler()

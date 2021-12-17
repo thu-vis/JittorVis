@@ -1,6 +1,6 @@
 <template>
     <div id="confusionfeaturemaps">
-        <confusion-node-map v-for="nodeid in featureMapNodeIDs" :node-id="nodeid" :key="nodeid"
+        <confusion-node-map v-for="(cellid, index) in confusionCellIDs" :cell-id="cellid" :key="index"
             v-on:delete-id="deleteId"></confusion-node-map>
     </div>
 </template>
@@ -14,34 +14,27 @@ export default {
     name: 'confusionfeaturemap',
     computed: {
         ...mapGetters([
-            'featureMapNodeID',
+            'confusionCellID',
         ]),
     },
     watch: {
-        featureMapNodeIDs: function(newNodeIDs, oldNodeIDs) {
-            console.log('watched');
+        confusionCellID: function(newID, oldID) {
+            console.log('set cell', newID, oldID);
+            this.confusionCellIDs.push(newID);
         },
-        featureMapNodeID: function(newNodeID, oldNodeID) {
-            console.log('setid', newNodeID, oldNodeID);
-            this.featureMapNodeIDs.push(newNodeID);
+        confusionCellIDs: function(newIDs, oldIDs) {
+            console.log('cell watched', newIDs, oldIDs);
         },
     },
     data: function() {
         return {
             leafNode: null,
             leafNodeShape: [],
-            featureImages: [],
-            featureMapNodeIDs: [],
+            confusionCellIDs: [],
         };
     },
     methods: {
         deleteId(id) {
-            console.log('delete', id);
-            const index = this.featureMapNodeIDs.indexOf(id);
-            console.log(index);
-            if (index !== -1) {
-                this.featureMapNodeIDs.splice(index, 1);
-            }
         },
     },
 };

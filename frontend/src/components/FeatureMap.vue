@@ -18,9 +18,6 @@ export default {
         ]),
     },
     watch: {
-        featureMapNodeIDs: function(newNodeIDs, oldNodeIDs) {
-            console.log('watched');
-        },
         featureMapNodeID: function(newNodeID, oldNodeID) {
             console.log('setid', newNodeID, oldNodeID);
             this.featureMapNodeIDs.push(newNodeID);
@@ -28,9 +25,6 @@ export default {
     },
     data: function() {
         return {
-            leafNode: null,
-            leafNodeShape: [],
-            featureImages: [],
             featureMapNodeIDs: [],
         };
     },
