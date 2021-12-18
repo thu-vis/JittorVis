@@ -56,7 +56,7 @@ def main():
     parser = argparse.ArgumentParser(description='manual to this script')
     parser.add_argument("--data_path", type=str, default='/data/zhaowei/jittor-data/')
     parser.add_argument("--host", type=str, default="0.0.0.0")
-    parser.add_argument("--port", type=int, default=5008)
+    parser.add_argument("--port", type=int, default=5005)
     args = parser.parse_args()
     if not os.path.exists(args.data_path):
         raise Exception("The path does not exist.")

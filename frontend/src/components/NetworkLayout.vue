@@ -1,11 +1,19 @@
 <template>
-    <svg :id="id" class="one-network" :viewBox="`0 0 ${width} ${height}`" :width="width*scale" :height="height*scale">
-        <g id="network-layout" :transform="`translate(${width/2},${heightMargin})`">
-            <g id="background-info"></g>
-            <g id="network-nodes"></g>
-            <g id="network-edges"></g>
-        </g>
-    </svg>
+    <div class="networkLayoutWarpper">
+        <vue-scroll :ops="scrollOptions" style="width:80%" @handle-scroll="updateScroll" ref="vs">
+            <svg :id="id" class="one-network" :viewBox="`0 0 ${width} ${height}`" :width="width*scale" :height="height*scale">
+                <g id="network-layout" :transform="`translate(${width/2},${heightMargin})`">
+                    <g id="background-info"></g>
+                    <g id="network-nodes"></g>
+                    <g id="network-edges"></g>
+                </g>
+            </svg>
+        </vue-scroll>
+        <div style="width:20%; height:100%" @click.prevent="" @mouseenter.prevent="" ref="navContainer">
+            <svg class="one-network-nav" :width="width*0.1" :height="height*0.1" @click.prevent="">
+            </svg>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -16,6 +24,7 @@ import clone from 'just-clone';
 import Util from './Util.vue';
 import GlobalVar from './GlovalVar.vue';
 
+/* eslint-disable */
 export default {
     name: 'network-layout',
     mixins: [Util, GlobalVar],
@@ -36,6 +45,18 @@ export default {
         svg: function() {
             return d3.select('#'+this.id);
         },
+        svgMini: function() {
+            return d3.select('svg.one-network-nav');
+        },
+        pageHeight: function() {
+            return this.$refs.navContainer.offsetHeight;
+        },
+        scrollBar: function() {
+            return this.$refs['vs'];
+        },
+        scrollPosition: function() {
+            return this.$refs['vs'].getPosition().scrollTop;
+        },
         backgroundG: function() {
             return this.svg.select('#background-info');
         },
@@ -52,6 +73,11 @@ export default {
     data: function() {
         return {
             // dagre layout options
+            scrollOptions: {
+                bar: {
+                    background: '#c6bebe',
+                },
+            },
             dagreLayoutOptions: {
                 rankdir: 'TB',
                 ranker: 'network-simplex',
@@ -148,6 +174,9 @@ export default {
             root.expand = true;
             this.localLayoutNetwork = newLayoutNetwork;
             this.drawAllLayout();
+        },
+        scale: function(newScale, oldScale) {
+            this.updateNav();
         },
     },
     mounted: function() {
@@ -400,6 +429,7 @@ export default {
             await this.remove(graph);
             await this.update(graph);
             await this.create(graph);
+            this.updateNav();
         },
         /**
          * a tool function for beautiful edge routing
@@ -476,6 +506,7 @@ export default {
                         const parentID = that.nodes[d.id].parent.split('/').join('-');
                         that.drawNodeParent(d.id, that.localLayoutNetwork, that.nodes, that.backgroundG,
                             that.nodeParentGIDPrefix+parentID, that.nodeParentGClass);
+                        that.updateNav();
                     })
                     .on('mouseleave', function(e, d) {
                         // eslint-disable-next-line no-invalid-this
@@ -483,6 +514,7 @@ export default {
                         const parentID = that.nodes[d.id].parent.split('/').join('-');
                         that.removeToolBtns(ele, that.nodeToolBtnsClass);
                         that.removeNodeParent(that.backgroundG, that.nodeParentGIDPrefix+parentID);
+                        that.updateNav();
                     });
 
                 nodesing.transition()
@@ -673,6 +705,53 @@ export default {
                 }
             });
         },
+        updateNav: function() {
+            const that=this;
+            const content=this.svg.html();
+            window.content=content;
+            window.t=this;
+            window.d3=d3;
+            this.svgMini.html(content);
+            this.svgMini.append('rect')
+                .attr('id', 'networkNavBar')
+                .attr('fill', '#c6bebe')
+                .attr('opacity', 0.3)
+                .call(d3.drag()
+                    .on('start', function() {
+                        d3.select(this).attr('opacity', 0.5);
+                    })
+                    .on('drag', function(e) {
+                        console.log(e.dy, that.scale, 10);
+                        that.scrollBar.scrollBy({
+                            'dx': e.dx * 1.44 * that.scale,
+                            'dy': e.dy * 1.44 * that.scale,
+                        });
+                    })
+                    .on('end', function() {
+                        d3.select(this).attr('opacity', 0.3);
+                    }),
+                );
+            this.updateScroll();
+        },
+        updateScroll: function() {
+            const pos=this.scrollBar.getPosition().scrollTop/this.scale;
+            // console.log('pos', pos,this.scale,this.pageHeight);
+            const barHeight = this.pageHeight/this.scale;
+
+            this.svgMini.select('#networkNavBar')
+                .attr('x', 0)
+                .attr('y', pos)
+                .attr('width', 2000)
+                .attr('height', barHeight);
+
+            if (this.height*0.1 > this.pageHeight) {
+                this.svgMini.attr('viewBox',
+                    [0, pos/(this.height-this.pageHeight/this.scale) * (this.height-this.pageHeight*10), this.width, this.pageHeight*10])
+                    .attr('height', this.pageHeight);
+            } else {
+                this.svgMini.attr('viewBox', [0, 0, this.width, this.height]);
+            }
+        },
         /**
          * draw tool buttons when hover on a network node
          *
@@ -821,3 +900,11 @@ export default {
     },
 };
 </script>
+<style>
+div.networkLayoutWarpper{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+}
+</style>
