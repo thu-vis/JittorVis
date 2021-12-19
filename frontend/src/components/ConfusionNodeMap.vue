@@ -52,7 +52,7 @@ export default {
     data: function() {
         return {
             curVis: 'origin',
-            visOptions: ['origin', 'vanilla_bp', 'guided_bp', 'grad_cam', 'layer_cam', 'grad_times_image'],
+            visOptions: ['origin', 'vanilla_bp', 'guided_bp', 'grad_cam', 'layer_cam', 'grad_times_image', 'gbp_grad_times_image'],
             featureImages: [],
             images: [],
             scrollOptions: {
@@ -70,16 +70,27 @@ export default {
             const context = canvas.getContext('2d');
             const height = feature.length;
             const width = feature[0].length;
+            const depth = feature[0][0].length;
             canvas.width = width;
             canvas.height = height;
             const image = context.createImageData(width, height);
             const data = image.data;
-            for (let i=0; i<data.length; i+=4) {
-                const v = feature[Math.floor(i/4/width)][(i/4)%width];
-                data[i] = v[0];
-                data[i+1] = v[1];
-                data[i+2] = v[2];
-                data[i+3] = 255;
+            if (depth==1) {
+                for (let i=0; i<data.length; i+=4) {
+                    const v = feature[Math.floor(i/4/width)][(i/4)%width];
+                    data[i] = v[0];
+                    data[i+1] = v[0];
+                    data[i+2] = v[0];
+                    data[i+3] = 255;
+                }
+            } else {
+                for (let i=0; i<data.length; i+=4) {
+                    const v = feature[Math.floor(i/4/width)][(i/4)%width];
+                    data[i] = v[0];
+                    data[i+1] = v[1];
+                    data[i+2] = v[2];
+                    data[i+3] = 255;
+                }
             }
             context.putImageData(image, 0, 0);
             return canvas.toDataURL();
@@ -121,6 +132,7 @@ export default {
                 .then(function(response) {
                     // console.log('get gradient', response.data);
                     that.featureImages.push(that.toImage(response.data));
+                    // that.featureImages.push(response.data);
                 });
         },
     },
@@ -165,7 +177,7 @@ export default {
     max-height: 480px;
 }
 .featuremap {
-    width: 19%;
+    width: 24%;
     margin: 3px 3px 3px 3px;
 }
 .el-select >>> .el-input__inner {

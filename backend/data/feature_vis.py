@@ -13,7 +13,7 @@ from data.feature_utils import *
 model_dict_path = '/home/fengyuan/JittorModels/trained-models/restnet-14-0.98.pkl'
 img_path = '/home/fengyuan/JittorModels/trainingSet/trainingSet/0/img_1.jpg'
 
-def get_transforms():
+def get_train_transforms():
     return transform.Compose([
         transform.RandomCropAndResize((448, 448)),
         transform.RandomHorizontalFlip(),
@@ -21,6 +21,13 @@ def get_transforms():
         transform.ImageNormalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
     ])
 
+def get_valid_transforms():
+    return transform.Compose([
+        transform.Resize(448),
+        # transform.CenterCrop(448),
+        transform.ToTensor(),
+        transform.ImageNormalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
+    ])
 
 
 class Extractor():
@@ -175,7 +182,7 @@ class FeatureVis():
         self.model = model
         self.model.eval()
 
-        self.transform = get_transforms()
+        self.transform = get_valid_transforms()
 
         self.ori_img = get_img(img_path)
         self.model_input = self.transform(self.ori_img)
@@ -221,6 +228,9 @@ class FeatureVis():
             save_gradient_images(pos_sal, file_name_to_export + '_p_sal')
             save_gradient_images(neg_sal, file_name_to_export + '_n_sal')
         
+        grayscale_guided_grads = convert_to_grayscale(vanilla_grads)
+        vanilla_grads = grayscale_guided_grads
+
         print('vanilla_bp', type(vanilla_grads), vanilla_grads.shape)
         
         vanilla_grads = normalize(vanilla_grads)
