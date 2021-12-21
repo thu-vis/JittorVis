@@ -63,15 +63,18 @@ export default {
         // all info was loaded
         colors: function(newColors, oldColors) {
             const that = this;
-            axios.post(that.URL_GET_GRID, {
-                nodes: [],
-                depth: 0,
-            }).then(function(response) {
-                that.nodes = response.data.nodes;
-                that.depth = response.data.depth;
-                that.gridInfo = response.data.grid;
-                that.render();
-            });
+            if (!this.rendering) {
+                this.rendering = true;
+                axios.post(that.URL_GET_GRID, {
+                    nodes: [],
+                    depth: 0,
+                }).then(function(response) {
+                    that.nodes = response.data.nodes;
+                    that.depth = response.data.depth;
+                    that.gridInfo = response.data.grid;
+                    that.render();
+                });
+            }
         },
     },
     data: function() {
@@ -79,6 +82,7 @@ export default {
             nodes: [],
             depth: 0,
             gridInfo: {},
+            rendering: false,
 
             //
             gridCellsInG: undefined,
@@ -100,6 +104,7 @@ export default {
     },
     methods: {
         zoomin: function(nodes) {
+            this.rendering = true;
             if (nodes===undefined) {
                 nodes = [];
                 this.depth = 0;
@@ -131,6 +136,7 @@ export default {
 
             this.gridCellsInG = this.girdG.selectAll('.'+this.gridCellAttrs['gClass']);
             this.lassoNodesInG = this.lassoG.selectAll('.'+this.gridCellAttrs['centerClass']);
+            this.rendering = false;
         },
         create: async function() {
             const that = this;
@@ -275,6 +281,21 @@ export default {
             this.svg.select('.lasso').remove();
             this.svg.on('.drag', null);
         },
+    },
+    mounted: function() {
+        const that = this;
+        if (!this.rendering) {
+            this.rendering = true;
+            axios.post(that.URL_GET_GRID, {
+                nodes: [],
+                depth: 0,
+            }).then(function(response) {
+                that.nodes = response.data.nodes;
+                that.depth = response.data.depth;
+                that.gridInfo = response.data.grid;
+                that.render();
+            });
+        }
     },
 };
 </script>

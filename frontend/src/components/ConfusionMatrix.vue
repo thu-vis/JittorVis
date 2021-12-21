@@ -239,18 +239,7 @@ export default {
                     .attr('class', that.horizonTextAttrs['gClass'])
                     .attr('opacity', 0)
                     .attr('transform', (d, i) => `translate(${d.depth*that.horizonTextAttrs['leftMargin']}, 
-                        ${i*that.cellAttrs['size']})`)
-                    .on('mouseenter', function(e, d) {
-                        const idx = that.showNodes.indexOf(d);
-                        that.matrixCellsG.selectAll('g.'+that.cellAttrs['gClass']).filter((d)=>d.value>0).each(function(cell) {
-                            // eslint-disable-next-line no-invalid-this
-                            d3.select(this).select('text').attr('opacity', (cell) => (idx===cell.row)?1:0);
-                        });
-                    })
-                    .on('mouseleave', function(e, d) {
-                        that.matrixCellsG.selectAll('g.'+that.cellAttrs['gClass']).filter((d)=>d.value>0).selectAll('text')
-                            .attr('opacity', 0);
-                    });
+                        ${i*that.cellAttrs['size']})`);
 
                 horizonTextinG.transition()
                     .duration(that.createDuration)
@@ -312,18 +301,7 @@ export default {
                     .attr('class', that.verticalTextAttrs['gClass'])
                     .attr('opacity', 0)
                     .attr('transform', (d, i) => `translate(${d.depth*that.verticalTextAttrs['leftMargin']}, 
-                        ${i*that.cellAttrs['size']})`)
-                    .on('mouseenter', function(e, d) {
-                        const idx = that.showNodes.indexOf(d);
-                        that.matrixCellsG.selectAll('g.'+that.cellAttrs['gClass']).filter((d)=>d.value>0).each(function(cell) {
-                            // eslint-disable-next-line no-invalid-this
-                            d3.select(this).select('text').attr('opacity', (cell) => (idx===cell.column)?1:0);
-                        });
-                    })
-                    .on('mouseleave', function(e, d) {
-                        that.matrixCellsG.selectAll('g.'+that.cellAttrs['gClass']).filter((d)=>d.value>0).selectAll('text')
-                            .attr('opacity', 0);
-                    });
+                        ${i*that.cellAttrs['size']})`);
 
                 verticalTextinG.transition()
                     .duration(that.createDuration)
@@ -420,16 +398,6 @@ export default {
                     .attr('opacity', 0)
                     .attr('fill', that.cellAttrs['text-fill'])
                     .text((d) => d.value);
-
-                matrixCellsinG.filter((d) => d.value>0)
-                    .on('mouseenter', function(e, d) {
-                        // eslint-disable-next-line no-invalid-this
-                        d3.select(this).select('text').attr('opacity', 1);
-                    })
-                    .on('mouseleave', function(e, d) {
-                        // eslint-disable-next-line no-invalid-this
-                        d3.select(this).select('text').attr('opacity', 0);
-                    });
 
 
                 if ((that.horizonTextinG.enter().size() === 0) && (that.verticalTextinG.enter().size() === 0) &&
