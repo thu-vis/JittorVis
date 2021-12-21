@@ -7,6 +7,7 @@
         <svg id="grid-drawer" ref="gridsvg">
             <g id="grid-main-g" transform="translate(0,0)">
                 <g id="grid-g"></g>
+                <g id="highlight-g"></g>
                 <g id="lasso-g"></g>
             </g>
         </svg>
@@ -58,20 +59,26 @@ export default {
         lasso: function() {
             return d3.lasso;
         },
+        highlightG: function() {
+            return this.mainG.select('#highlight-g');
+        },
     },
     watch: {
         // all info was loaded
         colors: function(newColors, oldColors) {
             const that = this;
-            axios.post(that.URL_GET_GRID, {
-                nodes: [],
-                depth: 0,
-            }).then(function(response) {
-                that.nodes = response.data.nodes;
-                that.depth = response.data.depth;
-                that.gridInfo = response.data.grid;
-                that.render();
-            });
+            if (!this.rendering) {
+                this.rendering = true;
+                axios.post(that.URL_GET_GRID, {
+                    nodes: [],
+                    depth: 0,
+                }).then(function(response) {
+                    that.nodes = response.data.nodes;
+                    that.depth = response.data.depth;
+                    that.gridInfo = response.data.grid;
+                    that.render();
+                });
+            }
         },
     },
     data: function() {
@@ -79,6 +86,7 @@ export default {
             nodes: [],
             depth: 0,
             gridInfo: {},
+            rendering: false,
 
             //
             gridCellsInG: undefined,
@@ -100,8 +108,10 @@ export default {
     },
     methods: {
         zoomin: function(nodes) {
+            this.rendering = true;
             if (nodes===undefined) {
-                nodes = [];
+                // zoom home
+                nodes = this.nodes;
                 this.depth = 0;
             }
             if (nodes.length>0 && typeof(nodes[0])!=='number') {
@@ -131,6 +141,7 @@ export default {
 
             this.gridCellsInG = this.girdG.selectAll('.'+this.gridCellAttrs['gClass']);
             this.lassoNodesInG = this.lassoG.selectAll('.'+this.gridCellAttrs['centerClass']);
+            this.rendering = false;
         },
         create: async function() {
             const that = this;
@@ -275,6 +286,42 @@ export default {
             this.svg.select('.lasso').remove();
             this.svg.on('.drag', null);
         },
+        highlightCells: function(cells) {
+            const cellDict = {};
+            const that = this;
+            for (const cell of cells) cellDict[cell] = true;
+            this.gridCellsInG.filter((d) => cellDict[d.index]!==undefined)
+                .each(function(d) {
+                    that.highlightG.append('rect')
+                        .attr('x', (d.grid%that.gridInfo.width)*that.gridCellAttrs['size'])
+                        .attr('y', Math.floor(d.grid/that.gridInfo.width)*that.gridCellAttrs['size'])
+                        .attr('width', that.gridCellAttrs['size'])
+                        .attr('height', that.gridCellAttrs['size'])
+                        .attr('stroke', that.gridCellAttrs['stroke'])
+                        .attr('stroke-width', 4)
+                        .attr('fill', 'none');
+                });
+        },
+        unhighlightCells: function(cells) {
+            this.highlightG
+                .selectAll('rect')
+                .remove();
+        },
+    },
+    mounted: function() {
+        const that = this;
+        if (!this.rendering) {
+            this.rendering = true;
+            axios.post(that.URL_GET_GRID, {
+                nodes: [],
+                depth: 0,
+            }).then(function(response) {
+                that.nodes = response.data.nodes;
+                that.depth = response.data.depth;
+                that.gridInfo = response.data.grid;
+                that.render();
+            });
+        }
     },
 };
 </script>

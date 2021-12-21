@@ -222,11 +222,20 @@ class DataCtrler(object):
     def gridZoomIn(self, nodes, constraints, depth):
         neighbors, newDepth = self.sampler.zoomin(nodes, depth)
         zoomInConstraints = None
+        zoomInConstraintX = None
         if constraints is not None:
             zoomInConstraints = []
+            zoomInConstraintX = []
         zoomInNodes = []
         if type(neighbors)==list:
             zoomInNodes = neighbors
+            if constraints is not None:
+                zoomInConstraints = np.array(constraints)
+                nodesset = set(neighbors)
+                for node in nodes:
+                    if node in nodesset:
+                        zoomInConstraintX.append(node)
+                zoomInConstraintX = self.features[zoomInConstraintX]
         else:
             for i in range(len(nodes)):
                 parent = nodes[i]
@@ -234,9 +243,11 @@ class DataCtrler(object):
                     zoomInNodes.append(int(child))
                     if constraints is not None:
                         zoomInConstraints.append(constraints[i])
+            zoomInConstraints = np.array(zoomInConstraints)
+            zoomInConstraintX = self.features[zoomInNodes]
         zoomInLabels = self.labels[zoomInNodes]
         
-        tsne, grid, gridsize = self.grider.fit(self.features[zoomInNodes], labels = zoomInLabels, constraintX = zoomInConstraints)
+        tsne, grid, gridsize = self.grider.fit(self.features[zoomInNodes], labels = zoomInLabels, constraintX = zoomInConstraintX,  constraintY = zoomInConstraints)
         tsne = tsne.tolist()
         grid = grid.tolist()
         zoomInLabels = zoomInLabels.tolist()
@@ -255,4 +266,8 @@ class DataCtrler(object):
             },
             "depth": newDepth
         }
+
+    def findGridParent(self, children, parents):
+        return self.sampler.findParents(children, parents)
+    
 dataCtrler = DataCtrler()
