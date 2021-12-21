@@ -67,17 +67,8 @@ export default {
     },
     methods: {
         initColor(hierarchy) {
-            const basecolors = ['#8c564b',
-                '#ff7f0e',
-                '#9467bd',
-                '#d62728',
-                '#1f77b4',
-                '#2ca02c',
-                '#e377c2',
-                '#ffdb45',
-                '#bcbd22',
-                '#17becf',
-                '#a6cee3'];
+            const basecolors = ['#8dd3c7', '#ffffb3', '#fb8072', '#80b1d3',
+                '#fdb462', '#b3de69', '#fccde5', '#bc80bd', '#ccebc5', '#ffed6f'];
             const colors = {};
             for (let i=0; i<hierarchy.length; i++) {
                 const queue = [hierarchy[i]];

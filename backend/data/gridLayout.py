@@ -1,6 +1,7 @@
 import numpy as np
 # from tsnecuda import TSNE
-from sklearn.manifold import TSNE
+# from sklearn.manifold import TSNE
+from data.IncrementalTSNE import IncrementalTSNE
 import fastlapjv
 from matplotlib import pyplot as plt
 from scipy.spatial.distance import cdist
@@ -12,20 +13,20 @@ class GridLayout(object):
     def __init__(self):
         super().__init__()
 
-    def fit(self, X: np.ndarray, labels: np.ndarray = None, constraintX: np.ndarray = None):
+    def fit(self, X: np.ndarray, labels: np.ndarray = None, constraintX: np.ndarray = None, constraintY: np.ndarray = None):
         """main fit function
 
         Args:
             X (np.ndarray): n * d, n is the number of samples, d is the dimension of a sample
             labels (np.ndarray): label of each sample in X
         """        
-        X_embedded = self.tsne(X)
+        X_embedded = self.tsne(X, constraintX = constraintX, constraintY = constraintY)
         # self._draw_tsne(X_embedded, labels)
         grid_ass, grid_size = self.grid(X_embedded)
         return X_embedded, grid_ass, grid_size
         
-    def tsne(self, X: np.ndarray, perplexity: int = 15, learning_rate: int = 3) -> np.ndarray:
-        X_embedded = TSNE(n_components=2, perplexity=perplexity, learning_rate=learning_rate).fit_transform(X)
+    def tsne(self, X: np.ndarray, perplexity: int = 15, learning_rate: int = 3, constraintX: np.ndarray = None, constraintY: np.ndarray = None) -> np.ndarray:
+        X_embedded = IncrementalTSNE(n_components=2, perplexity=perplexity, learning_rate=learning_rate).fit_transform(X, constraint_X = constraintX, constraint_Y = constraintY)
         return X_embedded
     
     def grid(self, X_embedded: np.ndarray):

@@ -106,7 +106,8 @@ export default {
         zoomin: function(nodes) {
             this.rendering = true;
             if (nodes===undefined) {
-                nodes = [];
+                // zoom home
+                nodes = this.nodes;
                 this.depth = 0;
             }
             if (nodes.length>0 && typeof(nodes[0])!=='number') {
