@@ -122,6 +122,7 @@ class HierarchySampling(object):
         self.hierarchy = {}
         self.max_depth = 0
         self.top_nodes = []
+        self.child2parent = []
         
     def fit(self, data, category, sampling_rate, top_nodes_count):
         n = data.shape[0]
@@ -170,4 +171,24 @@ class HierarchySampling(object):
             self.hierarchy = hierarchyInfo["hierarchy"]
             self.max_depth = hierarchyInfo["max_depth"]
             self.top_nodes = hierarchyInfo["top_nodes"]
+            # set child2parent
+            self.child2parent = [[-1]*(self.max_depth-1) for i in range(len(self.hierarchy))]
+            for parentID in range(len(self.hierarchy)):
+                for depth in range(1,len(self.hierarchy[parentID])):
+                    for child in self.hierarchy[parentID][depth]:
+                        self.child2parent[child][depth-1]=parentID
+            for child in range(len(self.hierarchy)):
+                for depth in range(self.max_depth-1):
+                    if self.child2parent[child][depth]==-1:
+                        self.child2parent[child][depth] = self.child2parent[self.child2parent[child][depth-1]][depth]
             
+    def findParents(self, children: list, parents: list) -> list:
+        remainParents = set()
+        parents = set(parents)
+        
+        for child in children:
+            for childParent in self.child2parent[child]:
+                if childParent in parents:
+                    remainParents.add(childParent)
+        return list(remainParents)
+        

@@ -67,5 +67,6 @@ export default new Vuex.Store({
             return (imageID) => state.APIBASE + `/api/imageGradient?imageID=${imageID}`;
         },
         URL_GET_GRID: (state) => state.APIBASE + '/api/grid',
+        URL_FIND_GRID_PARENT: (state) => state.APIBASE + '/api/findParent',
     },
 });

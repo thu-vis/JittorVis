@@ -7,6 +7,7 @@
         <svg id="grid-drawer" ref="gridsvg">
             <g id="grid-main-g" transform="translate(0,0)">
                 <g id="grid-g"></g>
+                <g id="highlight-g"></g>
                 <g id="lasso-g"></g>
             </g>
         </svg>
@@ -57,6 +58,9 @@ export default {
         },
         lasso: function() {
             return d3.lasso;
+        },
+        highlightG: function() {
+            return this.mainG.select('#highlight-g');
         },
     },
     watch: {
@@ -281,6 +285,27 @@ export default {
         stoplasso: function() {
             this.svg.select('.lasso').remove();
             this.svg.on('.drag', null);
+        },
+        highlightCells: function(cells) {
+            const cellDict = {};
+            const that = this;
+            for (const cell of cells) cellDict[cell] = true;
+            this.gridCellsInG.filter((d) => cellDict[d.index]!==undefined)
+                .each(function(d) {
+                    that.highlightG.append('rect')
+                        .attr('x', (d.grid%that.gridInfo.width)*that.gridCellAttrs['size'])
+                        .attr('y', Math.floor(d.grid/that.gridInfo.width)*that.gridCellAttrs['size'])
+                        .attr('width', that.gridCellAttrs['size'])
+                        .attr('height', that.gridCellAttrs['size'])
+                        .attr('stroke', that.gridCellAttrs['stroke'])
+                        .attr('stroke-width', 4)
+                        .attr('fill', 'none');
+                });
+        },
+        unhighlightCells: function(cells) {
+            this.highlightG
+                .selectAll('rect')
+                .remove();
         },
     },
     mounted: function() {

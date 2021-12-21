@@ -266,4 +266,8 @@ class DataCtrler(object):
             },
             "depth": newDepth
         }
+
+    def findGridParent(self, children, parents):
+        return self.sampler.findParents(children, parents)
+    
 dataCtrler = DataCtrler()

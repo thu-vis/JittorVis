@@ -58,6 +58,12 @@ def grid():
     depth = request.json['depth']
     return jsonify(dataCtrler.gridZoomIn(nodes, constraints, depth))
 
+@app.route('/api/findParent', methods=["POST"])
+def findParent():
+    children = request.json['children']
+    parents = request.json['parents']
+    return jsonify(dataCtrler.findGridParent(children, parents))
+
 def main():
     parser = argparse.ArgumentParser(description='manual to this script')
     parser.add_argument("--data_path", type=str, default='/data/zhaowei/jittor-data/')
