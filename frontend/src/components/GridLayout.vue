@@ -11,6 +11,7 @@
                 <g id="lasso-g"></g>
             </g>
         </svg>
+        <waiting-icon v-if="rendering"></waiting-icon>
     </div>
 </template>
 
@@ -22,9 +23,11 @@ window.d3 = d3;
 require('../js/d3-lasso.js');
 import Util from './Util.vue';
 import GlobalVar from './GlovalVar.vue';
+import WaitingIcon from './WaitingIcon.vue';
 
 export default {
     name: 'GridLayout',
+    components: {WaitingIcon},
     mixins: [Util, GlobalVar],
     computed: {
         ...mapGetters([
@@ -115,7 +118,8 @@ export default {
                 this.depth = 0;
             }
             if (nodes.length>0 && typeof(nodes[0])!=='number') {
-                nodes = nodes.map((d) => d.index);
+                nodes = node;
+                WaitingIcons.map((d) => d.index);
             }
             const that = this;
             const tsnes = nodes.map((d) => this.nodesDict[d].tsne);
@@ -341,6 +345,7 @@ export default {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    position: relative;
 }
 
 #grid-drawer {

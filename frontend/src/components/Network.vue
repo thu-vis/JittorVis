@@ -29,20 +29,27 @@
             </vue-scroll>
         </div>
     </div>
+    <waiting-icon v-if="rendering"></waiting-icon>
 </div>
 </template>
 
 <script>
 import {mapGetters} from 'vuex';
 import NetworkLayout from './NetworkLayout.vue';
+import WaitingIcon from './WaitingIcon.vue';
 
 export default {
     name: 'network',
-    components: {NetworkLayout},
+    components: {NetworkLayout, WaitingIcon},
     computed: {
         ...mapGetters([
             'network',
         ]),
+    },
+    watch: {
+        network: function() {
+            this.rendering = false;
+        },
     },
     data: function() {
         return {
@@ -62,6 +69,7 @@ export default {
             splitOpacity: 0.5,
             scale: 1,
             width: 0,
+            rendering: true,
         };
     },
     mounted: function() {
@@ -98,6 +106,7 @@ export default {
     display: flex;
     flex-direction: column;
     height: 100%;
+    position: relative;
 }
 
 #network-tools-bar {

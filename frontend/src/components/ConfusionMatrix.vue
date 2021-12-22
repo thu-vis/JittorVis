@@ -144,6 +144,7 @@ export default {
                 'font-family': 'Comic Sans MS',
                 'font-weight': 'normal',
                 'font-size': 15,
+                'cursor': 'pointer',
             },
             // buffer
             maxCellValue: 0,
@@ -361,6 +362,7 @@ export default {
                     .append('g')
                     .attr('class', that.cellAttrs['gClass'])
                     .attr('opacity', 0)
+                    .attr('cursor', that.cellAttrs['cursor'])
                     .attr('transform', (d) => `translate(${d.column*that.cellAttrs['size']}, 
                         ${d.row*that.cellAttrs['size']})`)
                     .on('click', function(e, d) {

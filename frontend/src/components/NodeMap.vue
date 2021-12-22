@@ -25,6 +25,7 @@
                 <img class="featuremap" v-for="(image, index) in filteredFeatureImage" :key="index" :src="image" />
             </div>
         </vue-scroll>
+        <waiting-icon v-if="rendering"></waiting-icon>
     </div>
 </template>
 
@@ -34,6 +35,7 @@ import axios from 'axios';
 import {Select, Option, Slider} from 'element-ui';
 import Vue from 'vue';
 import {mapGetters} from 'vuex';
+import WaitingIcon from './WaitingIcon.vue';
 
 Vue.use(Select);
 Vue.use(Option);
@@ -41,6 +43,7 @@ Vue.use(Slider);
 
 export default {
     name: 'nodemap',
+    components: {WaitingIcon},
     props: {
         nodeId: String,
     },
@@ -72,6 +75,7 @@ export default {
             },
             featureMapSize: 50,
             actThreshold: 0,
+            rendering: true,
         };
     },
     methods: {
@@ -112,6 +116,7 @@ export default {
             axios.post(store.getters.URL_GET_FEATURE_INFO, {
                 'branch': this.nodeId,
             }).then(function(response) {
+                that.rendering = false;
                 that.leafNode = response.data.leafID;
                 if (that.leafNode === -1) {
                     that.featureImages = [];
@@ -156,6 +161,7 @@ export default {
     border-radius: 2px;
     padding: 3px;
     margin: 5px 10px 5px 2px;
+    position: relative;
 }
 
 .featurenode-header {
@@ -168,7 +174,8 @@ export default {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    max-height: 480px;
+    height: 480px;
+    align-items: flex-start;
 }
 .featuremap {
     width: 19%;
