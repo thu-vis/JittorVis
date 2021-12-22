@@ -22,7 +22,7 @@
       </div>
       <div id="middle">
         <div id="tree-container">
-          <div id="network-container"><network></network></div>
+          <div id="network-container"><network ref="network"></network></div>
         </div>
       </div>
       <div id="featuremap-container">
@@ -73,6 +73,7 @@ export default {
             }).then(function(response) {
                 const images = response.data;
                 that.images = images;
+                that.selectedImage = '';
                 if (images.length>0) {
                     const getImageGradientURL = store.getters.URL_GET_IMAGE_GRADIENT;
                     axios.get(getImageGradientURL(images[0]))
@@ -83,7 +84,9 @@ export default {
             });
         },
         runNetworkOnImage: function(id) {
+            if (id==='') return;
             const store = this.$store;
+            this.$refs.network.rendering = true;
             axios.post(this.URL_RUN_IMAGE_ON_MODEL, {
                 imageID: id,
             }).then(function(response) {
