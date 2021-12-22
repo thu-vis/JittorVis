@@ -171,7 +171,11 @@ class DataCtrler(object):
     def getStatisticData(self):
         """get statistic data
         """
-        return self.statistic        
+        return {
+            "loss": self.statistic["loss"],
+            "accuracy": self.statistic["accuracy"],
+            "recall": self.statistic["recall"]
+        }
 
     def getConfusionMatrix(self):
         """ confusion matrix
