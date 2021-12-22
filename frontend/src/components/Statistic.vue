@@ -46,6 +46,11 @@ export default {
             statisticChart: null,
         };
     },
+    watch: {
+        statisticData: function() {
+            this.statisticChart.setOption(this.chartOptions);
+        },
+    },
     mounted: function() {
         this.statisticChart = echarts.init(document.getElementById('statistic-chart-'+this.dataName));
         this.statisticChart.setOption(this.chartOptions);
