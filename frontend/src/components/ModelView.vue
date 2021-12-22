@@ -4,6 +4,17 @@
         <div id="confusion-matrix-container">
           <span>—— Confusion Matrix ——</span>
             <confusion-matrix id="confusion-matrix" @clickCell="clickConfusionCell"></confusion-matrix>
+            <div id="image-selector">
+              <span>Images in Selected Cells</span>
+              <el-select v-model="selectedImage" placeholder="Images" size="mini" @change="runNetworkOnImage">
+                <el-option
+                  v-for="image in images"
+                  :key="image"
+                  :label="'image-'+image"
+                  :value="image">
+                </el-option>
+              </el-select>
+            </div>
         </div>
         <div id="statistic-container">
           <statistic v-for="item in Object.keys(statistic)" :key="item" :dataName="item" :statisticData="statistic[item]"></statistic>
@@ -42,22 +53,26 @@ export default {
                     background: '#c6bebe',
                 },
             },
+            images: [],
+            selectedImage: '',
         };
     },
     computed: {
         ...mapGetters([
             'statistic',
+            'URL_RUN_IMAGE_ON_MODEL',
         ]),
     },
     methods: {
         clickConfusionCell: function(d) {
             const store = this.$store;
+            const that = this;
             axios.post(store.getters.URL_GET_IMAGES_IN_MATRIX_CELL, {
                 labels: d.rowNode.leafs,
                 preds: d.colNode.leafs,
             }).then(function(response) {
                 const images = response.data;
-                console.log(`confusion matrix cell ${d.key}`, images);
+                that.images = images;
                 if (images.length>0) {
                     const getImageGradientURL = store.getters.URL_GET_IMAGE_GRADIENT;
                     axios.get(getImageGradientURL(images[0]))
@@ -65,6 +80,15 @@ export default {
                             console.log('get gradient', response.data);
                         });
                 }
+            });
+        },
+        runNetworkOnImage: function(id) {
+            const store = this.$store;
+            axios.post(this.URL_RUN_IMAGE_ON_MODEL, {
+                imageID: id,
+            }).then(function(response) {
+                store.commit('setNetwork', response.data);
+                console.log('new network data', store.getters.network);
             });
         },
     },
@@ -139,4 +163,15 @@ export default {
   align-items: center;
 }
 
+#image-selector {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+#image-selector > span {
+  font-size: 8px;
+  margin: 0 10px 0 10px;
+}
 </style>

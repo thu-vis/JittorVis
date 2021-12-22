@@ -22,6 +22,7 @@ export default {
             console.log('watched');
         },
         featureMapNodeID: function(newNodeID, oldNodeID) {
+            if (newNodeID===-1) return;
             console.log('setid', newNodeID, oldNodeID);
             this.featureMapNodeIDs.push(newNodeID);
         },
@@ -37,6 +38,7 @@ export default {
     methods: {
         deleteId(id) {
             console.log('delete', id);
+            this.$store.commit('setFeatureMapNodeID', -1);
             const index = this.featureMapNodeIDs.indexOf(id);
             console.log(index);
             if (index !== -1) {
