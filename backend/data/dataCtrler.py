@@ -7,6 +7,8 @@ import math
 from tempfile import NamedTemporaryFile
 from data.sampling import HierarchySampling
 from data.gridLayout import GridLayout
+import jittor as jt
+from jittor import transform
 
 class DataCtrler(object):
 
@@ -17,6 +19,7 @@ class DataCtrler(object):
         self.statistic = {}
         self.labels = None
         self.preds = None
+        self.model = None
         self.features = None
         
         self.grider = GridLayout()
@@ -46,12 +49,13 @@ class DataCtrler(object):
             self.sampler.fit(data, labels, 0.25, 1600)
             self.sampler.dump(self.sampling_buffer_path)
 
-    def process(self, networkRawdata, statisticData, predictData = None, modeltype='jittor', trainImages = None, sampling_buffer_path="/tmp/hierarchy.pkl", attrs = {}):
+    def process(self, networkRawdata, statisticData, model = None, predictData = None, modeltype='jittor', trainImages = None, sampling_buffer_path="/tmp/hierarchy.pkl", attrs = {}):
         """process raw data
         """        
         self.networkRawdata = networkRawdata
         self.network = self.processNetworkData(self.networkRawdata["node_data"])
         self.statistic = self.processStatisticData(statisticData)
+        self.model = model
 
         if predictData is not None:
             self.labels = predictData["labels"].astype(int)
@@ -66,7 +70,9 @@ class DataCtrler(object):
         branch = self.network["branch"]
         newBranch = copy.deepcopy(branch)
         for branchID, branchNode in newBranch.items():
-            if type(branchNode["children"][0])==int:
+            if len(branchNode["children"])==0:
+                branchNode["children"]=[]
+            elif type(branchNode["children"][0])==int:
                 branchNode["children"]=[]
         return newBranch
 
@@ -269,5 +275,26 @@ class DataCtrler(object):
 
     def findGridParent(self, children, parents):
         return self.sampler.findParents(children, parents)
+    
+    def runImageOnModel(self, imageID):
+         if self.trainImages is not None:
+            input = self.trainImages[imageID]
+            mtransform = transform.Compose([
+                transform.Resize(512),
+                transform.CenterCrop(448),
+                transform.ToTensor(),
+                transform.ImageNormalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
+            ])
+            input =mtransform(input)
+            input = input.reshape((1,3,448,448))
+            input = jt.array(input)
+            
+            with jt.flag_scope(trace_py_var=2, trace_var_data=1):
+                output = self.model(input)
+                output.sync()
+                data = jt.dump_trace_data()
+            self.networkRawdata = data
+            self.network = self.processNetworkData(self.networkRawdata["node_data"])
+            return self.getBranchTree()
     
 dataCtrler = DataCtrler()

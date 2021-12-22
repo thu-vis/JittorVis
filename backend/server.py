@@ -4,9 +4,11 @@ import pickle
 import json
 import argparse
 import numpy as np
+from data.jimm import resnet26
 from flask import Flask, jsonify, request, send_file, render_template
 from data.dataCtrler import dataCtrler
 from flask_cors import CORS
+import jittor as jt
 app = Flask(__name__)
 CORS(app)
 
@@ -21,6 +23,11 @@ def allData():
         "statistic": dataCtrler.getStatisticData()
     }
     return jsonify(alldata)
+
+@app.route('/api/networkOnImage', methods=["POST"])
+def networkOnImage():
+    imageID = request.json['imageID']
+    return jsonify(dataCtrler.runImageOnModel(imageID))
 
 @app.route('/api/featureInfo', methods=['POST'])
 def featureInfo():
@@ -77,6 +84,7 @@ def main():
     predictPath = os.path.join(args.data_path, "predict_info.pkl")
     trainImagePath = os.path.join(args.data_path, "trainImages.npy")
     bufferPath = os.path.join(args.data_path, "buffer")
+    modelPath = os.path.join(args.data_path, "resnet26.pkl")
     with open(predictPath, 'rb') as f:
         predictData = pickle.load(f)
     with open(networkPath, 'rb') as f:
@@ -84,8 +92,11 @@ def main():
     with open(evaluationPath, 'r') as f:
         statisticData = json.load(f)
     trainImages = np.load(trainImagePath)
+    model = resnet26(pretrained=False, num_classes=100)
+    model.load_state_dict(jt.load(modelPath))
+    model.eval()
     sampling_buffer_path = os.path.join(bufferPath, "hierarchy.pkl")
-    dataCtrler.process(networkData, statisticData, predictData = predictData, trainImages = trainImages, sampling_buffer_path = sampling_buffer_path)
+    dataCtrler.process(networkData, statisticData, model = model, predictData = predictData, trainImages = trainImages, sampling_buffer_path = sampling_buffer_path)
     app.run(port=args.port, host=args.host, threaded=True, debug=False)
 
 if __name__ == "__main__":
