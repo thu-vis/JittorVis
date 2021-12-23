@@ -60,9 +60,7 @@ export default {
     },
     methods: {
         clickConfusionCell: function(d) {
-            // const store = this.$store;
             const that = this;
-            console.log(d.rowNode.leafs, d.colNode.leafs);
             that.$store.commit('setConfusionCellID', {labels: d.rowNode.leafs, preds: d.colNode.leafs});
             // console.log(that.$store.state.confusionCellID);
             // axios.post(store.getters.URL_GET_IMAGES_IN_MATRIX_CELL, {

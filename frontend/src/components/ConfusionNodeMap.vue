@@ -140,7 +140,7 @@ export default {
         if (this.cellId != undefined) {
             const that = this;
             const store = that.$store;
-            console.log('cell_id', that.cellId);
+            // console.log('cell_id', that.cellId);
             axios.post(store.getters.URL_GET_IMAGES_IN_MATRIX_CELL, {
                 'labels': that.cellId['labels'],
                 'preds': that.cellId['preds'],
