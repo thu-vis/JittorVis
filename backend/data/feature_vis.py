@@ -174,8 +174,8 @@ class FeatureVis():
     """
         Algorithms for feature visualization 
             (bp)          vanilla_bp, guided_bp  
-            (cam)         grad_cam, layer_cam, guided_grad_cam, score_cam
-            (grad)        smooth_grad, integrated_gradients
+            (cam)         grad_cam, layer_cam, guided_grad_cam
+            (grad)        integrated_gradients
             (gradximg)    [(gbp/integ)_]grad_times_image, 
     """
     def __init__(self, model=None):
@@ -228,8 +228,8 @@ class FeatureVis():
             save_gradient_images(pos_sal, file_name_to_export + '_p_sal')
             save_gradient_images(neg_sal, file_name_to_export + '_n_sal')
         
-        grayscale_guided_grads = convert_to_grayscale(vanilla_grads)
-        vanilla_grads = grayscale_guided_grads
+        # grayscale_guided_grads = convert_to_grayscale(vanilla_grads)
+        # vanilla_grads = grayscale_guided_grads
 
         print('vanilla_bp', type(vanilla_grads), vanilla_grads.shape)
         
@@ -376,87 +376,10 @@ class FeatureVis():
             print('layer_cam', type(heat_map_on_image), heat_map_on_image.shape)
             return heat_map_on_image
 
-    def score_cam(self, img_input, target_class, ori_img, file_name_to_export='score_cam', save=False, cam_size=None, return_cam=False):
-        # not support 
-        extractor = Extractor(self.model)
-        extractor.register_hooks("cam")
-        extractor.forward_and_backward(img_input, target_class)
-        last_conv_output = extractor.conv_output[-1][0]
-        target = last_conv_output
-        cam = np.ones(target.shape[1:], dtype=np.float32)
-        for i in range(len(target)):
-            # Unsqueeze to 4D
-            saliency_map = jt.unsqueeze(jt.unsqueeze(target[i, :, :],0),0)
-            # Upsampling to input size
-            saliency_map =  jt.nn.interpolate(saliency_map, size=img_input.shape[2:], mode='bilinear', align_corners=False)
-            if saliency_map.max() == saliency_map.min():
-                continue
-            # Scale between 0-1
-            norm_saliency_map = (saliency_map - saliency_map.min()) / (saliency_map.max() - saliency_map.min())
-            # Get the target score
-            w = jt.nn.softmax(self.model(img_input*norm_saliency_map),dim=1)[0][target_class]
-            cam += w.data * target[i, :, :].data
-        cam = np.maximum(cam, 0)
-        cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))  # Normalize between 0-1
-        cam = np.uint8(cam * 255)  # Scale between 0-255 to visualize
-        if not cam_size:
-            cam_size = ori_img.size
-        cam = np.uint8(Image.fromarray(cam).resize((cam_size), Image.ANTIALIAS))/255
-
-        if return_cam:
-            return cam
-        else:
-            heat_map_on_image = get_class_activation_image(ori_img, cam)
-            print('score_cam', type(heat_map_on_image), heat_map_on_image.shape)
-            return heat_map_on_image
-
-    def smooth_grad(self, img_input, target_class, file_name_to_export='smooth_grad', save=False, param_sigma_multiplier=4, param_n=10, grad_type="vbp"):
-        # not recommended
-        assert grad_type in ['gbp', 'vbp']
-        extractor = Extractor(self.model)
-        if grad_type=='vbp':
-            extractor.register_hooks("vbp")
-        else: # gbp
-            extractor.register_hooks("gbp")
-        smooth_grad = np.zeros(img_input.size()[1:])
-        mean = 0
-        sigma = param_sigma_multiplier / (jt.max(img_input) - jt.min(img_input)).item()
-        for x in range(param_n):
-            # Generate noise
-            noise = jt.normal(mean=mean, std=sigma**2, size=img_input.size())
-            # Add noise to the image
-            noisy_img = img_input + noise
-            # Calculate gradients
-            bp_grads = extractor.generate_gradients(noisy_img, target_class)
-            # Add gradients to smooth_grad
-            smooth_grad = smooth_grad + bp_grads
-        # Average it out
-        smooth_grad = smooth_grad / param_n
-        smooth_grad = smooth_grad.data[0]
-
-        if save:
-            save_gradient_images(smooth_grad, file_name_to_export + '_SmoothGrad_color')
-            grayscale_smooth_grad = convert_to_grayscale(smooth_grad)
-            save_gradient_images(grayscale_smooth_grad, file_name_to_export + '_SmoothGrad_gray')
-
-        print('smooth_grad', type(smooth_grad), smooth_grad.shape)
-        return normalize(smooth_grad)
-
 if __name__=="__main__":
     model = resnet26(pretrained=False, num_classes=10)
     model.load_state_dict(jt.load(model_dict_path))
     featurevis = FeatureVis(model)
-    featurevis.guided_bp()
-    featurevis.vanilla_bp()
-    featurevis.grad_cam()
-    featurevis.layer_cam()
-    featurevis.grad_times_image()
-    featurevis.guided_grad_cam()
-    featurevis.integrated_gradients()
-    featurevis.integ_grad_times_image()
-    featurevis.gbp_grad_times_image()
-    # featurevis.score_cam()
-    featurevis.smooth_grad()
     vis = featurevis.get_feature_vis()
     print(vis.shape)
 
