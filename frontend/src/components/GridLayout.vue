@@ -118,8 +118,7 @@ export default {
                 this.depth = 0;
             }
             if (nodes.length>0 && typeof(nodes[0])!=='number') {
-                nodes = node;
-                WaitingIcons.map((d) => d.index);
+                nodes = nodes.map((d) => d.index);
             }
             const that = this;
             const tsnes = nodes.map((d) => this.nodesDict[d].tsne);

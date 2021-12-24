@@ -69,7 +69,7 @@ export default {
             splitOpacity: 0.5,
             scale: 1,
             width: 0,
-            rendering: true,
+            rendering: false,
         };
     },
     mounted: function() {
