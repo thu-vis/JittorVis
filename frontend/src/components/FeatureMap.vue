@@ -18,9 +18,6 @@ export default {
         ]),
     },
     watch: {
-        featureMapNodeIDs: function(newNodeIDs, oldNodeIDs) {
-            console.log('watched');
-        },
         featureMapNodeID: function(newNodeID, oldNodeID) {
             if (newNodeID===-1) return;
             console.log('setid', newNodeID, oldNodeID);
@@ -29,18 +26,19 @@ export default {
     },
     data: function() {
         return {
-            leafNode: null,
-            leafNodeShape: [],
-            featureImages: [],
             featureMapNodeIDs: [],
         };
     },
     methods: {
         deleteId(id) {
+<<<<<<< HEAD
             console.log('delete', id);
             this.$store.commit('setFeatureMapNodeID', -1);
+=======
+            // console.log('delete', id);
+>>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
             const index = this.featureMapNodeIDs.indexOf(id);
-            console.log(index);
+            // console.log(index);
             if (index !== -1) {
                 this.featureMapNodeIDs.splice(index, 1);
             }

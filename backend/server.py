@@ -4,6 +4,7 @@ import pickle
 import json
 import argparse
 import numpy as np
+import jittor
 from data.jimm import resnet26
 from flask import Flask, jsonify, request, send_file, render_template
 from data.dataCtrler import dataCtrler
@@ -54,7 +55,8 @@ def confusionMatrixCell():
 @app.route('/api/imageGradient', methods=["GET"])
 def imageGradient():
     imageID = int(request.args['imageID'])
-    return jsonify(dataCtrler.getImageGradient(imageID))
+    method = request.args['method']
+    return jsonify(dataCtrler.getImageGradient(imageID, method))
 
 @app.route('/api/grid', methods=["POST"])
 def grid():
@@ -75,7 +77,7 @@ def main():
     parser = argparse.ArgumentParser(description='manual to this script')
     parser.add_argument("--data_path", type=str, default='/data/zhaowei/jittor-data/')
     parser.add_argument("--host", type=str, default="0.0.0.0")
-    parser.add_argument("--port", type=int, default=5005)
+    parser.add_argument("--port", type=int, default=5004)
     args = parser.parse_args()
     if not os.path.exists(args.data_path):
         raise Exception("The path does not exist.")

@@ -2,11 +2,18 @@
     <div class="featurenode">
         <div class="featurenode-header" style="margin-bottom:3px; margin-top:3px">
             <span style="font-size:10px; cursor:pointer; font-family:Comic Sans MS;
+<<<<<<< HEAD
                 margin-left:3px;">{{ nodeId }}</span>
             <el-slider v-model="actThreshold" :min="0" :max="maxActivation" input-size="mini"
                 :step="0.001" style="width: 150px; margin: 0 20px 0 20px;"></el-slider>
             <div style="width: 50px; flex-grow: 100;"></div>
             <div style="display:inline-flex; width:50px; margin-right:10px">
+=======
+                margin-left:3px;">{{cellId['labels'][0]}}->{{cellId['preds'][0]}}</span>
+                <!-- cellId['labels'] + cellId['preds'] -->
+            <div style="width: 50px; flex-grow: 100;"></div>
+            <div style="display:inline-flex; width:100px; margin-right:10px">
+>>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
                 <el-select class="visselect" :popper-append-to-body="false" v-on:change="changeKey" v-model="curVis" placeholder="origin">
                     <el-option
                         v-for="item in visOptions"
@@ -16,13 +23,21 @@
                     </el-option>
                 </el-select>
             </div>
+<<<<<<< HEAD
             <span style="font-size:10px; cursor:pointer; margin-right:10px; margin-top:3px;" v-on:click="$emit('delete-id', nodeId)">
+=======
+            <span style="font-size:10px; cursor:pointer; margin-right:10px; margin-top:3px;" v-on:click="$emit('delete-id', cellId)">
+>>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
                 <i class="el-icon-close"></i>
             </span>
         </div>
         <vue-scroll :ops="scrollOptions">
             <div id="featuremaps">
+<<<<<<< HEAD
                 <img class="featuremap" v-for="(image, index) in filteredFeatureImage" :key="index" :src="image" />
+=======
+                <img class="featuremap" v-for="(image, index) in featureImages" :key="index" :src="image" />
+>>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
             </div>
         </vue-scroll>
     </div>
@@ -43,11 +58,16 @@ export default {
     name: 'confusionnodemap',
     props: {
         nodeId: String,
+<<<<<<< HEAD
+=======
+        cellId: Object,
+>>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
     },
     computed: {
         ...mapGetters([
             'layoutInfo',
         ]),
+<<<<<<< HEAD
         filteredFeatureImage: function() {
             const that = this;
             return this.featureImages.filter((image, index) => {
@@ -65,11 +85,21 @@ export default {
             featureMaxActivations: [],
             featureMinActivations: [],
             maxActivation: 1,
+=======
+    },
+    data: function() {
+        return {
+            curVis: 'origin',
+            visOptions: ['origin', 'vanilla_bp', 'guided_bp', 'grad_cam', 'layer_cam', 'grad_times_image', 'gbp_grad_times_image'],
+            featureImages: [],
+            images: [],
+>>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
             scrollOptions: {
                 bar: {
                     background: '#c6bebe',
                 },
             },
+<<<<<<< HEAD
             featureMapSize: 50,
             actThreshold: 0,
         };
@@ -90,20 +120,53 @@ export default {
             const context = canvas.getContext('2d');
             const height = feature.length;
             const width = feature[0].length;
+=======
+        };
+    },
+    methods: {
+        toImage: function(feature) {
+            // return array;
+            window.feature = feature;
+            const canvas = this.toImage.canvas || (this.toImage.canvas = document.createElement('canvas'));
+            const context = canvas.getContext('2d');
+            const height = feature.length;
+            const width = feature[0].length;
+            const depth = feature[0][0].length;
+>>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
             canvas.width = width;
             canvas.height = height;
             const image = context.createImageData(width, height);
             const data = image.data;
+<<<<<<< HEAD
             for (let i=0; i<data.length; i+=4) {
                 const v = feature[Math.floor(i/4/width)][(i/4)%width];
                 data[i] = v>0?(255-Math.floor(v/maxv*255)):255;
                 data[i+1] = v>0?(255-Math.floor(v/maxv*255)):(255-Math.floor(v/minv*255));
                 data[i+2] = v>0?255:(255-Math.floor(v/minv*255));
                 data[i+3] = 255;
+=======
+            if (depth==1) {
+                for (let i=0; i<data.length; i+=4) {
+                    const v = feature[Math.floor(i/4/width)][(i/4)%width];
+                    data[i] = v[0];
+                    data[i+1] = v[0];
+                    data[i+2] = v[0];
+                    data[i+3] = 255;
+                }
+            } else {
+                for (let i=0; i<data.length; i+=4) {
+                    const v = feature[Math.floor(i/4/width)][(i/4)%width];
+                    data[i] = v[0];
+                    data[i+1] = v[1];
+                    data[i+2] = v[2];
+                    data[i+3] = 255;
+                }
+>>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
             }
             context.putImageData(image, 0, 0);
             return canvas.toDataURL();
         },
+<<<<<<< HEAD
     },
     mounted: function() {
         if (this.nodeId != undefined) {
@@ -141,6 +204,60 @@ export default {
                         return that.featureMapToImage(d, maxv, minv);
                     });
                 }
+=======
+        changeKey: function() {
+            this.getFeatureImages();
+        },
+        clearFeatureImages: function() {
+            this.featureImages = [];
+        },
+        getFeatureImages: async function() {
+            this.clearFeatureImages();
+            const that = this;
+            const images = that.images;
+            // const store = that.$store;
+            for (let i=0; i<images.length; i++) {
+                await that.getSingleFeatureImage(i);
+            }
+            // 异步
+            // if (images.length>0) {
+            //     const getImageGradientURL = store.getters.URL_GET_IMAGE_GRADIENT;
+            //     for (let i=0; i<images.length; i++) {
+            //         console.log(i);
+            //         axios.get(getImageGradientURL(images[i], that.curVis))
+            //             .then(function(response) {
+            //                 console.log('get gradient', response.data);
+            //                 that.featureImages.push(that.toImage(response.data));
+            //             });
+            //     }
+            // }
+        },
+        getSingleFeatureImage: async function(i) {
+            const that = this;
+            const images = that.images;
+            const store = that.$store;
+            const getImageGradientURL = store.getters.URL_GET_IMAGE_GRADIENT;
+            // console.log(i);
+            await axios.get(getImageGradientURL(images[i], that.curVis))
+                .then(function(response) {
+                    // console.log('get gradient', response.data);
+                    that.featureImages.push(that.toImage(response.data));
+                    // that.featureImages.push(response.data);
+                });
+        },
+    },
+    mounted: function() {
+        if (this.cellId != undefined) {
+            const that = this;
+            const store = that.$store;
+            // console.log('cell_id', that.cellId);
+            axios.post(store.getters.URL_GET_IMAGES_IN_MATRIX_CELL, {
+                'labels': that.cellId['labels'],
+                'preds': that.cellId['preds'],
+            }).then(function(response) {
+                that.images = response.data;
+                that.getFeatureImages();
+>>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
             });
         }
     },
@@ -151,7 +268,11 @@ export default {
 .featurenode {
     width: 100%;
     max-height: 480px;
+<<<<<<< HEAD
     overflow: hidden;
+=======
+    /* overflow: hidden; */
+>>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
     border-top: 1px solid #aaaaaa;
     border-radius: 2px;
     padding: 3px;
@@ -171,14 +292,22 @@ export default {
     max-height: 480px;
 }
 .featuremap {
+<<<<<<< HEAD
     width: 19%;
+=======
+    width: 24%;
+>>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
     margin: 3px 3px 3px 3px;
 }
 .el-select >>> .el-input__inner {
     font-size: 5px;
     line-height: 15px;
     height: 15px;
+<<<<<<< HEAD
     width: 50px;
+=======
+    width: 100px;
+>>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
     padding-left: 2px;
     padding-right: 15px;
     border: 1px solid #aaaaaa;

@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 import matplotlib.cm as mpl_color_map
 import jittor as jt
-import data.jimm
+import data.jimm as jimm
 
 
 def get_img(path):
@@ -46,6 +46,22 @@ def save_gradient_images(gradient, file_name):
     # Save image
     path_to_file = os.path.join('./results', file_name + '.jpg')
     save_image(gradient, path_to_file)
+
+def normalize(gradient):
+    """
+        Exports the original gradient image
+    Args:
+        gradient (np arr): Numpy array of the gradient with shape (3, 224, 224)
+        file_name (str): File name to be exported
+    """
+    # Normalize
+    gradient = gradient - gradient.min()
+    if gradient.max() != 0:
+        gradient /= gradient.max()
+    else:
+        print('dividend=0')
+    gradient = (gradient*255).astype(np.uint8)
+    return gradient
 
 def save_class_activation_images(org_img, activation_map, file_name):
     """
