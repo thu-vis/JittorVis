@@ -10,7 +10,7 @@
             </svg>
         </vue-scroll>
         <div style="width:20%; height:100%" @click.prevent="" @mouseenter.prevent="" ref="navContainer">
-            <svg class="one-network-nav" :width="width*0.1" :height="height*0.1" @click.prevent="">
+            <svg class="one-network-nav" width="100%" @click.prevent="">
             </svg>
         </div>
     </div>
@@ -24,7 +24,6 @@ import clone from 'just-clone';
 import Util from './Util.vue';
 import GlobalVar from './GlovalVar.vue';
 
-/* eslint-disable */
 export default {
     name: 'network-layout',
     mixins: [Util, GlobalVar],
@@ -50,6 +49,9 @@ export default {
         },
         pageHeight: function() {
             return this.$refs.navContainer.offsetHeight;
+        },
+        navWidth: function() {
+            return this.$refs.navContainer.offsetWidth;
         },
         scrollBar: function() {
             return this.$refs['vs'];
@@ -708,26 +710,28 @@ export default {
         updateNav: function() {
             const that=this;
             const content=this.svg.html();
-            window.content=content;
-            window.t=this;
-            window.d3=d3;
             this.svgMini.html(content);
+
+            const svgScale = this.navWidth / this.width;
+            const svgHeight = this.height * svgScale > this.pageHeight ? this.pageHeight : this.height * svgScale;
+
             this.svgMini.append('rect')
                 .attr('id', 'networkNavBar')
                 .attr('fill', '#c6bebe')
                 .attr('opacity', 0.3)
+                .attr('height', svgHeight)
                 .call(d3.drag()
                     .on('start', function() {
+                        // eslint-disable-next-line no-invalid-this
                         d3.select(this).attr('opacity', 0.5);
                     })
                     .on('drag', function(e) {
-                        console.log(e.dy, that.scale, 10);
                         that.scrollBar.scrollBy({
-                            'dx': e.dx * 1.44 * that.scale,
                             'dy': e.dy * 1.44 * that.scale,
                         });
                     })
                     .on('end', function() {
+                        // eslint-disable-next-line no-invalid-this
                         d3.select(this).attr('opacity', 0.3);
                     }),
                 );
@@ -735,8 +739,8 @@ export default {
         },
         updateScroll: function() {
             const pos=this.scrollBar.getPosition().scrollTop/this.scale;
-            // console.log('pos', pos,this.scale,this.pageHeight);
             const barHeight = this.pageHeight/this.scale;
+            const maxHeight = this.pageHeight / this.navWidth * this.width;
 
             this.svgMini.select('#networkNavBar')
                 .attr('x', 0)
@@ -744,9 +748,9 @@ export default {
                 .attr('width', 2000)
                 .attr('height', barHeight);
 
-            if (this.height*0.1 > this.pageHeight) {
+            if (this.height > maxHeight) {
                 this.svgMini.attr('viewBox',
-                    [0, pos/(this.height-this.pageHeight/this.scale) * (this.height-this.pageHeight*10), this.width, this.pageHeight*10])
+                    [0, pos/(this.height-this.pageHeight/this.scale) * (this.height-maxHeight), this.width, maxHeight])
                     .attr('height', this.pageHeight);
             } else {
                 this.svgMini.attr('viewBox', [0, 0, this.width, this.height]);
