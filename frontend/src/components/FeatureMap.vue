@@ -31,12 +31,6 @@ export default {
     },
     methods: {
         deleteId(id) {
-<<<<<<< HEAD
-            console.log('delete', id);
-            this.$store.commit('setFeatureMapNodeID', -1);
-=======
-            // console.log('delete', id);
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
             const index = this.featureMapNodeIDs.indexOf(id);
             // console.log(index);
             if (index !== -1) {

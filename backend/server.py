@@ -77,7 +77,7 @@ def main():
     parser = argparse.ArgumentParser(description='manual to this script')
     parser.add_argument("--data_path", type=str, default='/data/zhaowei/jittor-data/')
     parser.add_argument("--host", type=str, default="0.0.0.0")
-    parser.add_argument("--port", type=int, default=5004)
+    parser.add_argument("--port", type=int, default=5003)
     args = parser.parse_args()
     if not os.path.exists(args.data_path):
         raise Exception("The path does not exist.")
@@ -97,7 +97,7 @@ def main():
     trainImages = np.load(trainImagePath)
 
     model = resnet26(pretrained=False, num_classes=100)
-    model_dict_path = '/home/zhaowei/JittorModels/trained-models/restnet-14-0.98.pkl'
+    model_dict_path = '/data/zhaowei/cifar-100/models/resnet26-48-0.75.pkl'
     model.load_state_dict(jt.load(model_dict_path))
     model.eval()
     sampling_buffer_path = os.path.join(bufferPath, "hierarchy.pkl")

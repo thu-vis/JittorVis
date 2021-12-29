@@ -8,23 +8,11 @@ from jittor.lr_scheduler import CosineAnnealingLR
 from data.jimm import resnet26
 
 
-<<<<<<< HEAD
-from backend.data.feature_utils import *
-=======
 from data.feature_utils import *
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
 
 model_dict_path = '/home/fengyuan/JittorModels/trained-models/restnet-14-0.98.pkl'
 img_path = '/home/fengyuan/JittorModels/trainingSet/trainingSet/0/img_1.jpg'
 
-<<<<<<< HEAD
-transform = transform.Compose([
-    transform.Resize(512),
-    transform.CenterCrop(448),
-    transform.ToTensor(),
-    transform.ImageNormalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
-])
-=======
 def get_train_transforms():
     return transform.Compose([
         transform.RandomCropAndResize((448, 448)),
@@ -41,7 +29,6 @@ def get_valid_transforms():
         transform.ImageNormalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
     ])
 
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
 
 class Extractor():
     """
@@ -187,51 +174,23 @@ class FeatureVis():
     """
         Algorithms for feature visualization 
             (bp)          vanilla_bp, guided_bp  
-<<<<<<< HEAD
-            (cam)         grad_cam, layer_cam, guided_grad_cam, score_cam
-            (grad)        smooth_grad, integrated_gradients
-=======
             (cam)         grad_cam, layer_cam, guided_grad_cam
             (grad)        integrated_gradients
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
             (gradximg)    [(gbp/integ)_]grad_times_image, 
     """
     def __init__(self, model=None):
         self.model = model
         self.model.eval()
 
-<<<<<<< HEAD
-        self.ori_img = get_img(img_path)
-        self.model_input = transform(self.ori_img)
-=======
         self.transform = get_valid_transforms()
 
         self.ori_img = get_img(img_path)
         self.model_input = self.transform(self.ori_img)
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
         self.model_input = self.model_input.reshape((1,3,448,448))
         self.model_input = jt.array(self.model_input)
 
         self.target_class = extract_target_class(img_path)
 
-<<<<<<< HEAD
-        self.extractor = Extractor(self.model)
-
-
-    def get_feature_vis(self, model_input=None, method='vanilla_bp'):
-        """
-            model_input (numpy, [1, 3, w, h])
-            return numpy([3, w, h])
-        """
-        if model_input:
-            self.model_input = jt.array(model_input)
-        return eval("self.%s" % method)()
-        
-
-    def vanilla_bp(self, file_name_to_export='vanilla_bp', save=False):
-        self.extractor.register_hooks(type="vbp")
-        first_conv_grad = self.extractor.generate_gradients(self.model_input, self.target_class)[0].data
-=======
     def get_feature_vis(self, model_input=None, target_class=None, method='vanilla_bp'):
         """
             model_input (numpy, [w, h, 3])
@@ -259,7 +218,6 @@ class FeatureVis():
         extractor = Extractor(self.model)
         extractor.register_hooks(type="vbp")
         first_conv_grad = extractor.generate_gradients(img_input, target_class)[0].data
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
         vanilla_grads = first_conv_grad
 
         if save:
@@ -270,14 +228,6 @@ class FeatureVis():
             save_gradient_images(pos_sal, file_name_to_export + '_p_sal')
             save_gradient_images(neg_sal, file_name_to_export + '_n_sal')
         
-<<<<<<< HEAD
-        print('vanilla_bp', type(vanilla_grads), vanilla_grads.shape)
-        return vanilla_grads
-
-    def guided_bp(self, file_name_to_export='guided_bp', save=False):
-        self.extractor.register_hooks("gbp")
-        first_conv_grad = self.extractor.generate_gradients(self.model_input, self.target_class)[0].data
-=======
         # grayscale_guided_grads = convert_to_grayscale(vanilla_grads)
         # vanilla_grads = grayscale_guided_grads
 
@@ -291,7 +241,6 @@ class FeatureVis():
         extractor = Extractor(self.model)
         extractor.register_hooks("gbp")
         first_conv_grad = extractor.generate_gradients(img_input, target_class)[0].data
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
         guided_grads = first_conv_grad
 
         if save:
@@ -303,20 +252,12 @@ class FeatureVis():
             save_gradient_images(neg_sal, file_name_to_export + '_n_sal')
 
         print('guided_bp', type(guided_grads), guided_grads.shape)
-<<<<<<< HEAD
-        return guided_grads
-
-    def integrated_gradients(self, steps=10, file_name_to_export='integrated_gradients', save=False):
-        self.extractor.register_hooks("vbp")
-        integrated_grads = self.extractor.generate_integrated_gradients(self.model_input, self.target_class, steps)
-=======
         return normalize(guided_grads)
 
     def integrated_gradients(self, img_input, target_class, steps=10, file_name_to_export='integrated_gradients', save=False):
         extractor = Extractor(self.model)
         extractor.register_hooks("vbp")
         integrated_grads = extractor.generate_integrated_gradients(img_input, target_class, steps)
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
         integrated_grads = integrated_grads.data
         
         if save:
@@ -324,15 +265,6 @@ class FeatureVis():
             save_gradient_images(grayscale_integrated_grads, file_name_to_export + '_Integrated_G_gray')
 
         print('integrated_gradients', type(integrated_grads), integrated_grads.shape)
-<<<<<<< HEAD
-        return integrated_grads
-
-    def grad_times_image(self, file_name_to_export='gradximg', save=False):
-        self.extractor.register_hooks("vbp")
-        first_conv_grad = self.extractor.generate_gradients(self.model_input, self.target_class)[0].data
-        vanilla_grads = first_conv_grad
-        grad_times_image = vanilla_grads * self.model_input.numpy()[0]
-=======
         grayscale_integrated_grads = convert_to_grayscale(integrated_grads)
         return normalize(grayscale_integrated_grads)
 
@@ -342,22 +274,12 @@ class FeatureVis():
         first_conv_grad = extractor.generate_gradients(img_input, target_class)[0].data
         vanilla_grads = first_conv_grad
         grad_times_image = vanilla_grads * img_input.numpy()[0]
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
 
         if save:
             grayscale_vanilla_grads = convert_to_grayscale(grad_times_image)
             save_gradient_images(grayscale_vanilla_grads, file_name_to_export + '_grad_times_image_gray')
 
         print('grad_times_image', type(grad_times_image), grad_times_image.shape)
-<<<<<<< HEAD
-        return grad_times_image
-
-    def gbp_grad_times_image(self, file_name_to_export='gbp_gradximg', save=False):
-        self.extractor.register_hooks("gbp")
-        first_conv_grad = self.extractor.generate_gradients(self.model_input, self.target_class)[0].data
-        gbp_grads = first_conv_grad
-        gbp_grad_times_image = gbp_grads * self.model_input.numpy()[0]
-=======
         grayscale_vanilla_grads = convert_to_grayscale(grad_times_image)
         return normalize(grayscale_vanilla_grads)
 
@@ -367,21 +289,12 @@ class FeatureVis():
         first_conv_grad = extractor.generate_gradients(img_input, target_class)[0].data
         gbp_grads = first_conv_grad
         gbp_grad_times_image = gbp_grads * img_input.numpy()[0]
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
 
         if save:
             grayscale_vanilla_grads = convert_to_grayscale(gbp_grad_times_image)
             save_gradient_images(grayscale_vanilla_grads, file_name_to_export + '_grad_times_image_gray')
 
         print('gbp_grad_times_image', type(gbp_grad_times_image), gbp_grad_times_image.shape)
-<<<<<<< HEAD
-        return gbp_grad_times_image
-
-    def integ_grad_times_image(self, file_name_to_export='integ_gradximg', save=False):
-        self.extractor.register_hooks("vbp")
-        integrated_grads = self.extractor.generate_integrated_gradients(self.model_input, self.target_class).data
-        integ_grad_times_image = integrated_grads * self.model_input.numpy()[0]
-=======
         grayscale_vanilla_grads = convert_to_grayscale(gbp_grad_times_image)
         return normalize(grayscale_vanilla_grads)
 
@@ -390,22 +303,12 @@ class FeatureVis():
         extractor.register_hooks("vbp")
         integrated_grads = extractor.generate_integrated_gradients(img_input, target_class).data
         integ_grad_times_image = integrated_grads * img_input.numpy()[0]
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
 
         if save:
             grayscale_vanilla_grads = convert_to_grayscale(integ_grad_times_image)
             save_gradient_images(grayscale_vanilla_grads, file_name_to_export + '_grad_times_image_gray')
 
         print('integ_grad_times_image', type(integ_grad_times_image), integ_grad_times_image.shape)
-<<<<<<< HEAD
-        return integ_grad_times_image
-
-    def grad_cam(self, file_name_to_export='grad_cam', save=False, cam_size=None, return_cam=False):
-        self.extractor.register_hooks("cam")
-        self.extractor.forward_and_backward(self.model_input, self.target_class)
-        last_conv_grad = self.extractor.conv_grads_out[0][0].data
-        last_conv_output = self.extractor.conv_output[-1][0].data
-=======
         grayscale_vanilla_grads = convert_to_grayscale(integ_grad_times_image)
         return normalize(grayscale_vanilla_grads)
 
@@ -415,7 +318,6 @@ class FeatureVis():
         extractor.forward_and_backward(img_input, target_class)
         last_conv_grad = extractor.conv_grads_out[0][0].data
         last_conv_output = extractor.conv_output[-1][0].data
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
         weights = np.mean(last_conv_grad, axis=(1, 2))
         target = last_conv_output
         cam = np.ones(target.shape[1:], dtype=np.float32)
@@ -425,32 +327,15 @@ class FeatureVis():
         cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))
         cam = np.uint8(cam * 255)
         if not cam_size:
-<<<<<<< HEAD
-            cam_size = self.ori_img.size
-        cam = np.uint8(Image.fromarray(cam).resize(cam_size, Image.ANTIALIAS))/255
-
-        if save:
-            save_class_activation_images(self.ori_img, cam, file_name_to_export)
-=======
             cam_size = ori_img.size
         cam = np.uint8(Image.fromarray(cam).resize(cam_size, Image.ANTIALIAS))/255
 
         if save:
             save_class_activation_images(ori_img, cam, file_name_to_export)
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
 
         if return_cam:
             return cam
         else:
-<<<<<<< HEAD
-            heat_map_on_image = get_class_activation_image(self.ori_img, cam)
-            print('grad_cam', type(heat_map_on_image), heat_map_on_image.shape)
-            return heat_map_on_image
-
-    def guided_grad_cam(self, file_name_to_export='guided_grad_cam', save=False):
-        cam = self.grad_cam(save=False, cam_size=tuple(self.model_input.shape[2:]), return_cam=True)
-        guided_grads = self.guided_bp(save=False)
-=======
             heat_map_on_image = get_class_activation_image(ori_img, cam)
             print('grad_cam', type(heat_map_on_image), heat_map_on_image.shape)
             return heat_map_on_image
@@ -458,7 +343,6 @@ class FeatureVis():
     def guided_grad_cam(self, img_input, target_class=None, ori_img=None, file_name_to_export='guided_grad_cam', save=False):
         cam = self.grad_cam(img_input, save=False, cam_size=tuple(img_input.shape[2:]), return_cam=True)
         guided_grads = self.guided_bp(img_input, save=False)
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
         cam_gb = np.multiply(cam, guided_grads)
 
         if save:
@@ -466,15 +350,6 @@ class FeatureVis():
             grayscale_cam_gb = convert_to_grayscale(cam_gb)
             save_gradient_images(grayscale_cam_gb, file_name_to_export + '_GGrad_Cam_gray')
 
-<<<<<<< HEAD
-        return cam_gb
-
-    def layer_cam(self, file_name_to_export='layer_cam', save=False, return_cam=False):
-        self.extractor.register_hooks("cam")
-        self.extractor.forward_and_backward(self.model_input, self.target_class)
-        last_conv_grad = self.extractor.conv_grads_out[0][0].data
-        last_conv_output = self.extractor.conv_output[-1][0].data
-=======
         return normalize(cam_gb)
 
     def layer_cam(self, img_input, target_class, ori_img, file_name_to_export='layer_cam', save=False, return_cam=False):
@@ -483,128 +358,31 @@ class FeatureVis():
         extractor.forward_and_backward(img_input, target_class)
         last_conv_grad = extractor.conv_grads_out[0][0].data
         last_conv_output = extractor.conv_output[-1][0].data
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
         weights = last_conv_grad
         target = last_conv_output
         weights[weights < 0] = 0
         cam = np.sum(weights * target, axis=0)
         cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))
         cam = np.uint8(cam * 255)
-<<<<<<< HEAD
-        cam = np.uint8(Image.fromarray(cam).resize(self.ori_img.size, Image.ANTIALIAS))/255
-
-        if save:
-            save_class_activation_images(self.ori_img, cam, file_name_to_export)
-=======
         cam = np.uint8(Image.fromarray(cam).resize(ori_img.size, Image.ANTIALIAS))/255
 
         if save:
             save_class_activation_images(ori_img, cam, file_name_to_export)
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
 
         if return_cam:
             return cam
         else:
-<<<<<<< HEAD
-            heat_map_on_image = get_class_activation_image(self.ori_img, cam)
-            print('layer_cam', type(heat_map_on_image), heat_map_on_image.shape)
-            return heat_map_on_image
-
-    def score_cam(self, file_name_to_export='score_cam', save=False, cam_size=None, return_cam=False):
-        # not support 
-        self.extractor.register_hooks("cam")
-        self.extractor.forward_and_backward(self.model_input, self.target_class)
-        last_conv_output = self.extractor.conv_output[-1][0]
-        target = last_conv_output
-        cam = np.ones(target.shape[1:], dtype=np.float32)
-        for i in range(len(target)):
-            # Unsqueeze to 4D
-            saliency_map = jt.unsqueeze(jt.unsqueeze(target[i, :, :],0),0)
-            # Upsampling to input size
-            saliency_map =  jt.nn.interpolate(saliency_map, size=self.model_input.shape[2:], mode='bilinear', align_corners=False)
-            if saliency_map.max() == saliency_map.min():
-                continue
-            # Scale between 0-1
-            norm_saliency_map = (saliency_map - saliency_map.min()) / (saliency_map.max() - saliency_map.min())
-            # Get the target score
-            w = jt.nn.softmax(self.model(self.model_input*norm_saliency_map),dim=1)[0][self.target_class]
-            cam += w.data * target[i, :, :].data
-        cam = np.maximum(cam, 0)
-        cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))  # Normalize between 0-1
-        cam = np.uint8(cam * 255)  # Scale between 0-255 to visualize
-        if not cam_size:
-            cam_size = self.ori_img.size
-        cam = np.uint8(Image.fromarray(cam).resize((cam_size), Image.ANTIALIAS))/255
-
-        if return_cam:
-            return cam
-        else:
-            heat_map_on_image = get_class_activation_image(self.ori_img, cam)
-            print('score_cam', type(heat_map_on_image), heat_map_on_image.shape)
-            return heat_map_on_image
-
-    def smooth_grad(self, file_name_to_export='smooth_grad', save=False, param_sigma_multiplier=4, param_n=10, grad_type="vbp"):
-        # not recommended
-        assert grad_type in ['gbp', 'vbp']
-        if grad_type=='vbp':
-            self.extractor.register_hooks("vbp")
-        else: # gbp
-            self.extractor.register_hooks("gbp")
-        smooth_grad = np.zeros(self.model_input.size()[1:])
-        mean = 0
-        sigma = param_sigma_multiplier / (jt.max(self.model_input) - jt.min(self.model_input)).item()
-        for x in range(param_n):
-            # Generate noise
-            noise = jt.normal(mean=mean, std=sigma**2, size=self.model_input.size())
-            # Add noise to the image
-            noisy_img = self.model_input + noise
-            # Calculate gradients
-            bp_grads = self.extractor.generate_gradients(noisy_img, self.target_class)
-            # Add gradients to smooth_grad
-            smooth_grad = smooth_grad + bp_grads
-        # Average it out
-        smooth_grad = smooth_grad / param_n
-        smooth_grad = smooth_grad.data[0]
-
-        if save:
-            save_gradient_images(smooth_grad, file_name_to_export + '_SmoothGrad_color')
-            grayscale_smooth_grad = convert_to_grayscale(smooth_grad)
-            save_gradient_images(grayscale_smooth_grad, file_name_to_export + '_SmoothGrad_gray')
-
-        print('smooth_grad', type(smooth_grad), smooth_grad.shape)
-        return smooth_grad
-
-=======
             heat_map_on_image = get_class_activation_image(ori_img, cam)
             print('layer_cam', type(heat_map_on_image), heat_map_on_image.shape)
             return heat_map_on_image
 
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
 if __name__=="__main__":
     model = resnet26(pretrained=False, num_classes=10)
     model.load_state_dict(jt.load(model_dict_path))
     featurevis = FeatureVis(model)
-<<<<<<< HEAD
-    featurevis.guided_bp()
-    featurevis.vanilla_bp()
-    featurevis.grad_cam()
-    featurevis.layer_cam()
-    featurevis.grad_times_image()
-    featurevis.guided_grad_cam()
-    featurevis.integrated_gradients()
-    featurevis.integ_grad_times_image()
-    featurevis.gbp_grad_times_image()
-    # featurevis.score_cam()
-    featurevis.smooth_grad()
-=======
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
     vis = featurevis.get_feature_vis()
     print(vis.shape)
 
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 2d7bde681034fcd91b47df6d0c8c70a5a4bba485
         
