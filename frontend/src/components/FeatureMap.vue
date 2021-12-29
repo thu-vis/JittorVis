@@ -31,10 +31,8 @@ export default {
     },
     methods: {
         deleteId(id) {
-            console.log('delete', id);
-            this.$store.commit('setFeatureMapNodeID', -1);
             const index = this.featureMapNodeIDs.indexOf(id);
-            console.log(index);
+            // console.log(index);
             if (index !== -1) {
                 this.featureMapNodeIDs.splice(index, 1);
             }
