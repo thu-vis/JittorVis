@@ -1,6 +1,6 @@
 # JittorVis: Visual understanding of deep learning model
 
-![Image of JittorVis](https://github.com/thu-vis/JittorVis/blob/main/assets/overview.png)
+![Image of JittorVis](https://github.com/thu-vis/JittorVis/blob/main/assets/overview.jpg)
 
 **JittorVis** is an open-source library for understanding the inner workings of [**Jittor**](https://github.com/jittor/jittor/) models by visually illustrating their dataflow graphs.
 
