@@ -25,12 +25,20 @@
           <div id="network-container"><network ref="network"></network></div>
         </div>
       </div>
-      <div id="featuremap-container">
+      <div id="right">
+        <div id="featuremap-container">
             <span>—— Features ——</span>
             <vue-scroll :ops="scrollOptions">
               <feature-map></feature-map>
             </vue-scroll>
         </div>
+        <div id="confusion-featuremap-container">
+            <span>——  Confusion Features ——</span>
+            <vue-scroll :ops="scrollOptions">
+              <confusion-feature-map></confusion-feature-map>
+            </vue-scroll>
+        </div>
+      </div>
     </div>
 </template>
 
@@ -38,13 +46,14 @@
 import Network from './Network.vue';
 import Statistic from './Statistic.vue';
 import FeatureMap from './FeatureMap.vue';
+import ConfusionFeatureMap from './ConfusionFeatureMap.vue';
 import ConfusionMatrix from './ConfusionMatrix.vue';
 import {mapGetters} from 'vuex';
-import axios from 'axios';
+// import axios from 'axios';
 
 
 export default {
-    components: {Network, Statistic, FeatureMap, ConfusionMatrix},
+    components: {Network, Statistic, FeatureMap, ConfusionFeatureMap, ConfusionMatrix},
     name: 'ModelView',
     data: function() {
         return {
@@ -65,23 +74,23 @@ export default {
     },
     methods: {
         clickConfusionCell: function(d) {
-            const store = this.$store;
             const that = this;
-            axios.post(store.getters.URL_GET_IMAGES_IN_MATRIX_CELL, {
-                labels: d.rowNode.leafs,
-                preds: d.colNode.leafs,
-            }).then(function(response) {
-                const images = response.data;
-                that.images = images;
-                that.selectedImage = '';
-                if (images.length>0) {
-                    const getImageGradientURL = store.getters.URL_GET_IMAGE_GRADIENT;
-                    axios.get(getImageGradientURL(images[0]))
-                        .then(function(response) {
-                            console.log('get gradient', response.data);
-                        });
-                }
-            });
+            that.$store.commit('setConfusionCellID', {labels: d.rowNode.leafs, preds: d.colNode.leafs});
+            // console.log(that.$store.state.confusionCellID);
+            // axios.post(store.getters.URL_GET_IMAGES_IN_MATRIX_CELL, {
+            //     labels: d.rowNode.leafs,
+            //     preds: d.colNode.leafs,
+            // }).then(function(response) {
+            //     const images = response.data;
+            //     console.log(`confusion matrix cell ${d.key}`, images);
+            //     if (images.length>0) {
+            //         const getImageGradientURL = store.getters.URL_GET_IMAGE_GRADIENT;
+            //         axios.get(getImageGradientURL(images[0]))
+            //             .then(function(response) {
+            //                 console.log('get gradient', response.data);
+            //             });
+            //     }
+            // });
         },
         runNetworkOnImage: function(id) {
             if (id==='') return;
@@ -114,12 +123,6 @@ export default {
   margin: 5px 5px 0 0;
 }
 
-#featuremap-container {
-  width: 40%;
-  height: 100%;
-  border-left: 1px solid lightgray;
-}
-
 #model-content {
   width: 100%;
   height: 100%;
@@ -141,6 +144,11 @@ export default {
   height: 100%;
 }
 
+#right {
+  width: 40%;
+  height: 100%;
+}
+
 #network-container {
   width: 100%;
   height: 100%;
@@ -150,9 +158,33 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  height: 50%;
+  width: 100%;
 }
 
-#featuremap-container > span, #confusion-matrix-container > span, #confusion-matrix-container > span {
+#confusion-featuremap-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 50%;
+  width: 100%;
+}
+
+
+#confusion-featuremap-container > span, #featuremap-container > span, #confusion-matrix-container > span {
+  border-left: 1px solid lightgray;
+}
+
+#confusion-featuremap-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 50%;
+  width: 100%;
+  border-left: 1px solid lightgray;
+}
+
+#confusion-featuremap-container > span, #featuremap-container > span, #confusion-matrix-container > span {
   font-family: Lucida Sans Typewriter;
   font-weight: 400;
   margin: 5px 0 5px 0;

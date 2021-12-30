@@ -21,6 +21,7 @@ export default new Vuex.Store({
         },
         colors: {},
         featureMapNodeID: null, // which node to show feature map
+        confusionCellID: null, // which cell clicked ({labels, preds})
     },
     mutations: {
         setAllData(state, allData) {
@@ -44,11 +45,18 @@ export default new Vuex.Store({
         setColors(state, colors) {
             state.colors = colors;
         },
+        setConfusionCellID(state, confusionCellID) {
+            state.confusionCellID = confusionCellID;
+        },
+        setConfusionCellID(state, confusionCellID) {
+            state.confusionCellID = confusionCellID;
+        },
     },
     getters: {
         network: (state) => state.network,
         statistic: (state) => state.statistic,
         featureMapNodeID: (state) => state.featureMapNodeID,
+        confusionCellID: (state) => state.confusionCellID,
         layoutInfo: (state) => state.layoutInfo,
         confusionMatrix: (state) => state.confusionMatrix,
         labelHierarchy: (state) => state.labelHierarchy,
@@ -63,7 +71,7 @@ export default new Vuex.Store({
         },
         URL_GET_IMAGES_IN_MATRIX_CELL: (state) => state.APIBASE+'/api/confusionMatrixCell',
         URL_GET_IMAGE_GRADIENT: (state) => {
-            return (imageID) => state.APIBASE + `/api/imageGradient?imageID=${imageID}`;
+            return (imageID, method) => state.APIBASE + `/api/imageGradient?imageID=${imageID}&method=${method}`;
         },
         URL_GET_GRID: (state) => state.APIBASE + '/api/grid',
         URL_FIND_GRID_PARENT: (state) => state.APIBASE + '/api/findParent',
