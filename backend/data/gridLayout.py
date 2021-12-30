@@ -12,21 +12,37 @@ from time import time
 class GridLayout(object):
     def __init__(self):
         super().__init__()
+        self.tsner = IncrementalTSNE(n_components=2, init='pca', method='barnes_hut', perplexity=30, angle=0.3, n_jobs=8, n_iter=1000, random_state = 100)
 
-    def fit(self, X: np.ndarray, labels: np.ndarray = None, constraintX: np.ndarray = None, constraintY: np.ndarray = None):
+    def fit(self, X: np.ndarray, labels: np.ndarray = None, constraintX: np.ndarray = None, constraintY: np.ndarray = None, constraintLabels: np.ndarray = None, init = None):
         """main fit function
 
         Args:
             X (np.ndarray): n * d, n is the number of samples, d is the dimension of a sample
             labels (np.ndarray): label of each sample in X
         """        
-        X_embedded = self.tsne(X, constraintX = constraintX, constraintY = constraintY)
-        # self._draw_tsne(X_embedded, labels)
+        X_embedded = self.tsne(X, constraintX = constraintX, constraintY = constraintY, labels = labels, constraintLabels = constraintLabels, init = init)
         grid_ass, grid_size = self.grid(X_embedded)
         return X_embedded, grid_ass, grid_size
         
-    def tsne(self, X: np.ndarray, perplexity: int = 15, learning_rate: int = 3, constraintX: np.ndarray = None, constraintY: np.ndarray = None) -> np.ndarray:
-        X_embedded = IncrementalTSNE(n_components=2, perplexity=perplexity, learning_rate=learning_rate).fit_transform(X, constraint_X = constraintX, constraint_Y = constraintY)
+    def tsne(self, X: np.ndarray, labels: np.ndarray = None, perplexity: int = 15, learning_rate: int = 3, constraintX: np.ndarray = None, constraintY: np.ndarray = None, constraintLabels: np.ndarray = None, init = None) -> np.ndarray:
+        # remove empty labels
+        labelcnt = 0
+        removeEmptyTransform = np.zeros((np.max(labels)+1), dtype=int)-1
+        for label in labels:
+            if removeEmptyTransform[label]==-1:
+                removeEmptyTransform[label]=labelcnt
+                labelcnt += 1
+        labels = removeEmptyTransform[labels]
+        constraintLabels = removeEmptyTransform[constraintLabels]
+        self.tsner = IncrementalTSNE(n_components=2, init='pca' if init is None else init, method='barnes_hut', perplexity=30, angle=0.3, n_jobs=8, n_iter=1000, random_state = 100)
+        if constraintX is None:
+            X_embedded = self.tsner.fit_transform(X, constraint_X = constraintX, constraint_Y = constraintY, prev_n = 0 if constraintX is None else len(constraintX), 
+            alpha = 0.5, labels=labels, label_alpha=0.9)
+        else:
+            self.tsner = IncrementalTSNE(n_components=2, init='pca' if init is None else init, method='barnes_hut', perplexity=5, angle=0.3, n_jobs=8, n_iter=1000, random_state = 100)
+            X_embedded = self.tsner.fit_transform(X, constraint_X = constraintX, constraint_Y = constraintY, constraint_labels = constraintLabels, prev_n = 0 if constraintX is None else len(constraintX), 
+            alpha = 0.3, labels = labels, label_alpha=0.2)
         return X_embedded
     
     def grid(self, X_embedded: np.ndarray):
@@ -48,15 +64,6 @@ class GridLayout(object):
         row_asses, col_asses, info = fastlapjv(cost_matrix, k_value=50)
         col_asses = col_asses[:num]
         return col_asses, square_len
-    
-    def _draw_tsne(self, X, labels):
-        labels = labels.astype(int)
-        label_colors = ["#A9A9A9", "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2",
-            "#ffdb45", "#bcbd22", "#17becf"]
-        colors = [label_colors[label] for label in labels]
-        plt.figure()
-        plt.scatter(X[:, 0], X[:, 1], s=2, c=colors)
-        plt.savefig('tsne.png')
         
 if __name__ == "__main__":
     X = np.random.rand(500, 128)

@@ -152,9 +152,12 @@ class HierarchySampling(object):
         else:
             selected_indexes = {}
             depth += 1
-            assert depth<=self.max_depth
+            if depth>self.max_depth:
+                depth = self.max_depth
             for index in indexes:
                 selected_indexes[index] = self.hierarchy[index][self.max_depth-depth]
+                if len(selected_indexes[index])==0:
+                    selected_indexes[index].append(index)
             return selected_indexes, depth
         
     def dump(self, path):

@@ -48,7 +48,7 @@ class DataCtrler(object):
             data = data.reshape((n, d))
             
             labels = self.labels
-            self.sampler.fit(data, labels, 0.25, 1600)
+            self.sampler.fit(data, labels, 0.5, 1600)
             self.sampler.dump(self.sampling_buffer_path)
 
     def process(self, networkRawdata, statisticData, model = None, predictData = None, modeltype='jittor', trainImages = None, sampling_buffer_path="/tmp/hierarchy.pkl", attrs = {}):
@@ -239,6 +239,14 @@ class DataCtrler(object):
         
     def gridZoomIn(self, nodes, constraints, depth):
         neighbors, newDepth = self.sampler.zoomin(nodes, depth)
+        if type(neighbors)==dict:
+            while True:
+                newnodes = []
+                for neighbor in neighbors.values():
+                    newnodes += neighbor
+                if len(newnodes) >= 1000 or newDepth==self.sampler.max_depth:
+                    break
+                neighbors, newDepth = self.sampler.zoomin(newnodes, newDepth)
         zoomInConstraints = None
         zoomInConstraintX = None
         if constraints is not None:
@@ -253,19 +261,24 @@ class DataCtrler(object):
                 for node in nodes:
                     if node in nodesset:
                         zoomInConstraintX.append(node)
-                zoomInConstraintX = self.features[zoomInConstraintX]
+                zoomInConstraintX = self.features[nodes]
         else:
-            for i in range(len(nodes)):
-                parent = nodes[i]
-                for child in neighbors[parent]:
-                    zoomInNodes.append(int(child))
-                    if constraints is not None:
-                        zoomInConstraints.append(constraints[i])
-            zoomInConstraints = np.array(zoomInConstraints)
-            zoomInConstraintX = self.features[zoomInNodes]
+            for children in neighbors.values():
+                for child in children:
+                    if int(child) not in nodes:
+                        zoomInNodes.append(int(child))
+                    # initY.append([constraints[i][0], constraints[i][1]])
+            if constraints is not None:
+                zoomInConstraints = np.array(constraints)
+            zoomInConstraintX = self.features[nodes]
+            zoomInNodes = nodes + zoomInNodes
         zoomInLabels = self.labels[zoomInNodes]
         
-        tsne, grid, gridsize = self.grider.fit(self.features[zoomInNodes], labels = zoomInLabels, constraintX = zoomInConstraintX,  constraintY = zoomInConstraints)
+        labelTransform = self.transformBottomLabelToTop([node['name'] for node in self.statistic['confusion']['hierarchy']])
+        constraintLabels = labelTransform[self.labels[nodes]]
+        labels = labelTransform[zoomInLabels]        
+        
+        tsne, grid, gridsize = self.grider.fit(self.features[zoomInNodes], labels = labels, constraintX = zoomInConstraintX,  constraintY = zoomInConstraints, constraintLabels = constraintLabels)
         tsne = tsne.tolist()
         grid = grid.tolist()
         zoomInLabels = zoomInLabels.tolist()
@@ -287,6 +300,33 @@ class DataCtrler(object):
 
     def findGridParent(self, children, parents):
         return self.sampler.findParents(children, parents)
+    
+    def transformBottomLabelToTop(self, topLabels):
+        topLabelChildren = {}
+        topLabelSet = set(topLabels)
+        def dfs(nodes):
+            childrens = []
+            for root in nodes:
+                if type(root)==str:
+                    childrens.append(root)
+                    if root in topLabelSet:
+                        topLabelChildren[root] = [root]
+                else:
+                    rootChildren = dfs(root['children'])
+                    childrens += rootChildren
+                    if root['name'] in topLabelSet:
+                        topLabelChildren[root['name']] = rootChildren
+            return childrens
+        dfs(self.statistic['confusion']['hierarchy'])
+        childToTop = {}
+        for topLabelIdx in range(len(topLabels)):
+            for child in topLabelChildren[topLabels[topLabelIdx]]:
+                childToTop[child] = topLabelIdx
+        n = len(self.statistic['confusion']['names'])
+        labelTransform = np.zeros(n, dtype=int)
+        for i in range(n):
+            labelTransform[i] = childToTop[self.statistic['confusion']['names'][i]]
+        return labelTransform.astype(int)
     
     def runImageOnModel(self, imageID):
          if self.trainImages is not None:

@@ -313,6 +313,7 @@ export default {
     },
     mounted: function() {
         const that = this;
+        window.gridlayout = this;
         if (!this.rendering) {
             this.rendering = true;
             axios.post(that.URL_GET_GRID, {
