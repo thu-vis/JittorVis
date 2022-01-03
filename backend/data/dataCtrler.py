@@ -363,18 +363,4 @@ class DataCtrler(object):
         """
         return self.featureVis.get_feature_vis(inputImage, label, method)
 
-    def getFeatureVis(self, inputImage, label, method="vanilla_bp"):
-        """get feature visualization of an image
-
-        Args:
-            inputImage (numpy, (w,h,3)): RGB image
-            label (int): true class label
-            method (str): vanilla_bp, guided_bp, grad_cam, layer_cam, integrated_gradients, grad_times_image ...
-
-        Returns:
-            numpy (w, h, 3)
-        """
-        return self.featureVis.get_feature_vis(inputImage, label, method)
-
-
 dataCtrler = DataCtrler()
