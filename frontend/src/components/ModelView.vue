@@ -75,22 +75,8 @@ export default {
     methods: {
         clickConfusionCell: function(d) {
             const that = this;
-            that.$store.commit('setConfusionCellID', {labels: d.rowNode.leafs, preds: d.colNode.leafs});
-            // console.log(that.$store.state.confusionCellID);
-            // axios.post(store.getters.URL_GET_IMAGES_IN_MATRIX_CELL, {
-            //     labels: d.rowNode.leafs,
-            //     preds: d.colNode.leafs,
-            // }).then(function(response) {
-            //     const images = response.data;
-            //     console.log(`confusion matrix cell ${d.key}`, images);
-            //     if (images.length>0) {
-            //         const getImageGradientURL = store.getters.URL_GET_IMAGE_GRADIENT;
-            //         axios.get(getImageGradientURL(images[0]))
-            //             .then(function(response) {
-            //                 console.log('get gradient', response.data);
-            //             });
-            //     }
-            // });
+            that.$store.commit('setConfusionCellID',
+                {class_label: d.rowNode.name, class_pred: d.colNode.name, labels: d.rowNode.leafs, preds: d.colNode.leafs});
         },
         runNetworkOnImage: function(id) {
             if (id==='') return;
@@ -181,7 +167,7 @@ export default {
   align-items: center;
   height: 50%;
   width: 100%;
-  border-left: 1px solid lightgray;
+  /* border-left: 1px solid lightgray; */
 }
 
 #confusion-featuremap-container > span, #featuremap-container > span, #confusion-matrix-container > span {

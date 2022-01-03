@@ -2,7 +2,7 @@
     <div class="featurenode">
         <div class="featurenode-header" style="margin-bottom:3px; margin-top:3px">
             <span style="font-size:10px; cursor:pointer; font-family:Comic Sans MS;
-                margin-left:3px;">{{cellId['labels'][0]}}->{{cellId['preds'][0]}}</span>
+                margin-left:3px;">{{cellId['class_label']}}->{{cellId['class_pred']}}</span>
                 <!-- cellId['labels'] + cellId['preds'] -->
             <div style="width: 50px; flex-grow: 100;"></div>
             <div style="display:inline-flex; width:100px; margin-right:10px">
@@ -147,7 +147,7 @@ export default {
     max-height: 480px;
 }
 .featuremap {
-    width: 24%;
+    width: 19%;
     margin: 3px 3px 3px 3px;
 }
 .el-select >>> .el-input__inner {

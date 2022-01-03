@@ -21,6 +21,7 @@ export default {
     watch: {
         confusionCellID: function(newID, oldID) {
             // console.log('set cell', newID, oldID);
+            this.confusionCellIDs = [];
             this.confusionCellIDs.push(newID);
         },
         confusionCellIDs: function(newIDs, oldIDs) {
