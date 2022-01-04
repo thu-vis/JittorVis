@@ -168,8 +168,8 @@ export default {
                     .attr('height', that.gridCellAttrs['size'])
                     .attr('stroke', that.gridCellAttrs['stroke'])
                     .attr('stroke-width', that.gridCellAttrs['stroke-width'])
-                    .attr('fill', (d)=>that.colors[that.labelnames[d.label]])
-                    .attr('opacity', that.gridCellAttrs['rectOpacity']);
+                    .attr('fill', (d)=>that.colors[that.labelnames[d.label]].fill)
+                    .attr('opacity', (d)=>that.colors[that.labelnames[d.label]].opacity);
 
                 that.lassoNodesInG.enter().append('circle')
                     .attr('class', that.gridCellAttrs['centerClass'])
@@ -195,7 +195,8 @@ export default {
                 that.gridCellsInG.selectAll('rect')
                     .transition()
                     .duration(that.updateDuration)
-                    .attr('fill', (d)=>that.colors[that.labelnames[d.label]])
+                    .attr('fill', (d)=>that.colors[that.labelnames[d.label]].fill)
+                    .attr('opacity', (d)=>that.colors[that.labelnames[d.label]].opacity)
                     .on('end', resolve);
 
                 if ((that.gridCellsInG.size() === 0)) {

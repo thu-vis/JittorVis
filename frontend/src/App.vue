@@ -69,20 +69,46 @@ export default {
         initColor(hierarchy) {
             const basecolors = ['#8dd3c7', '#ffffb3', '#fb8072', '#80b1d3',
                 '#fdb462', '#b3de69', '#fccde5', '#bc80bd', '#ccebc5', '#ffed6f'];
-            const colors = {};
-            for (let i=0; i<hierarchy.length; i++) {
-                const queue = [hierarchy[i]];
-                while (queue.length>0) {
-                    const top = queue.pop();
-                    if (typeof(top)==='string') {
-                        colors[top] = basecolors[i];
-                    } else {
-                        colors[top.name] = basecolors[i];
-                        for (const child of top.children) {
-                            queue.push(child);
-                        }
+            const colors = {}; // fill and opacity
+
+            const assignColor = function(node, depth) {
+                if (typeof(node)==='string') return;
+                const nodename = node.name;
+                const basecolor = colors[nodename].fill;
+                const baseopacity = colors[nodename].opacity;
+                if (depth===0) {
+                    const childcnt = node.children.length;
+                    let opacity = baseopacity;
+                    const minOpacity = baseopacity>0.4?0.4:0;
+                    const opacityStep = childcnt>1?(opacity-minOpacity)/(childcnt-1):0;
+                    for (const child of node.children) {
+                        const childname = typeof(child)==='string'?child:child.name;
+                        colors[childname] = {
+                            fill: basecolor,
+                            opacity: opacity,
+                        };
+                        opacity -= opacityStep;
+                        assignColor(child, depth+1);
+                    }
+                } else if (depth>=1) {
+                    for (const child of node.children) {
+                        const childname = typeof(child)==='string'?child:child.name;
+                        colors[childname] = {
+                            fill: basecolor,
+                            opacity: baseopacity,
+                        };
                     }
                 }
+            };
+
+
+            for (let i=0; i<hierarchy.length; i++) {
+                const nodename = typeof(hierarchy[i])==='string'?hierarchy[i]:hierarchy[i].name;
+                colors[nodename] = {
+                    fill: basecolors[i],
+                    opacity: 1,
+                };
+                assignColor(hierarchy[i], 0);
             }
             return colors;
         },
