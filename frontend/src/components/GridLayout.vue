@@ -69,7 +69,7 @@ export default {
     watch: {
         // all info was loaded
         hierarchyColors: function(newColors, oldColors) {
-            if (!this.rendering) {
+            if (!this.rendering && this.nodes.length>0 ) {
                 this.render();
             }
         },
@@ -305,18 +305,18 @@ export default {
     mounted: function() {
         const that = this;
         window.gridlayout = this;
-        if (!this.rendering) {
-            this.rendering = true;
-            axios.post(that.URL_GET_GRID, {
-                nodes: [],
-                depth: 0,
-            }).then(function(response) {
-                that.nodes = response.data.nodes;
-                that.depth = response.data.depth;
-                that.gridInfo = response.data.grid;
+        axios.post(that.URL_GET_GRID, {
+            nodes: [],
+            depth: 0,
+        }).then(function(response) {
+            that.nodes = response.data.nodes;
+            that.depth = response.data.depth;
+            that.gridInfo = response.data.grid;
+            if (!that.rendering && that.labelnames.length>0) {
+                that.rendering = true;
                 that.render();
-            });
-        }
+            }
+        });
     },
 };
 </script>
