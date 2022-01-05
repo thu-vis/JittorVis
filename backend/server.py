@@ -100,8 +100,8 @@ def main():
     model_dict_path = '/data/zhaowei/cifar-100/models/resnet26-48-0.75.pkl'
     model.load_state_dict(jt.load(model_dict_path))
     model.eval()
-    sampling_buffer_path = os.path.join(bufferPath, "hierarchy.pkl")
-    dataCtrler.process(networkData, statisticData, model = model, predictData = predictData, trainImages = trainImages, sampling_buffer_path = sampling_buffer_path)
+    
+    dataCtrler.process(networkData, statisticData, model = model, predictData = predictData, trainImages = trainImages, bufferPath = bufferPath)
 
     app.run(port=args.port, host=args.host, threaded=True, debug=False)
 

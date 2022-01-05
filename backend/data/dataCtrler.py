@@ -2,6 +2,7 @@ from data.network import JittorNetworkProcessor
 import copy
 import os
 import numpy as np
+import json
 from PIL import Image
 import math
 from tempfile import NamedTemporaryFile
@@ -26,6 +27,7 @@ class DataCtrler(object):
         self.sampler = HierarchySampling()
         self.trainImages = None
         self.featureVis = None
+        self.enableTSNEBuffer = True
 
     def processNetworkData(self, network: dict) -> dict:
         processor = JittorNetworkProcessor()
@@ -51,7 +53,7 @@ class DataCtrler(object):
             self.sampler.fit(data, labels, 0.5, 1600)
             self.sampler.dump(self.sampling_buffer_path)
 
-    def process(self, networkRawdata, statisticData, model = None, predictData = None, modeltype='jittor', trainImages = None, sampling_buffer_path="/tmp/hierarchy.pkl", attrs = {}):
+    def process(self, networkRawdata, statisticData, model = None, predictData = None, modeltype='jittor', trainImages = None, bufferPath="/tmp/hierarchy.pkl", attrs = {}):
         """process raw data
         """        
         self.networkRawdata = networkRawdata
@@ -59,11 +61,14 @@ class DataCtrler(object):
         self.statistic = self.processStatisticData(statisticData)
         self.model = model
         self.featureVis = FeatureVis(model)
+        self.bufferPath = bufferPath
 
         if predictData is not None:
             self.labels = predictData["labels"].astype(int)
             self.preds = predictData["preds"].astype(int)
             self.features = predictData["features"]
+            
+            sampling_buffer_path = os.path.join(bufferPath, "hierarchy.pkl")
             self.sampling = self.processSamplingData(sampling_buffer_path)
         self.trainImages = trainImages
         
@@ -238,6 +243,10 @@ class DataCtrler(object):
             return []
         
     def gridZoomIn(self, nodes, constraints, depth):
+        TSNEBufferPath = os.path.join(self.bufferPath, "tsneTop.json")
+        if depth==0 and self.enableTSNEBuffer and os.path.exists(TSNEBufferPath):
+            with open(TSNEBufferPath) as f:
+                return json.load(f)
         neighbors, newDepth = self.sampler.zoomin(nodes, depth)
         if type(neighbors)==dict:
             while True:
@@ -289,7 +298,7 @@ class DataCtrler(object):
             "grid": grid[i],
             "label": zoomInLabels[i]
         } for i in range(n)]
-        return {
+        res = {
             "nodes": nodes,
             "grid": {
                 "width": gridsize,
@@ -297,6 +306,10 @@ class DataCtrler(object):
             },
             "depth": newDepth
         }
+        if depth==0 and self.enableTSNEBuffer:
+            with open(TSNEBufferPath, 'w') as f:
+                json.dump(res, f)
+        return res
 
     def findGridParent(self, children, parents):
         return self.sampler.findParents(children, parents)
