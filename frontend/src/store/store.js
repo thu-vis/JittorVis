@@ -20,6 +20,7 @@ export default new Vuex.Store({
             t: -1, // a timestamp
         },
         colors: {},
+        hierarchyColors: {},
         featureMapNodeID: null, // which node to show feature map
         confusionCellID: null, // which cell clicked ({labels, preds})
     },
@@ -51,6 +52,9 @@ export default new Vuex.Store({
         setConfusionCellID(state, confusionCellID) {
             state.confusionCellID = confusionCellID;
         },
+        setHierarchyColors(state, hierarchyColors) {
+            state.hierarchyColors = hierarchyColors;
+        },
     },
     getters: {
         network: (state) => state.network,
@@ -62,6 +66,7 @@ export default new Vuex.Store({
         labelHierarchy: (state) => state.labelHierarchy,
         labelnames: (state) => state.labelnames,
         colors: (state) => state.colors,
+        hierarchyColors: (state) => state.hierarchyColors,
 
         URL_GET_ALL_DATA: (state) => state.APIBASE + '/api/allData',
         URL_GET_CONFUSION_MATRIX: (state) => state.APIBASE + '/api/confusionMatrix',

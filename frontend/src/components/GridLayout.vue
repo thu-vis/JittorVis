@@ -34,8 +34,8 @@ export default {
             'confusionMatrix',
             'labelHierarchy',
             'labelnames',
-            'colors',
             'URL_GET_GRID',
+            'hierarchyColors',
         ]),
         svg: function() {
             return d3.select('#grid-drawer');
@@ -68,19 +68,9 @@ export default {
     },
     watch: {
         // all info was loaded
-        colors: function(newColors, oldColors) {
-            const that = this;
+        hierarchyColors: function(newColors, oldColors) {
             if (!this.rendering) {
-                this.rendering = true;
-                axios.post(that.URL_GET_GRID, {
-                    nodes: [],
-                    depth: 0,
-                }).then(function(response) {
-                    that.nodes = response.data.nodes;
-                    that.depth = response.data.depth;
-                    that.gridInfo = response.data.grid;
-                    that.render();
-                });
+                this.render();
             }
         },
     },
@@ -168,8 +158,8 @@ export default {
                     .attr('height', that.gridCellAttrs['size'])
                     .attr('stroke', that.gridCellAttrs['stroke'])
                     .attr('stroke-width', that.gridCellAttrs['stroke-width'])
-                    .attr('fill', (d)=>that.colors[that.labelnames[d.label]].fill)
-                    .attr('opacity', (d)=>that.colors[that.labelnames[d.label]].opacity);
+                    .attr('fill', (d)=>that.hierarchyColors[that.labelnames[d.label]].fill)
+                    .attr('opacity', (d)=>that.hierarchyColors[that.labelnames[d.label]].opacity);
 
                 that.lassoNodesInG.enter().append('circle')
                     .attr('class', that.gridCellAttrs['centerClass'])
@@ -195,8 +185,8 @@ export default {
                 that.gridCellsInG.selectAll('rect')
                     .transition()
                     .duration(that.updateDuration)
-                    .attr('fill', (d)=>that.colors[that.labelnames[d.label]].fill)
-                    .attr('opacity', (d)=>that.colors[that.labelnames[d.label]].opacity)
+                    .attr('fill', (d)=>that.hierarchyColors[that.labelnames[d.label]].fill)
+                    .attr('opacity', (d)=>that.hierarchyColors[that.labelnames[d.label]].opacity)
                     .on('end', resolve);
 
                 if ((that.gridCellsInG.size() === 0)) {
