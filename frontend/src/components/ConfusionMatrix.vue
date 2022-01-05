@@ -19,12 +19,19 @@ import clone from 'just-clone';
 export default {
     name: 'ConfusionMatrix',
     mixins: [Util, GlobalVar],
+    props: {
+        showColor: {
+            type: Boolean,
+            default: false,
+        },
+    },
     computed: {
         ...mapGetters([
             'confusionMatrix',
             'labelHierarchy',
             'labelnames',
             'colors',
+            'hierarchyColors',
         ]),
         baseMatrix: function() {
             return this.confusionMatrix;
@@ -51,6 +58,12 @@ export default {
         svgWidth: function() {
             return this.leftCornerSize+this.textMatrixMargin+this.matrixWidth;
         },
+        colorCellSize: function() {
+            return this.showColor?this.cellAttrs['size']*0.7:0;
+        },
+        colorCellMargin: function() {
+            return this.showColor?10:0;
+        },
         horizonTextG: function() {
             return d3.select('g#horizon-text-g');
         },
@@ -73,7 +86,7 @@ export default {
                     `${this.horizonTextAttrs['font-weight']} ${this.horizonTextAttrs['font-size']}px ${this.horizonTextAttrs['font-family']}`);
                 const arrowIconNum = node.children.length===0?node.depth:node.depth+1;
                 maxwidth = Math.max(maxwidth, this.horizonTextAttrs['leftMargin']*node.depth + textwidth +
-                    arrowIconNum*(this.horizonTextAttrs['font-size'] + this.horizonTextAttrs['iconMargin']));
+                    arrowIconNum*(this.horizonTextAttrs['font-size'] + this.horizonTextAttrs['iconMargin'])+this.colorCellSize+this.colorCellMargin);
             }
             return maxwidth;
         },
@@ -131,6 +144,7 @@ export default {
                 'font-weight': 'normal',
                 'font-size': 15,
                 'iconMargin': 5,
+                'iconDy': 3,
                 'indent-line-stroke': 'gray',
                 'indent-line-stroke-width': 2,
             },
@@ -250,7 +264,8 @@ export default {
                     .on('end', resolve);
 
                 horizonTextinG.append('text')
-                    .attr('x', (d) => d.children.length===0?0:that.horizonTextAttrs['font-size']+that.horizonTextAttrs['iconMargin'])
+                    .attr('x', (d) => (d.children.length===0?0:that.horizonTextAttrs['font-size'] +
+                        that.horizonTextAttrs['iconMargin'])+that.colorCellSize + that.colorCellMargin)
                     .attr('y', 0)
                     .attr('dy', that.cellAttrs['size']/2+that.horizonTextAttrs['font-size']/2)
                     .attr('text-anchor', that.horizonTextAttrs['text-anchor'])
@@ -312,7 +327,8 @@ export default {
                     .on('end', resolve);
 
                 verticalTextinG.append('text')
-                    .attr('x', (d) => d.children.length===0?0:that.verticalTextAttrs['font-size']+that.verticalTextAttrs['iconMargin'])
+                    .attr('x', (d) => (d.children.length===0?0:that.verticalTextAttrs['font-size'] +
+                        that.verticalTextAttrs['iconMargin'])+that.colorCellSize + that.colorCellMargin)
                     .attr('y', 0)
                     .attr('dy', that.cellAttrs['size']/2+that.horizonTextAttrs['font-size']/2)
                     .attr('text-anchor', that.verticalTextAttrs['text-anchor'])
@@ -359,6 +375,28 @@ export default {
                         const x = that.verticalTextAttrs['font-size']/2;
                         return `M ${x} ${that.cellAttrs['size']} L ${x} ${that.cellAttrs['size']+linelen}`;
                     });
+
+                if (that.showColor) {
+                    horizonTextinG.append('rect')
+                        .attr('x', (d) => d.children.length===0?0:that.horizonTextAttrs['font-size'] + that.horizonTextAttrs['iconMargin'])
+                        .attr('y', (that.cellAttrs['size']-that.colorCellSize)/2+that.horizonTextAttrs['iconDy'])
+                        .attr('width', that.colorCellSize)
+                        .attr('height', that.colorCellSize)
+                        .attr('stroke', that.cellAttrs['stroke'])
+                        .attr('stroke-width', that.cellAttrs['stroke-width'])
+                        .attr('fill', (d) => that.hierarchyColors[d.name].fill)
+                        .attr('opacity', (d) => that.hierarchyColors[d.name].opacity);
+
+                    verticalTextinG.append('rect')
+                        .attr('x', (d) => d.children.length===0?0:that.verticalTextAttrs['font-size'] + that.verticalTextAttrs['iconMargin'])
+                        .attr('y', (that.cellAttrs['size']-that.colorCellSize)/2+that.verticalTextAttrs['iconDy'])
+                        .attr('width', that.colorCellSize)
+                        .attr('height', that.colorCellSize)
+                        .attr('stroke', that.cellAttrs['stroke'])
+                        .attr('stroke-width', that.cellAttrs['stroke-width'])
+                        .attr('fill', (d) => that.hierarchyColors[d.name].fill)
+                        .attr('opacity', (d) => that.hierarchyColors[d.name].opacity);
+                }
 
                 const matrixCellsinG = that.matrixCellsinG.enter()
                     .append('g')

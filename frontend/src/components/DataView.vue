@@ -2,7 +2,7 @@
     <div id="data-content">
         <div id="left">
             <div id="left-confusion-matrix-container">
-                <confusion-matrix id="confusion-matrix" @clickCell="clickConfusionCell"></confusion-matrix>
+                <confusion-matrix id="confusion-matrix" @clickCell="clickConfusionCell" :showColor="true"></confusion-matrix>
             </div>
         </div>
         <div id="right">
