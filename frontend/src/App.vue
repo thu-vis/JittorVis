@@ -65,6 +65,9 @@ export default {
                 const colors = that.initColor(store.getters.labelHierarchy);
                 store.commit('setColors', colors);
                 console.log('colors', store.getters.colors);
+                // init hierarchy colors
+                const hierarchyColors = {...colors};
+                store.commit('setHierarchyColors', hierarchyColors);
             });
         if (this.$route.path === '/') {
             this.$router.push('/modelview');

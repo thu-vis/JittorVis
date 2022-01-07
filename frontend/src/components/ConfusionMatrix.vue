@@ -30,7 +30,6 @@ export default {
             'confusionMatrix',
             'labelHierarchy',
             'labelnames',
-            'colors',
             'hierarchyColors',
         ]),
         baseMatrix: function() {
@@ -211,7 +210,6 @@ export default {
             return showNodes;
         },
         getDataAndRender: function() {
-            this.setLabelColorsByHierarchy(this.colors, this.hierarchy);
             // get nodes to show
             this.showNodes = this.getShowNodes(this.hierarchy);
             // get cells to render
@@ -703,23 +701,6 @@ export default {
                 return node.expand===true && node.children.length>0;
             };
             return isHideNode(this.showNodes[cell.row]) || isHideNode(this.showNodes[cell.column]);
-        },
-        setLabelColorsByHierarchy: function(colors, hierarchy) {
-            const hierarchyColors = {};
-            const dfs = function(root, colors, hierarchyColors, isExpand, parentColor) {
-                if (isExpand) {
-                    hierarchyColors[root.name] = colors[root.name];
-                } else {
-                    hierarchyColors[root.name] = parentColor;
-                }
-                for (const child of root.children) {
-                    dfs(child, colors, hierarchyColors, isExpand&&root.expand, hierarchyColors[root.name]);
-                }
-            };
-            for (const root of hierarchy) {
-                dfs(root, colors, hierarchyColors, true, '');
-            }
-            this.$store.commit('setHierarchyColors', hierarchyColors);
         },
     },
 };
