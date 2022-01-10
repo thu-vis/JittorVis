@@ -24,6 +24,8 @@ require('../js/d3-lasso.js');
 import Util from './Util.vue';
 import GlobalVar from './GlovalVar.vue';
 import WaitingIcon from './WaitingIcon.vue';
+import cloneDeep from 'lodash.clonedeep';
+import PriorityQueue from 'priorityqueue';
 
 export default {
     name: 'GridLayout',
@@ -36,6 +38,7 @@ export default {
             'labelnames',
             'URL_GET_GRID',
             'hierarchyColors',
+            'colors',
         ]),
         svg: function() {
             return d3.select('#grid-drawer');
@@ -68,7 +71,7 @@ export default {
     },
     watch: {
         // all info was loaded
-        hierarchyColors: function(newColors, oldColors) {
+        labelnames: function(newColors, oldColors) {
             if (!this.rendering && this.nodes.length>0 ) {
                 this.render();
             }
@@ -124,6 +127,9 @@ export default {
             });
         },
         render: async function() {
+            // set color
+            this.setLabelColor(this.labelHierarchy, this.colors, this.nodes, this.labelnames);
+
             this.gridCellsInG = this.girdG.selectAll('.'+this.gridCellAttrs['gClass']).data(this.nodes, (d)=>d.index);
             this.lassoNodesInG = this.lassoG.selectAll('.'+this.gridCellAttrs['centerClass']).data(this.nodes, (d)=>d.index);
 
@@ -168,7 +174,7 @@ export default {
                     .attr('cy', (d)=>that.gridCellAttrs['size']/2+Math.floor(d.grid/that.gridInfo.width)*that.gridCellAttrs['size']);
 
 
-                if ((that.gridCellsInG.enter().size() === 0)) {
+                if ((that.gridCellsInG.enter().size() === 0) && (that.lassoNodesInG.enter().size() === 0)) {
                     resolve();
                 }
             });
@@ -189,7 +195,11 @@ export default {
                     .attr('opacity', (d)=>that.hierarchyColors[that.labelnames[d.label]].opacity)
                     .on('end', resolve);
 
-                if ((that.gridCellsInG.size() === 0)) {
+                that.lassoNodesInG
+                    .attr('cx', (d)=>that.gridCellAttrs['size']/2+(d.grid%that.gridInfo.width)*that.gridCellAttrs['size'])
+                    .attr('cy', (d)=>that.gridCellAttrs['size']/2+Math.floor(d.grid/that.gridInfo.width)*that.gridCellAttrs['size']);
+
+                if ((that.gridCellsInG.size() === 0) && (that.lassoNodesInG.size() === 0)) {
                     resolve();
                 }
             });
@@ -204,7 +214,14 @@ export default {
                     .remove()
                     .on('end', resolve);
 
-                if ((that.gridCellsInG.exit().size() === 0)) {
+                that.lassoNodesInG.exit()
+                    .transition()
+                    .duration(that.removeDuration)
+                    .attr('opacity', 0)
+                    .remove()
+                    .on('end', resolve);
+
+                if ((that.gridCellsInG.exit().size() === 0) && (that.lassoNodesInG.exit().size() === 0)) {
                     resolve();
                 }
             });
@@ -300,6 +317,96 @@ export default {
             this.highlightG
                 .selectAll('rect')
                 .remove();
+        },
+        setLabelColor: function(labelHierarchy, colors, nodes, labelnames) {
+            const hierarchy = cloneDeep(labelHierarchy);
+            const root = {
+                name: '',
+                children: hierarchy,
+            };
+            // count samples in each class
+            const counts = {};
+            for (const node of nodes) {
+                if (counts[labelnames[node.label]] === undefined) {
+                    counts[labelnames[node.label]] = 0;
+                }
+                counts[labelnames[node.label]]++;
+            }
+            const dfsCount = function(root, counts) {
+                if (typeof(root)==='string') {
+                    if (counts[root]===undefined) {
+                        counts[root] = 0;
+                    }
+                    return {
+                        name: root,
+                        count: counts[root],
+                        children: [],
+                        realChildren: [],
+                        emptyChildren: [],
+                    };
+                } else {
+                    let count = 0;
+                    const realChildren = [];
+                    const emptyChildren = [];
+                    for (let i=0; i<root.children.length; i++) {
+                        root.children[i] = dfsCount(root.children[i], counts);
+                        count += root.children[i].count;
+                        if (root.children[i].count !== 0) {
+                            realChildren.push(root.children[i]);
+                        } else {
+                            emptyChildren.push(root.children[i]);
+                        }
+                    }
+                    // filter out empty nodes
+                    root.realChildren = realChildren;
+                    root.emptyChildren = emptyChildren;
+                    counts[root.name] = count;
+                    root.count = count;
+                    return root;
+                }
+            };
+            dfsCount(root, counts);
+            // set hierarchy color
+            console.log(root);
+            const pq = new PriorityQueue({
+                'comparator': (a, b)=>{
+                    return a.count>b.count?1:(a.count<b.count?-1:0);
+                },
+            });
+            pq.push(root);
+            const classThreshold = 10;
+            const countThreshold = 0.5;
+            const showNodes = {};
+            for (const topnode of root.children) {
+                showNodes[topnode.name] = colors[topnode.name];
+            }
+            while (true) {
+                const top = pq.top();
+                if ((pq.length-1+top.realChildren.length<=classThreshold) || (top.count/root.count>=countThreshold)) {
+                    pq.pop();
+                    showNodes[top.name] = colors[top.name];
+                    for (const child of top.realChildren) {
+                        pq.push(child);
+                    }
+                } else {
+                    for (const node of pq.toArray()) {
+                        showNodes[node.name] = colors[node.name];
+                    }
+                    break;
+                }
+            }
+            const hierarchyColors = {};
+            const dfsSetColor = function(root, showNodes, hierarchyColors, baseColor) {
+                if (showNodes[root.name] !== undefined) {
+                    baseColor = showNodes[root.name];
+                }
+                hierarchyColors[root.name] = baseColor;
+                for (const child of root.children) {
+                    dfsSetColor(child, showNodes, hierarchyColors, baseColor);
+                }
+            };
+            dfsSetColor(root, showNodes, hierarchyColors);
+            this.$store.commit('setHierarchyColors', hierarchyColors);
         },
     },
     mounted: function() {

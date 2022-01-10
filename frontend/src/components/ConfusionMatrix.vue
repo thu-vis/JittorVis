@@ -108,6 +108,9 @@ export default {
             this.hierarchy = this.getHierarchy(newLabelHierarchy);
             this.getDataAndRender();
         },
+        hierarchyColors: function() {
+            this.getDataAndRender();
+        },
     },
     data: function() {
         return {
@@ -525,6 +528,20 @@ export default {
                         const x = that.verticalTextAttrs['font-size']/2;
                         return `M ${x} ${that.cellAttrs['size']} L ${x} ${that.cellAttrs['size']+linelen}`;
                     });
+
+                if (that.showColor) {
+                    that.horizonTextinG.selectAll('rect')
+                        .attr('x', (d) => d.children.length===0?0:that.horizonTextAttrs['font-size'] + that.horizonTextAttrs['iconMargin'])
+                        .attr('y', (that.cellAttrs['size']-that.colorCellSize)/2+that.horizonTextAttrs['iconDy'])
+                        .attr('fill', (d) => that.hierarchyColors[d.name].fill)
+                        .attr('opacity', (d) => that.hierarchyColors[d.name].opacity);
+
+                    that.verticalTextinG.selectAll('rect')
+                        .attr('x', (d) => d.children.length===0?0:that.verticalTextAttrs['font-size'] + that.verticalTextAttrs['iconMargin'])
+                        .attr('y', (that.cellAttrs['size']-that.colorCellSize)/2+that.verticalTextAttrs['iconDy'])
+                        .attr('fill', (d) => that.hierarchyColors[d.name].fill)
+                        .attr('opacity', (d) => that.hierarchyColors[d.name].opacity);
+                }
 
                 that.matrixCellsinG
                     .transition()
