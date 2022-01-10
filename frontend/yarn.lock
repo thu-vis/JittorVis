@@ -7029,8 +7029,8 @@ lodash.camelcase@^4.3.0:
 
 lodash.clonedeep@^4.5.0:
   version "4.5.0"
-  resolved "https://registry.npm.taobao.org/lodash.clonedeep/download/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
-  integrity sha1-4j8/nE+Pvd6HJSnBBxhXoIblzO8=
+  resolved "https://registry.npmmirror.com/lodash.clonedeep/download/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
+  integrity sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==
 
 lodash.memoize@4.1.2, lodash.memoize@^4.1.2:
   version "4.1.2"
@@ -9049,6 +9049,11 @@ pretty-error@^2.1.1:
   dependencies:
     lodash "^4.17.20"
     renderkid "^2.0.4"
+
+priorityqueue@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.nlark.com/priorityqueue/download/priorityqueue-1.0.0.tgz#0585b7a441ff2b11a71bb8cd23a0b6f6504fb30c"
+  integrity sha1-BYW3pEH/KxGnG7jNI6C29lBPsww=
 
 prismjs@^1.15.0, prismjs@^1.17.1, prismjs@^1.23.0:
   version "1.25.0"

@@ -30,7 +30,6 @@ export default {
             'confusionMatrix',
             'labelHierarchy',
             'labelnames',
-            'colors',
             'hierarchyColors',
         ]),
         baseMatrix: function() {
@@ -107,6 +106,9 @@ export default {
     watch: {
         labelHierarchy: function(newLabelHierarchy, oldLabelHierarchy) {
             this.hierarchy = this.getHierarchy(newLabelHierarchy);
+            this.getDataAndRender();
+        },
+        hierarchyColors: function() {
             this.getDataAndRender();
         },
     },
@@ -211,7 +213,6 @@ export default {
             return showNodes;
         },
         getDataAndRender: function() {
-            this.setLabelColorsByHierarchy(this.colors, this.hierarchy);
             // get nodes to show
             this.showNodes = this.getShowNodes(this.hierarchy);
             // get cells to render
@@ -528,6 +529,20 @@ export default {
                         return `M ${x} ${that.cellAttrs['size']} L ${x} ${that.cellAttrs['size']+linelen}`;
                     });
 
+                if (that.showColor) {
+                    that.horizonTextinG.selectAll('rect')
+                        .attr('x', (d) => d.children.length===0?0:that.horizonTextAttrs['font-size'] + that.horizonTextAttrs['iconMargin'])
+                        .attr('y', (that.cellAttrs['size']-that.colorCellSize)/2+that.horizonTextAttrs['iconDy'])
+                        .attr('fill', (d) => that.hierarchyColors[d.name].fill)
+                        .attr('opacity', (d) => that.hierarchyColors[d.name].opacity);
+
+                    that.verticalTextinG.selectAll('rect')
+                        .attr('x', (d) => d.children.length===0?0:that.verticalTextAttrs['font-size'] + that.verticalTextAttrs['iconMargin'])
+                        .attr('y', (that.cellAttrs['size']-that.colorCellSize)/2+that.verticalTextAttrs['iconDy'])
+                        .attr('fill', (d) => that.hierarchyColors[d.name].fill)
+                        .attr('opacity', (d) => that.hierarchyColors[d.name].opacity);
+                }
+
                 that.matrixCellsinG
                     .transition()
                     .duration(that.updateDuration)
@@ -703,23 +718,6 @@ export default {
                 return node.expand===true && node.children.length>0;
             };
             return isHideNode(this.showNodes[cell.row]) || isHideNode(this.showNodes[cell.column]);
-        },
-        setLabelColorsByHierarchy: function(colors, hierarchy) {
-            const hierarchyColors = {};
-            const dfs = function(root, colors, hierarchyColors, isExpand, parentColor) {
-                if (isExpand) {
-                    hierarchyColors[root.name] = colors[root.name];
-                } else {
-                    hierarchyColors[root.name] = parentColor;
-                }
-                for (const child of root.children) {
-                    dfs(child, colors, hierarchyColors, isExpand&&root.expand, hierarchyColors[root.name]);
-                }
-            };
-            for (const root of hierarchy) {
-                dfs(root, colors, hierarchyColors, true, '');
-            }
-            this.$store.commit('setHierarchyColors', hierarchyColors);
         },
     },
 };
