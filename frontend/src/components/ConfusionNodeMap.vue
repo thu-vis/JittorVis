@@ -33,6 +33,7 @@ import axios from 'axios';
 import {Select, Option, Slider} from 'element-ui';
 import Vue from 'vue';
 import {mapGetters} from 'vuex';
+import Util from './Util.vue';
 
 Vue.use(Select);
 Vue.use(Option);
@@ -40,6 +41,7 @@ Vue.use(Slider);
 
 export default {
     name: 'confusionnodemap',
+    mixins: [Util],
     props: {
         nodeId: String,
         cellId: Object,
@@ -63,38 +65,6 @@ export default {
         };
     },
     methods: {
-        toImage: function(feature) {
-            // return array;
-            window.feature = feature;
-            const canvas = this.toImage.canvas || (this.toImage.canvas = document.createElement('canvas'));
-            const context = canvas.getContext('2d');
-            const height = feature.length;
-            const width = feature[0].length;
-            const depth = feature[0][0].length;
-            canvas.width = width;
-            canvas.height = height;
-            const image = context.createImageData(width, height);
-            const data = image.data;
-            if (depth==1) {
-                for (let i=0; i<data.length; i+=4) {
-                    const v = feature[Math.floor(i/4/width)][(i/4)%width];
-                    data[i] = v[0];
-                    data[i+1] = v[0];
-                    data[i+2] = v[0];
-                    data[i+3] = 255;
-                }
-            } else {
-                for (let i=0; i<data.length; i+=4) {
-                    const v = feature[Math.floor(i/4/width)][(i/4)%width];
-                    data[i] = v[0];
-                    data[i+1] = v[1];
-                    data[i+2] = v[2];
-                    data[i+3] = 255;
-                }
-            }
-            context.putImageData(image, 0, 0);
-            return canvas.toDataURL();
-        },
         changeKey: function() {
             this.getFeatureImages();
         },

@@ -26,6 +26,7 @@ import GlobalVar from './GlovalVar.vue';
 import WaitingIcon from './WaitingIcon.vue';
 import cloneDeep from 'lodash.clonedeep';
 import PriorityQueue from 'priorityqueue';
+import {createPopper} from '@popperjs/core';
 
 export default {
     name: 'GridLayout',
@@ -100,6 +101,9 @@ export default {
                 'centerClassNotSelect': 'lasso-not-possible',
                 'centerClassSelect': 'lasso-possible',
             },
+
+            //
+            tooltipClass: 'cell-tooltip',
         };
     },
     methods: {
@@ -150,7 +154,27 @@ export default {
                     .attr('class', that.gridCellAttrs['gClass'])
                     .attr('opacity', 0)
                     .attr('transform', (d) => `translate(${(d.grid%that.gridInfo.width)*that.gridCellAttrs['size']},
-                        ${Math.floor(d.grid/that.gridInfo.width)*that.gridCellAttrs['size']})`);
+                        ${Math.floor(d.grid/that.gridInfo.width)*that.gridCellAttrs['size']})`)
+                    .on('mouseenter', function(e, d) {
+                        // eslint-disable-next-line no-invalid-this
+                        const node = d3.select(this).node();
+                        that.createTooltip(d)
+                            .then(function(tooltip) {
+                                createPopper(node, tooltip, {
+                                    modifiers: [
+                                        {
+                                            name: 'offset',
+                                            options: {
+                                                offset: [0, 8],
+                                            },
+                                        },
+                                    ],
+                                });
+                            });
+                    })
+                    .on('mouseleave', function() {
+                        that.removeTooltip();
+                    });
 
                 gridCellsInG.transition()
                     .duration(that.createDuration)
@@ -164,8 +188,8 @@ export default {
                     .attr('height', that.gridCellAttrs['size'])
                     .attr('stroke', that.gridCellAttrs['stroke'])
                     .attr('stroke-width', that.gridCellAttrs['stroke-width'])
-                    .attr('fill', (d)=>that.hierarchyColors[that.labelnames[d.label]].fill)
-                    .attr('opacity', (d)=>that.hierarchyColors[that.labelnames[d.label]].opacity);
+                    .attr('fill', (d)=>that.hierarchyColors[that.labelnames[d.pred]].fill)
+                    .attr('opacity', (d)=>that.hierarchyColors[that.labelnames[d.pred]].opacity);
 
                 that.lassoNodesInG.enter().append('circle')
                     .attr('class', that.gridCellAttrs['centerClass'])
@@ -191,8 +215,8 @@ export default {
                 that.gridCellsInG.selectAll('rect')
                     .transition()
                     .duration(that.updateDuration)
-                    .attr('fill', (d)=>that.hierarchyColors[that.labelnames[d.label]].fill)
-                    .attr('opacity', (d)=>that.hierarchyColors[that.labelnames[d.label]].opacity)
+                    .attr('fill', (d)=>that.hierarchyColors[that.labelnames[d.pred]].fill)
+                    .attr('opacity', (d)=>that.hierarchyColors[that.labelnames[d.pred]].opacity)
                     .on('end', resolve);
 
                 that.lassoNodesInG
@@ -327,10 +351,10 @@ export default {
             // count samples in each class
             const counts = {};
             for (const node of nodes) {
-                if (counts[labelnames[node.label]] === undefined) {
-                    counts[labelnames[node.label]] = 0;
+                if (counts[labelnames[node.pred]] === undefined) {
+                    counts[labelnames[node.pred]] = 0;
                 }
-                counts[labelnames[node.label]]++;
+                counts[labelnames[node.pred]]++;
             }
             const dfsCount = function(root, counts) {
                 if (typeof(root)==='string') {
@@ -407,6 +431,23 @@ export default {
             };
             dfsSetColor(root, showNodes, hierarchyColors);
             this.$store.commit('setHierarchyColors', hierarchyColors);
+        },
+        createTooltip: function(node) {
+            const that = this;
+            const getImageGradientURL = this.$store.getters.URL_GET_IMAGE_GRADIENT;
+            const tooltip = d3.select('#grid-layout').append('div').attr('class', that.tooltipClass).style('display', 'none');
+            return axios.get(getImageGradientURL(node.index, 'origin'))
+                .then(function(response) {
+                    tooltip.style('display', 'flex');
+                    tooltip.html(`<div class="grid-tooltip-info">ID: ${node.index}</div>
+                        <div>${that.labelnames[node.label]} -> ${that.labelnames[node.pred]}</div>
+                    <img class="gird-tooltip-image" src="${that.toImage(response.data)}"/>
+                    <div id="grid-tooltip-arrow" data-popper-arrow></div>`);
+                    return tooltip.node();
+                });
+        },
+        removeTooltip: function() {
+            d3.selectAll('.'+this.tooltipClass).remove();
         },
     },
     mounted: function() {
@@ -494,5 +535,57 @@ export default {
 .lasso .origin {
     fill:#3399FF;
     fill-opacity:.5;
+}
+
+.cell-tooltip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  color: gray;
+  font-weight: bold;
+  padding: 5px 10px;
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+.gird-tooltip-image {
+    width: 100px;
+    height: 100px;
+    margin: 10px 0 0 0;
+}
+
+#grid-tooltip-arrow,
+#grid-tooltip-arrow::before {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+}
+
+#grid-tooltip-arrow {
+  visibility: hidden;
+}
+
+#grid-tooltip-arrow::before {
+  visibility: visible;
+  content: '';
+  transform: rotate(45deg);
+}
+
+.cell-tooltip[data-popper-placement^='top'] > #grid-tooltip-arrow {
+  bottom: -4px;
+}
+
+.cell-tooltip[data-popper-placement^='bottom'] > #grid-tooltip-arrow {
+  top: -4px;
+}
+
+.cell-tooltip[data-popper-placement^='left'] > #grid-tooltip-arrow {
+  right: -4px;
+}
+
+.cell-tooltip[data-popper-placement^='right'] > #grid-tooltip-arrow {
+  left: -4px;
 }
 </style>
