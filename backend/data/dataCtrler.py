@@ -282,6 +282,7 @@ class DataCtrler(object):
             zoomInConstraintX = self.features[nodes]
             zoomInNodes = nodes + zoomInNodes
         zoomInLabels = self.labels[zoomInNodes]
+        zoomInPreds = self.preds[zoomInNodes]
         
         labelTransform = self.transformBottomLabelToTop([node['name'] for node in self.statistic['confusion']['hierarchy']])
         constraintLabels = labelTransform[self.labels[nodes]]
@@ -291,12 +292,14 @@ class DataCtrler(object):
         tsne = tsne.tolist()
         grid = grid.tolist()
         zoomInLabels = zoomInLabels.tolist()
+        zoomInPreds = zoomInPreds.tolist()
         n = len(zoomInNodes)
         nodes = [{
             "index": zoomInNodes[i],
             "tsne": tsne[i],
             "grid": grid[i],
-            "label": zoomInLabels[i]
+            "label": zoomInLabels[i],
+            "pred": zoomInPreds[i]
         } for i in range(n)]
         res = {
             "nodes": nodes,
@@ -362,7 +365,6 @@ class DataCtrler(object):
             self.network = self.processNetworkData(self.networkRawdata["node_data"])
             return self.getBranchTree()
     
-
     def getFeatureVis(self, inputImage, label, method="vanilla_bp"):
         """get feature visualization of an image
 
