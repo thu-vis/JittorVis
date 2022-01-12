@@ -49,7 +49,7 @@ import FeatureMap from './FeatureMap.vue';
 import ConfusionFeatureMap from './ConfusionFeatureMap.vue';
 import ConfusionMatrix from './ConfusionMatrix.vue';
 import {mapGetters} from 'vuex';
-// import axios from 'axios';
+import axios from 'axios';
 
 
 export default {
@@ -75,32 +75,30 @@ export default {
     methods: {
         clickConfusionCell: function(d) {
             const that = this;
-            that.$store.commit('setConfusionCellID', {labels: d.rowNode.leafs, preds: d.colNode.leafs});
-            // console.log(that.$store.state.confusionCellID);
-            // axios.post(store.getters.URL_GET_IMAGES_IN_MATRIX_CELL, {
-            //     labels: d.rowNode.leafs,
-            //     preds: d.colNode.leafs,
-            // }).then(function(response) {
-            //     const images = response.data;
-            //     console.log(`confusion matrix cell ${d.key}`, images);
-            //     if (images.length>0) {
-            //         const getImageGradientURL = store.getters.URL_GET_IMAGE_GRADIENT;
-            //         axios.get(getImageGradientURL(images[0]))
-            //             .then(function(response) {
-            //                 console.log('get gradient', response.data);
-            //             });
-            //     }
-            // });
+            const store = this.$store;
+            that.$store.commit('setConfusionCellID',
+                {class_label: d.rowNode.name, class_pred: d.colNode.name, labels: d.rowNode.leafs, preds: d.colNode.leafs});
+            axios.post(store.getters.URL_GET_IMAGES_IN_MATRIX_CELL, {
+                labels: d.rowNode.leafs,
+                preds: d.colNode.leafs,
+            }).then(function(response) {
+                const images = response.data;
+                that.images = images;
+                that.selectedImage = '';
+            });
         },
         runNetworkOnImage: function(id) {
             if (id==='') return;
+            console.log('id', id);
             const store = this.$store;
             this.$refs.network.rendering = true;
             axios.post(this.URL_RUN_IMAGE_ON_MODEL, {
                 imageID: id,
             }).then(function(response) {
                 store.commit('setNetwork', response.data);
+                store.commit('setSelectedImageID', id);
                 console.log('new network data', store.getters.network);
+                console.log('new selectedImageID', store.getters.selectedImageID);
             });
         },
     },
@@ -181,7 +179,7 @@ export default {
   align-items: center;
   height: 50%;
   width: 100%;
-  border-left: 1px solid lightgray;
+  /* border-left: 1px solid lightgray; */
 }
 
 #confusion-featuremap-container > span, #featuremap-container > span, #confusion-matrix-container > span {

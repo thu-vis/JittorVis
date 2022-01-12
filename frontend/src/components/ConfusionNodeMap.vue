@@ -2,7 +2,7 @@
     <div class="featurenode">
         <div class="featurenode-header" style="margin-bottom:3px; margin-top:3px">
             <span style="font-size:10px; cursor:pointer; font-family:Comic Sans MS;
-                margin-left:3px;">{{cellId['labels'][0]}}->{{cellId['preds'][0]}}</span>
+                margin-left:3px;">{{cellId['class_label']}}->{{cellId['class_pred']}}</span>
                 <!-- cellId['labels'] + cellId['preds'] -->
             <div style="width: 50px; flex-grow: 100;"></div>
             <div style="display:inline-flex; width:100px; margin-right:10px">
@@ -24,6 +24,7 @@
                 <img class="featuremap" v-for="(image, index) in featureImages" :key="index" :src="image" />
             </div>
         </vue-scroll>
+        <waiting-icon v-if="rendering"></waiting-icon>
     </div>
 </template>
 
@@ -34,6 +35,7 @@ import {Select, Option, Slider} from 'element-ui';
 import Vue from 'vue';
 import {mapGetters} from 'vuex';
 import Util from './Util.vue';
+import WaitingIcon from './WaitingIcon.vue';
 
 Vue.use(Select);
 Vue.use(Option);
@@ -42,6 +44,7 @@ Vue.use(Slider);
 export default {
     name: 'confusionnodemap',
     mixins: [Util],
+    components: {WaitingIcon},
     props: {
         nodeId: String,
         cellId: Object,
@@ -62,6 +65,7 @@ export default {
                     background: '#c6bebe',
                 },
             },
+            rendering: true,
         };
     },
     methods: {
@@ -75,10 +79,11 @@ export default {
             this.clearFeatureImages();
             const that = this;
             const images = that.images;
-            // const store = that.$store;
+            that.rendering = true;
             for (let i=0; i<images.length; i++) {
                 await that.getSingleFeatureImage(i);
             }
+            that.rendering = false;
             // 异步
             // if (images.length>0) {
             //     const getImageGradientURL = store.getters.URL_GET_IMAGE_GRADIENT;
@@ -110,7 +115,7 @@ export default {
         if (this.cellId != undefined) {
             const that = this;
             const store = that.$store;
-            // console.log('cell_id', that.cellId);
+            that.rendering = true;
             axios.post(store.getters.URL_GET_IMAGES_IN_MATRIX_CELL, {
                 'labels': that.cellId['labels'],
                 'preds': that.cellId['preds'],
@@ -147,7 +152,7 @@ export default {
     max-height: 480px;
 }
 .featuremap {
-    width: 24%;
+    width: 19%;
     margin: 3px 3px 3px 3px;
 }
 .el-select >>> .el-input__inner {
