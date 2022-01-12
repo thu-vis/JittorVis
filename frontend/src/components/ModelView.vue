@@ -49,7 +49,7 @@ import FeatureMap from './FeatureMap.vue';
 import ConfusionFeatureMap from './ConfusionFeatureMap.vue';
 import ConfusionMatrix from './ConfusionMatrix.vue';
 import {mapGetters} from 'vuex';
-// import axios from 'axios';
+import axios from 'axios';
 
 
 export default {
@@ -75,18 +75,30 @@ export default {
     methods: {
         clickConfusionCell: function(d) {
             const that = this;
+            const store = this.$store;
             that.$store.commit('setConfusionCellID',
                 {class_label: d.rowNode.name, class_pred: d.colNode.name, labels: d.rowNode.leafs, preds: d.colNode.leafs});
+            axios.post(store.getters.URL_GET_IMAGES_IN_MATRIX_CELL, {
+                labels: d.rowNode.leafs,
+                preds: d.colNode.leafs,
+            }).then(function(response) {
+                const images = response.data;
+                that.images = images;
+                that.selectedImage = '';
+            });
         },
         runNetworkOnImage: function(id) {
             if (id==='') return;
+            console.log('id', id);
             const store = this.$store;
             this.$refs.network.rendering = true;
             axios.post(this.URL_RUN_IMAGE_ON_MODEL, {
                 imageID: id,
             }).then(function(response) {
                 store.commit('setNetwork', response.data);
+                store.commit('setSelectedImageID', id);
                 console.log('new network data', store.getters.network);
+                console.log('new selectedImageID', store.getters.selectedImageID);
             });
         },
     },

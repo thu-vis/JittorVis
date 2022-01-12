@@ -11,6 +11,7 @@ from data.gridLayout import GridLayout
 import jittor as jt
 from jittor import transform
 from data.feature_vis import FeatureVis
+from data.feature_utils import generate_discrepancy_map
 
 class DataCtrler(object):
 
@@ -84,11 +85,13 @@ class DataCtrler(object):
                 branchNode["children"]=[]
         return newBranch
 
-    def getBranchNodeOutput(self, branchID: str) -> np.ndarray:
+    def getBranchNodeOutput(self, branchID: str, method: str, imageID: int) -> np.ndarray:
         """unserializae leaf data from str to numpy.ndarray
 
         Args:
             branchID (str): branch node id
+            method (str): original / discrepancy map ...
+            imageID (int)
 
         Returns:
             np.ndarray: branch node output
@@ -130,6 +133,11 @@ class DataCtrler(object):
             features = [self.getFeature(outputnode["id"], featureIndex) for featureIndex in range(outputnode["attrs"]["shape"][0])]
             maxActivations = [float(np.max(feature)) for feature in features]
             minActivations = [float(np.min(feature)) for feature in features]
+
+        # fourth, generate discrepancy map
+        if 'discrepancy' in method:
+            original_image = self.trainImages[imageID]
+            features = [generate_discrepancy_map(f, original_image, sparsity=0.5) for f in features]            
 
         return {
             "leafID": outputnode["id"],

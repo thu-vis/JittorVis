@@ -33,7 +33,9 @@ def networkOnImage():
 @app.route('/api/featureInfo', methods=['POST'])
 def featureInfo():
     branchID = request.json['branch']
-    data = dataCtrler.getBranchNodeOutput(branchID)
+    method = request.json['method']
+    imageID = int(request.json['imageID'])
+    data = dataCtrler.getBranchNodeOutput(branchID, method, imageID)
     return jsonify(data)
 
 @app.route('/api/feature', methods=["GET"])

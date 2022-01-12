@@ -5,6 +5,7 @@ from PIL import Image
 import matplotlib.cm as mpl_color_map
 import jittor as jt
 import data.jimm as jimm
+from skimage.transform import resize
 
 
 def get_img(path):
@@ -201,6 +202,75 @@ def unpack_children(model):
         else:
             res.append(i)
     return res
+
+def activation_to_mask(feature_map, size, r):
+    _size = feature_map.shape
+    max_index = [
+        int(d) for d in np.unravel_index(np.argmax(feature_map), _size)
+    ]
+    center = [
+        int((x + 0.5) / _size[i] * size[0]) for i, x in enumerate(max_index)
+    ]
+    mask = np.zeros(size, dtype=np.float32)
+    mask[max(center[0] - r, 0):min(center[0] + r, size[0]),
+         max(center[1] - r, 0):min(center[1] + r, size[1])] = 1.0
+    return mask
+
+def generate_discrepancy_map(feature_map, original_image, **kwargs):
+    """get discrepancy_map
+
+    Args:
+        feature_map (list): output of certain filter of a layer
+        original_image ()
+        optional in kwargs :
+            sparsity (float): control the sparsity of the highlight region;
+            radius (int): only highlight area around the max value position with specific radius;
+            threshold_scale (float): highlight the positions that values of them are larger this threshold. 
+
+    Returns:
+        list: discrepancy map of original image
+    """
+    feature_map = np.array(feature_map)
+    max_value = np.max(feature_map)
+    feature_map = feature_map / max_value
+    segment_size = feature_map.shape
+
+    if kwargs.get('sparsity') is not None:
+        # binary search for threshold
+        mask = resize(feature_map, segment_size)
+        tgt_sp = kwargs['sparsity']
+        th_l = 0
+        th_r = 1
+        while (th_r - th_l) > 1e-3:
+            th_mid = (th_l + th_r) / 2
+            sp = (mask < th_mid).mean()
+            #print(sp, th_mid)
+            if sp < tgt_sp:
+                th_l = th_mid
+            else:
+                th_r = th_mid
+
+        # binarize the mask,
+        mask[mask <= th_l] = 0.0
+        mask[mask > th_l] = 1.0
+    elif kwargs.get('radius') is not None:
+        radius = kwargs['radius']
+        mask = activation_to_mask(feature_map, segment_size, radius)
+    else:
+        mask = resize(feature_map, segment_size)
+        th = kwargs['threshold_scale']
+        # binarize the mask
+        mask[mask <= th] = 0.0
+        mask[mask > th] = 1.0
+
+    original_image = np.squeeze(original_image)
+    original_image = original_image / 255.0
+    original_image = resize(original_image, segment_size)  #0-255
+
+    img_mask = (original_image * mask[:, :, None] * 255.0).astype('uint8').tolist()
+
+    return img_mask
+
 
 if __name__ == '__main__':
     pass
