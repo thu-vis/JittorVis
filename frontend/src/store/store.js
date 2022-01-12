@@ -52,9 +52,12 @@ export default new Vuex.Store({
         },
         setSelectedImageID(state, selectedImageID) {
             state.selectedImageID = selectedImageID;
+<<<<<<< HEAD
         },
         setHierarchyColors(state, hierarchyColors) {
             state.hierarchyColors = hierarchyColors;
+=======
+>>>>>>> 6365d677c7d05347366ed6a43bcfd71e00225adf
         },
     },
     getters: {
