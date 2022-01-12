@@ -22,6 +22,7 @@ export default new Vuex.Store({
         colors: {},
         featureMapNodeID: null, // which node to show feature map
         confusionCellID: null, // which cell clicked ({labels, preds})
+        selectedImageID: 0, // which image selected
     },
     mutations: {
         setAllData(state, allData) {
@@ -48,8 +49,8 @@ export default new Vuex.Store({
         setConfusionCellID(state, confusionCellID) {
             state.confusionCellID = confusionCellID;
         },
-        setConfusionCellID(state, confusionCellID) {
-            state.confusionCellID = confusionCellID;
+        setSelectedImageID(state, selectedImageID) {
+            state.selectedImageID = selectedImageID;
         },
     },
     getters: {
@@ -57,6 +58,7 @@ export default new Vuex.Store({
         statistic: (state) => state.statistic,
         featureMapNodeID: (state) => state.featureMapNodeID,
         confusionCellID: (state) => state.confusionCellID,
+        selectedImageID: (state) => state.selectedImageID,
         layoutInfo: (state) => state.layoutInfo,
         confusionMatrix: (state) => state.confusionMatrix,
         labelHierarchy: (state) => state.labelHierarchy,
