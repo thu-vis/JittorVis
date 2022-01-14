@@ -214,10 +214,7 @@ export default {
             return showNodes;
         },
         getDataAndRender: function() {
-<<<<<<< Updated upstream
-=======
             // this.setLabelColorsByHierarchy(this.colors, this.hierarchy);
->>>>>>> Stashed changes
             // get nodes to show
             this.showNodes = this.getShowNodes(this.hierarchy);
             // get cells to render

@@ -315,13 +315,10 @@ class DataCtrler(object):
         grid = grid.tolist()
         zoomInLabels = zoomInLabels.tolist()
         zoomInPreds = zoomInPreds.tolist()
-<<<<<<< Updated upstream
-=======
 
         
         show_tsne_result_plt(tsne, zoomInLabels, ops)
         # from IPython import embed;embed()
->>>>>>> Stashed changes
         n = len(zoomInNodes)
         nodes = [{
             "index": zoomInNodes[i],
