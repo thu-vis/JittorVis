@@ -29,6 +29,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import {Menu, MenuItem} from 'element-ui';
 import axios from 'axios';
+import {simulatedAnnealing2FindBestPalette, evaluatePalette} from './js/optimizeFunc';
 
 Vue.use(Menu);
 Vue.use(MenuItem);
@@ -48,6 +49,7 @@ export default {
         return {
             activeRoute: '/modelview',
             textures: [],
+            colorsscope: {'hue_scope': [0, 360], 'lumi_scope': [35, 95]},
         };
     },
     mounted: function() {
@@ -276,15 +278,17 @@ export default {
                     let opacity = baseopacity;
                     const minOpacity = baseopacity>0.4?0.4:0;
                     const opacityStep = childcnt>1?(opacity-minOpacity)/(childcnt-1):0;
-                    for (const child of node.children) {
+                    const bestColors = simulatedAnnealing2FindBestPalette(basecolor, childcnt, (newpalette) => evaluatePalette(newpalette), that.colorsscope);
+                    console.log('b', basecolor, bestColors);
+                    node.children.forEach((child, idx) => {
                         const childname = typeof(child)==='string'?child:child.name;
                         colors[childname] = {
-                            fill: basecolor,
+                            fill: that.rgb2hex(bestColors.id[idx]),
                             opacity: opacity,
                         };
                         opacity -= opacityStep;
                         assignColor(child, depth+1);
-                    }
+                    });
                 } else if (depth===1) {
                     for (let i=0; i<node.children.length; i++) {
                         const child = node.children[i];
@@ -316,6 +320,9 @@ export default {
                 assignColor(hierarchy[i], 0);
             }
             return colors;
+        },
+        rgb2hex(rgb) {
+            return '#'+(1<<24|rgb.r<<16|rgb.g<<8|rgb.b).toString(16).substring(1);
         },
     },
     router: router,

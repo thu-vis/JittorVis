@@ -31,6 +31,7 @@ export default {
             'labelHierarchy',
             'labelnames',
             'hierarchyColors',
+            'colors',
         ]),
         baseMatrix: function() {
             return this.confusionMatrix;
@@ -213,6 +214,10 @@ export default {
             return showNodes;
         },
         getDataAndRender: function() {
+<<<<<<< Updated upstream
+=======
+            // this.setLabelColorsByHierarchy(this.colors, this.hierarchy);
+>>>>>>> Stashed changes
             // get nodes to show
             this.showNodes = this.getShowNodes(this.hierarchy);
             // get cells to render
@@ -237,6 +242,23 @@ export default {
                 }
             }
             this.render();
+        },
+        setLabelColorsByHierarchy: function(colors, hierarchy) {
+            const hierarchyColors = {};
+            const dfs = function(root, colors, hierarchyColors, isExpand, parentColor) {
+                if (isExpand) {
+                    hierarchyColors[root.name] = colors[root.name];
+                } else {
+                    hierarchyColors[root.name] = parentColor;
+                }
+                for (const child of root.children) {
+                    dfs(child, colors, hierarchyColors, isExpand&&root.expand, hierarchyColors[root.name]);
+                }
+            };
+            for (const root of hierarchy) {
+                dfs(root, colors, hierarchyColors, true, '');
+            }
+            this.$store.commit('setHierarchyColors', hierarchyColors);
         },
         render: async function() {
             this.horizonTextinG = this.horizonTextG.selectAll('g.'+this.horizonTextAttrs['gClass']).data(this.showNodes, (d)=>d.name);

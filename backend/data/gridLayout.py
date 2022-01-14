@@ -14,18 +14,18 @@ class GridLayout(object):
         super().__init__()
         self.tsner = IncrementalTSNE(n_components=2, init='pca', method='barnes_hut', perplexity=30, angle=0.3, n_jobs=8, n_iter=1000, random_state = 100)
 
-    def fit(self, X: np.ndarray, labels: np.ndarray = None, constraintX: np.ndarray = None, constraintY: np.ndarray = None, constraintLabels: np.ndarray = None, init = None):
+    def fit(self, X: np.ndarray, labels: np.ndarray = None, constraintX: np.ndarray = None, constraintY: np.ndarray = None, constraintLabels: np.ndarray = None, init = None, ops = None):
         """main fit function
 
         Args:
             X (np.ndarray): n * d, n is the number of samples, d is the dimension of a sample
             labels (np.ndarray): label of each sample in X
         """        
-        X_embedded = self.tsne(X, constraintX = constraintX, constraintY = constraintY, labels = labels, constraintLabels = constraintLabels, init = init)
+        X_embedded = self.tsne(X, constraintX = constraintX, constraintY = constraintY, labels = labels, constraintLabels = constraintLabels, init = init, ops = ops)
         grid_ass, grid_size = self.grid(X_embedded)
         return X_embedded, grid_ass, grid_size
         
-    def tsne(self, X: np.ndarray, labels: np.ndarray = None, perplexity: int = 15, learning_rate: int = 3, constraintX: np.ndarray = None, constraintY: np.ndarray = None, constraintLabels: np.ndarray = None, init = None) -> np.ndarray:
+    def tsne(self, X: np.ndarray, labels: np.ndarray = None, perplexity: int = 15, learning_rate: int = 3, constraintX: np.ndarray = None, constraintY: np.ndarray = None, constraintLabels: np.ndarray = None, init = None, ops = None) -> np.ndarray:
         # remove empty labels
         labelcnt = 0
         removeEmptyTransform = np.zeros((np.max(labels)+1), dtype=int)-1
@@ -40,7 +40,10 @@ class GridLayout(object):
             X_embedded = self.tsner.fit_transform(X, constraint_X = constraintX, constraint_Y = constraintY, prev_n = 0 if constraintX is None else len(constraintX), 
             alpha = 0.5, labels=labels, label_alpha=0.9)
         else:
-            self.tsner = IncrementalTSNE(n_components=2, init='pca' if init is None else init, method='barnes_hut', perplexity=5, angle=0.3, n_jobs=8, n_iter=1000, random_state = 100)
+            if ops:
+                self.tsner = IncrementalTSNE(n_components=2, init=ops['init'], method=ops['method'], perplexity=ops['perplexity'], angle=ops['angle'], n_jobs=8, n_iter=1000, random_state = ops['random_state'])
+            else:
+                self.tsner = IncrementalTSNE(n_components=2, init='pca' if init is None else init, method='barnes_hut', perplexity=5, angle=0.3, n_jobs=8, n_iter=1000, random_state = 100)
             X_embedded = self.tsner.fit_transform(X, constraint_X = constraintX, constraint_Y = constraintY, constraint_labels = constraintLabels, prev_n = 0 if constraintX is None else len(constraintX), 
             alpha = 0.3, labels = labels, label_alpha=0.2)
         return X_embedded

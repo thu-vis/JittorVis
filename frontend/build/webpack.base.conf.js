@@ -85,7 +85,7 @@ module.exports = {
     },
     plugins: [
         new webpack.DefinePlugin({
-            'BACKEND_BASE_URL': process.env.NODE_ENV === 'production' ? '\'\'' : '\'//166.111.80.25:5005\'',
+            'BACKEND_BASE_URL': process.env.NODE_ENV === 'production' ? '\'\'' : '\'//166.111.80.25:5010\'',
         }),
     ],
 };

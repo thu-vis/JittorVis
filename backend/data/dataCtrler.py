@@ -12,6 +12,26 @@ import jittor as jt
 from jittor import transform
 from data.feature_vis import FeatureVis
 
+def show_tsne_result(tsne_arr, labels):
+    import cv2
+    # image = cv2.imread('tsne_result.png')
+    image = np.zeros((1000, 1000, 3), np.uint8)
+    for idx, pair in enumerate(tsne_arr):
+        if idx > 30:
+            break
+        cv2.circle(image, (int(pair[0]*1000), int(pair[1]*1000)), 1, (0, 0, 255), 4)
+        cv2.putText(image, str(labels[idx]), (int(pair[0]*1000), int(pair[1]*1000)), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0,255,0), 2)
+    cv2.imwrite("tsne_result.png", image)
+
+def show_tsne_result_plt(tsne_arr, labels, ops):
+    filename = ''.join(['_'+key+'_'+str(ops[key]) for key in ops.keys()])
+    import matplotlib.pyplot as plt 
+    for idx, pair in enumerate(tsne_arr):
+        plt.plot(pair[0], pair[1], 'r.')
+        plt.text(pair[0], pair[1], str(labels[idx]), fontsize=10)
+    print('len', len(labels))
+    plt.savefig(f"tsne_result{filename}.png")
+
 class DataCtrler(object):
 
     def __init__(self):
@@ -287,12 +307,21 @@ class DataCtrler(object):
         labelTransform = self.transformBottomLabelToTop([node['name'] for node in self.statistic['confusion']['hierarchy']])
         constraintLabels = labelTransform[self.labels[nodes]]
         labels = labelTransform[zoomInLabels]        
+
+        ops = { 'init': 'pca', 'method': 'barnes_hut', 'perplexity': 5, 'angle': 0.3, 'random_state': 100 }
         
-        tsne, grid, gridsize = self.grider.fit(self.features[zoomInNodes], labels = labels, constraintX = zoomInConstraintX,  constraintY = zoomInConstraints, constraintLabels = constraintLabels)
+        tsne, grid, gridsize = self.grider.fit(self.features[zoomInNodes], labels = labels, constraintX = zoomInConstraintX,  constraintY = zoomInConstraints, constraintLabels = constraintLabels, ops=ops)
         tsne = tsne.tolist()
         grid = grid.tolist()
         zoomInLabels = zoomInLabels.tolist()
         zoomInPreds = zoomInPreds.tolist()
+<<<<<<< Updated upstream
+=======
+
+        
+        show_tsne_result_plt(tsne, zoomInLabels, ops)
+        # from IPython import embed;embed()
+>>>>>>> Stashed changes
         n = len(zoomInNodes)
         nodes = [{
             "index": zoomInNodes[i],
