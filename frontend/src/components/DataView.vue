@@ -2,11 +2,12 @@
     <div id="data-content">
         <div id="left">
             <div id="left-confusion-matrix-container">
-                <confusion-matrix id="confusion-matrix" @clickCell="clickConfusionCell" :showColor="true"></confusion-matrix>
+                <confusion-matrix ref="matrix" id="confusion-matrix" @clickCell="clickConfusionCell" :showColor="true">
+                </confusion-matrix>
             </div>
         </div>
         <div id="right">
-            <gird-layout ref="grider"></gird-layout>
+            <gird-layout ref="grider" @hoveredNode="setHoveredNode"></gird-layout>
         </div>
     </div>
 </template>
@@ -19,7 +20,19 @@ import axios from 'axios';
 export default {
     components: {ConfusionMatrix, GirdLayout},
     name: 'DataView',
+    data() {
+        return {
+            hoveredNode: [],
+        };
+    },
     methods: {
+        setHoveredNode: function(node) {
+            if (node[0]===null) {
+                this.$refs.matrix.unhighlightCell();
+            } else {
+                this.$refs.matrix.highlightCell(node);
+            }
+        },
         clickConfusionCell: function(d) {
             const store = this.$store;
             const that = this;
@@ -34,7 +47,6 @@ export default {
                         parents: that.$refs.grider.nodes.map((d) => d.index),
                     }).then(function(response) {
                         const parentCells = response.data;
-                        console.log('parent cells', parentCells);
                         that.$refs.grider.unhighlightCells();
                         that.$refs.grider.highlightCells(parentCells);
                     });

@@ -102,7 +102,6 @@ export default {
                 'centerClassSelect': 'lasso-possible',
             },
 
-            //
             tooltipClass: 'cell-tooltip',
         };
     },
@@ -158,6 +157,7 @@ export default {
                     .on('mouseenter', function(e, d) {
                         // eslint-disable-next-line no-invalid-this
                         const node = d3.select(this).node();
+                        that.$emit('hoveredNode', [that.labelnames[d.label], that.labelnames[d.pred]]);
                         that.createTooltip(d)
                             .then(function(tooltip) {
                                 createPopper(node, tooltip, {
@@ -173,6 +173,7 @@ export default {
                             });
                     })
                     .on('mouseleave', function() {
+                        that.$emit('hoveredNode', [null, null]);
                         that.removeTooltip();
                     });
 
@@ -391,7 +392,6 @@ export default {
             };
             dfsCount(root, counts);
             // set hierarchy color
-            console.log(root);
             const pq = new PriorityQueue({
                 'comparator': (a, b)=>{
                     return a.count>b.count?1:(a.count<b.count?-1:0);
@@ -431,6 +431,7 @@ export default {
             };
             dfsSetColor(root, showNodes, hierarchyColors);
             this.$store.commit('setHierarchyColors', hierarchyColors);
+            this.$store.commit('setShownClass', Object.keys(showNodes));
         },
         createTooltip: function(node) {
             const that = this;
@@ -452,7 +453,6 @@ export default {
     },
     mounted: function() {
         const that = this;
-        window.gridlayout = this;
         axios.post(that.URL_GET_GRID, {
             nodes: [],
             depth: 0,

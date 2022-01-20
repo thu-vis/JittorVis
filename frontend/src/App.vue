@@ -29,6 +29,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import {Menu, MenuItem} from 'element-ui';
 import axios from 'axios';
+import {simulatedAnnealing2FindBestPalette, evaluatePalette} from './js/optimizeFunc';
 
 Vue.use(Menu);
 Vue.use(MenuItem);
@@ -48,6 +49,7 @@ export default {
         return {
             activeRoute: '/modelview',
             textures: [],
+            colorsscope: {'hue_scope': [0, 360], 'lumi_scope': [35, 95]},
         };
     },
     mounted: function() {
@@ -64,7 +66,6 @@ export default {
                 console.log('confusion matrix data', response.data);
                 const colors = that.initColor(store.getters.labelHierarchy);
                 store.commit('setColors', colors);
-                console.log('colors', store.getters.colors);
                 // init hierarchy colors
                 const hierarchyColors = {...colors};
                 store.commit('setHierarchyColors', hierarchyColors);
@@ -79,8 +80,9 @@ export default {
     methods: {
         initColor(hierarchy) {
             const that = this;
-            const basecolors = ['#8dd3c7', '#ffffb3', '#fb8072', '#80b1d3',
+            const basecolors = ['#8dd3c7', '#fee789', '#fe614f', '#80b1d3',
                 '#fdb462', '#b3de69', '#fccde5', '#bc80bd', '#ccebc5', '#ffed6f'];
+            // 1:ffffb3  2:fb8072
             const colors = {}; // fill and opacity
 
             const generateTexture = function(color, index, name) {
@@ -273,18 +275,20 @@ export default {
                 const baseopacity = colors[nodename].opacity;
                 if (depth===0) {
                     const childcnt = node.children.length;
-                    let opacity = baseopacity;
-                    const minOpacity = baseopacity>0.4?0.4:0;
-                    const opacityStep = childcnt>1?(opacity-minOpacity)/(childcnt-1):0;
-                    for (const child of node.children) {
+                    const opacity = baseopacity;
+                    // const minOpacity = baseopacity>0.4?0.4:0;
+                    // const opacityStep = childcnt>1?(opacity-minOpacity)/(childcnt-1):0;
+                    const bestColors = simulatedAnnealing2FindBestPalette(basecolor, childcnt, (newpalette) => evaluatePalette(newpalette), that.colorsscope);
+                    console.log(basecolor, bestColors);
+                    node.children.forEach((child, idx) => {
                         const childname = typeof(child)==='string'?child:child.name;
                         colors[childname] = {
-                            fill: basecolor,
+                            fill: that.rgb2hex(bestColors.id[idx]),
                             opacity: opacity,
                         };
-                        opacity -= opacityStep;
+                        // opacity -= opacityStep;
                         assignColor(child, depth+1);
-                    }
+                    });
                 } else if (depth===1) {
                     for (let i=0; i<node.children.length; i++) {
                         const child = node.children[i];
@@ -316,6 +320,9 @@ export default {
                 assignColor(hierarchy[i], 0);
             }
             return colors;
+        },
+        rgb2hex(rgb) {
+            return '#'+(1<<24|rgb.r<<16|rgb.g<<8|rgb.b).toString(16).substring(1);
         },
     },
     router: router,
