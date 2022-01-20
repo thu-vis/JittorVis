@@ -46,9 +46,9 @@ export default {
                         children: images,
                         parents: that.$refs.grider.nodes.map((d) => d.index),
                     }).then(function(response) {
-                        // const parentCells = response.data;
+                        const parentCells = response.data;
                         that.$refs.grider.unhighlightCells();
-                        that.$refs.grider.highlightCells(images);
+                        that.$refs.grider.highlightCells(parentCells);
                     });
                 }
             });

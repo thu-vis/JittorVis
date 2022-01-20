@@ -110,9 +110,9 @@ export default {
             this.hierarchy = this.getHierarchy(newLabelHierarchy);
             this.getDataAndRender();
         },
-        // hierarchyColors: function() {
-        //     this.getDataAndRender();
-        // },
+        hierarchyColors: function() {
+            this.getDataAndRender();
+        },
         shownClass: function(newShownClass, oldShownClass) {
             this.updateHierarchy(newShownClass);
             this.getDataAndRender();
@@ -308,7 +308,7 @@ export default {
             return showNodes;
         },
         getDataAndRender: function() {
-            this.setLabelColorsByHierarchy(this.colors, this.hierarchy);
+            // this.setLabelColorsByHierarchy(this.colors, this.hierarchy);
             // get nodes to show
             this.showNodes = this.getShowNodes(this.hierarchy);
             // get cells to render
@@ -642,19 +642,19 @@ export default {
                         return `M ${x} ${that.cellAttrs['size']} L ${x} ${that.cellAttrs['size']+linelen}`;
                     });
 
-                // if (that.showColor) {
-                //     that.horizonTextinG.selectAll('rect')
-                //         .attr('x', (d) => d.children.length===0?0:that.horizonTextAttrs['font-size'] + that.horizonTextAttrs['iconMargin'])
-                //         .attr('y', (that.cellAttrs['size']-that.colorCellSize)/2+that.horizonTextAttrs['iconDy'])
-                //         .attr('fill', (d) => that.hierarchyColors[d.name].fill)
-                //         .attr('opacity', (d) => that.hierarchyColors[d.name].opacity);
+                if (that.showColor) {
+                    that.horizonTextinG.selectAll('rect')
+                        .attr('x', (d) => d.children.length===0?0:that.horizonTextAttrs['font-size'] + that.horizonTextAttrs['iconMargin'])
+                        .attr('y', (that.cellAttrs['size']-that.colorCellSize)/2+that.horizonTextAttrs['iconDy'])
+                        .attr('fill', (d) => that.hierarchyColors[d.name].fill)
+                        .attr('opacity', (d) => that.hierarchyColors[d.name].opacity);
 
-                //     that.verticalTextinG.selectAll('rect')
-                //         .attr('x', (d) => d.children.length===0?0:that.verticalTextAttrs['font-size'] + that.verticalTextAttrs['iconMargin'])
-                //         .attr('y', (that.cellAttrs['size']-that.colorCellSize)/2+that.verticalTextAttrs['iconDy'])
-                //         .attr('fill', (d) => that.hierarchyColors[d.name].fill)
-                //         .attr('opacity', (d) => that.hierarchyColors[d.name].opacity);
-                // }
+                    that.verticalTextinG.selectAll('rect')
+                        .attr('x', (d) => d.children.length===0?0:that.verticalTextAttrs['font-size'] + that.verticalTextAttrs['iconMargin'])
+                        .attr('y', (that.cellAttrs['size']-that.colorCellSize)/2+that.verticalTextAttrs['iconDy'])
+                        .attr('fill', (d) => that.hierarchyColors[d.name].fill)
+                        .attr('opacity', (d) => that.hierarchyColors[d.name].opacity);
+                }
 
                 that.matrixCellsinG
                     .transition()
