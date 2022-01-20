@@ -11,6 +11,7 @@ from data.gridLayout import GridLayout
 import jittor as jt
 from jittor import transform
 from data.feature_vis import FeatureVis
+from queue import PriorityQueue
 
 class DataCtrler(object):
 
@@ -283,16 +284,105 @@ class DataCtrler(object):
             zoomInNodes = nodes + zoomInNodes
         zoomInLabels = self.labels[zoomInNodes]
         zoomInPreds = self.preds[zoomInNodes]
+
+        def getBottomLabels(zoomInNodes):
+            hierarchy = copy.deepcopy(self.statistic['confusion']['hierarchy'])
+            labelnames = copy.deepcopy(self.statistic['confusion']['names'])
+            nodes = [{
+                "index": zoomInNodes[i],
+                "label": zoomInLabels[i],
+                "pred": zoomInPreds[i]
+            } for i in range(len(zoomInNodes))]
+
+            root = {
+                'name': '',
+                'children': hierarchy,
+            }
+            counts = {}
+            for node in nodes:
+                if not counts.__contains__(labelnames[node['pred']]):
+                    counts[labelnames[node['pred']]] = 0
+                counts[labelnames[node['pred']]] += 1
+
+            def dfsCount(root, counts):
+                if isinstance(root, str):
+                    if not counts.__contains__(root): # todo
+                        counts[root] = 0
+                    return {
+                        'name': root,
+                        'count': counts[root],
+                        'children': [],
+                        'realChildren': [],
+                        'emptyChildren': [],
+                    }
+                else:
+                    count = 0
+                    realChildren = []
+                    emptyChildren = []
+                    for i in range(len(root['children'])):
+                        root['children'][i] = dfsCount(root['children'][i], counts)
+                        count += root['children'][i]['count']
+                        if root['children'][i]['count'] != 0:
+                            realChildren.append(root['children'][i])
+                        else: 
+                            emptyChildren.append(root['children'][i])
+                    root['realChildren'] = realChildren
+                    root['emptyChildren'] = emptyChildren
+                    counts[root['name']] = count
+                    root['count'] = count
+                    return root
+            
+            dfsCount(root, counts)
+
+            pq = PriorityQueue()
+
+            class Cmp:
+                def __init__(self, name, count, realChildren):
+                    self.name = name
+                    self.count = count
+                    self.realChildren = realChildren
+
+                def __lt__(self, other):
+                    if self.count <= other.count:
+                        return False
+                    else:
+                        return True
+
+                def to_list(self):
+                    return [self.name, self.count, self.realChildren]
+            
+            pq.put(Cmp(root['name'], root['count'], root['realChildren']))
+            classThreshold = 10
+            countThreshold = 0.5
         
-        labelTransform = self.transformBottomLabelToTop([node['name'] for node in self.statistic['confusion']['hierarchy']])
+            while True:
+                top = pq.get()
+                if pq.qsize() + len(top.realChildren) <= classThreshold or top.count / root['count'] >= countThreshold:
+                    for child in top.realChildren:
+                        pq.put(Cmp(child['name'], child['count'], child['realChildren']))
+                else:
+                    pq.put(top)
+                    break
+    
+            pq_list = []
+            while not pq.empty():
+                pq_list.append(pq.get().name)
+            return pq_list
+
+        bottomLabels = getBottomLabels(copy.deepcopy(zoomInNodes))
+        labelTransform = self.transformBottomLabelToTop(bottomLabels)
         constraintLabels = labelTransform[self.labels[nodes]]
-        labels = labelTransform[zoomInLabels]        
-        
+        labels = labelTransform[zoomInLabels]  
+
+        # oroginal
+        # labelTransform = self.transformBottomLabelToTop([node['name'] for node in self.statistic['confusion']['hierarchy']])       
+
         tsne, grid, gridsize = self.grider.fit(self.features[zoomInNodes], labels = labels, constraintX = zoomInConstraintX,  constraintY = zoomInConstraints, constraintLabels = constraintLabels)
         tsne = tsne.tolist()
         grid = grid.tolist()
         zoomInLabels = zoomInLabels.tolist()
         zoomInPreds = zoomInPreds.tolist()
+
         n = len(zoomInNodes)
         nodes = [{
             "index": zoomInNodes[i],
@@ -341,7 +431,10 @@ class DataCtrler(object):
         n = len(self.statistic['confusion']['names'])
         labelTransform = np.zeros(n, dtype=int)
         for i in range(n):
-            labelTransform[i] = childToTop[self.statistic['confusion']['names'][i]]
+            if not childToTop.__contains__(self.statistic['confusion']['names'][i]):
+                print('not include ' + self.statistic['confusion']['names'][i])
+            else:
+                labelTransform[i] = childToTop[self.statistic['confusion']['names'][i]]
         return labelTransform.astype(int)
     
     def runImageOnModel(self, imageID):
