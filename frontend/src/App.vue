@@ -66,7 +66,6 @@ export default {
                 console.log('confusion matrix data', response.data);
                 const colors = that.initColor(store.getters.labelHierarchy);
                 store.commit('setColors', colors);
-                console.log('colors', store.getters.colors);
                 // init hierarchy colors
                 const hierarchyColors = {...colors};
                 store.commit('setHierarchyColors', hierarchyColors);
@@ -81,8 +80,9 @@ export default {
     methods: {
         initColor(hierarchy) {
             const that = this;
-            const basecolors = ['#8dd3c7', '#ffffb3', '#fb8072', '#80b1d3',
+            const basecolors = ['#8dd3c7', '#fee789', '#fe614f', '#80b1d3',
                 '#fdb462', '#b3de69', '#fccde5', '#bc80bd', '#ccebc5', '#ffed6f'];
+            // 1:ffffb3  2:fb8072
             const colors = {}; // fill and opacity
 
             const generateTexture = function(color, index, name) {
@@ -275,18 +275,18 @@ export default {
                 const baseopacity = colors[nodename].opacity;
                 if (depth===0) {
                     const childcnt = node.children.length;
-                    let opacity = baseopacity;
-                    const minOpacity = baseopacity>0.4?0.4:0;
-                    const opacityStep = childcnt>1?(opacity-minOpacity)/(childcnt-1):0;
+                    const opacity = baseopacity;
+                    // const minOpacity = baseopacity>0.4?0.4:0;
+                    // const opacityStep = childcnt>1?(opacity-minOpacity)/(childcnt-1):0;
                     const bestColors = simulatedAnnealing2FindBestPalette(basecolor, childcnt, (newpalette) => evaluatePalette(newpalette), that.colorsscope);
-                    console.log('b', basecolor, bestColors);
+                    console.log(basecolor, bestColors);
                     node.children.forEach((child, idx) => {
                         const childname = typeof(child)==='string'?child:child.name;
                         colors[childname] = {
                             fill: that.rgb2hex(bestColors.id[idx]),
                             opacity: opacity,
                         };
-                        opacity -= opacityStep;
+                        // opacity -= opacityStep;
                         assignColor(child, depth+1);
                     });
                 } else if (depth===1) {

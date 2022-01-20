@@ -32,6 +32,7 @@ export default {
             'labelnames',
             'hierarchyColors',
             'colors',
+            'shownClass',
         ]),
         baseMatrix: function() {
             return this.confusionMatrix;
@@ -109,7 +110,11 @@ export default {
             this.hierarchy = this.getHierarchy(newLabelHierarchy);
             this.getDataAndRender();
         },
-        hierarchyColors: function() {
+        // hierarchyColors: function() {
+        //     this.getDataAndRender();
+        // },
+        shownClass: function(newShownClass, oldShownClass) {
+            this.updateHierarchy(newShownClass);
             this.getDataAndRender();
         },
     },
@@ -169,6 +174,64 @@ export default {
         };
     },
     methods: {
+        highlightCell: function(node) {
+            const label = node[0];
+            const pred = node[1];
+            let shownLabel = '';
+            let shownPred = '';
+            const findShownLabel = function(label, root, parents) {
+                if (root.name===label) {
+                    if (parents.length===0) {
+                        return label;
+                    } else {
+                        for (const p of parents) {
+                            if (p.expand===false) {
+                                return p.name;
+                            }
+                        }
+                        return label;
+                    }
+                }
+                parents.push({name: root.name, expand: root.expand});
+                for (const child of root.children) {
+                    const result = findShownLabel(label, child, parents);
+                    if (result!==null) {
+                        return result;
+                    }
+                }
+                parents.pop();
+                return null;
+            };
+            for (const child of this.hierarchy) {
+                const resultLabel = findShownLabel(label, child, []);
+                if (resultLabel) shownLabel = resultLabel;
+            }
+            for (const child of this.hierarchy) {
+                const resultPred = findShownLabel(pred, child, []);
+                if (resultPred) shownPred = resultPred;
+            }
+
+            // console.log(label, pred, shownLabel+','+shownPred);
+            const that = this;
+            d3.selectAll('.one-cell-g').filter((d) => d.key === shownLabel+','+shownPred)
+                .each(function(d, v, x) {
+                    // d3.select(x[0]).select('rect').attr('fill', 'red');
+                    const strokeWidth = 4;
+                    d3.select(x[0])
+                        .append('rect')
+                        .attr('class', 'mask')
+                        .attr('x', strokeWidth / 2)
+                        .attr('y', strokeWidth / 2)
+                        .attr('width', that.cellAttrs['size'] - strokeWidth)
+                        .attr('height', that.cellAttrs['size'] - strokeWidth)
+                        .attr('stroke', 'orange')
+                        .attr('stroke-width', strokeWidth)
+                        .attr('fill', 'none');
+                });
+        },
+        unhighlightCell(node) {
+            d3.selectAll('.one-cell-g').selectAll('.mask').remove();
+        },
         getHierarchy: function(hierarchy) {
             hierarchy = clone(hierarchy);
             const postorder = function(root, depth) {
@@ -199,6 +262,37 @@ export default {
             }
             return hierarchy;
         },
+        updateHierarchy: function(shownClass) {
+            console.log('hierarchy', shownClass, this.hierarchy);
+            const travel = function(root) {
+                root.expand = false;
+                for (const child of root.children) {
+                    if (shownClass.indexOf(child.name) !== -1) {
+                        root.expand = true;
+                        break;
+                    }
+                }
+                if (root.expand) {
+                    for (const child of root.children) {
+                        travel(child);
+                    }
+                } else {
+                    setUnexpand(root);
+                }
+            };
+            const setUnexpand = function(root) {
+                if (!root) {
+                    return;
+                }
+                root.expand = false;
+                for (const child of root.children) {
+                    setUnexpand(child);
+                }
+            };
+            for (const child of this.hierarchy) {
+                travel(child);
+            }
+        },
         getShowNodes: function(hierarchy) {
             const showNodes = [];
             const stack = Object.values(hierarchy).reverse();
@@ -214,7 +308,7 @@ export default {
             return showNodes;
         },
         getDataAndRender: function() {
-            // this.setLabelColorsByHierarchy(this.colors, this.hierarchy);
+            this.setLabelColorsByHierarchy(this.colors, this.hierarchy);
             // get nodes to show
             this.showNodes = this.getShowNodes(this.hierarchy);
             // get cells to render
@@ -548,19 +642,19 @@ export default {
                         return `M ${x} ${that.cellAttrs['size']} L ${x} ${that.cellAttrs['size']+linelen}`;
                     });
 
-                if (that.showColor) {
-                    that.horizonTextinG.selectAll('rect')
-                        .attr('x', (d) => d.children.length===0?0:that.horizonTextAttrs['font-size'] + that.horizonTextAttrs['iconMargin'])
-                        .attr('y', (that.cellAttrs['size']-that.colorCellSize)/2+that.horizonTextAttrs['iconDy'])
-                        .attr('fill', (d) => that.hierarchyColors[d.name].fill)
-                        .attr('opacity', (d) => that.hierarchyColors[d.name].opacity);
+                // if (that.showColor) {
+                //     that.horizonTextinG.selectAll('rect')
+                //         .attr('x', (d) => d.children.length===0?0:that.horizonTextAttrs['font-size'] + that.horizonTextAttrs['iconMargin'])
+                //         .attr('y', (that.cellAttrs['size']-that.colorCellSize)/2+that.horizonTextAttrs['iconDy'])
+                //         .attr('fill', (d) => that.hierarchyColors[d.name].fill)
+                //         .attr('opacity', (d) => that.hierarchyColors[d.name].opacity);
 
-                    that.verticalTextinG.selectAll('rect')
-                        .attr('x', (d) => d.children.length===0?0:that.verticalTextAttrs['font-size'] + that.verticalTextAttrs['iconMargin'])
-                        .attr('y', (that.cellAttrs['size']-that.colorCellSize)/2+that.verticalTextAttrs['iconDy'])
-                        .attr('fill', (d) => that.hierarchyColors[d.name].fill)
-                        .attr('opacity', (d) => that.hierarchyColors[d.name].opacity);
-                }
+                //     that.verticalTextinG.selectAll('rect')
+                //         .attr('x', (d) => d.children.length===0?0:that.verticalTextAttrs['font-size'] + that.verticalTextAttrs['iconMargin'])
+                //         .attr('y', (that.cellAttrs['size']-that.colorCellSize)/2+that.verticalTextAttrs['iconDy'])
+                //         .attr('fill', (d) => that.hierarchyColors[d.name].fill)
+                //         .attr('opacity', (d) => that.hierarchyColors[d.name].opacity);
+                // }
 
                 that.matrixCellsinG
                     .transition()
