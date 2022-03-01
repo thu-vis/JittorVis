@@ -1,0 +1,494 @@
+{
+    "flowers": {
+        "fill": "#8dd3c7",
+        "opacity": 1
+    },
+    "orchid": {
+        "fill": "#acd8ea",
+        "opacity": 1
+    },
+    "poppy": {
+        "fill": "#80fefe",
+        "opacity": 1
+    },
+    "rose": {
+        "fill": "#8eb1f5",
+        "opacity": 1
+    },
+    "sunflower": {
+        "fill": "#d3d7ff",
+        "opacity": 1
+    },
+    "tulip": {
+        "fill": "#c4f9d4",
+        "opacity": 1
+    },
+    "fruit and vegetables": {
+        "fill": "#fee789",
+        "opacity": 1
+    },
+    "apple": {
+        "fill": "#febd00",
+        "opacity": 1
+    },
+    "mushroom": {
+        "fill": "#fff808",
+        "opacity": 1
+    },
+    "orange": {
+        "fill": "#bab812",
+        "opacity": 1
+    },
+    "pear": {
+        "fill": "#f5ffb6",
+        "opacity": 1
+    },
+    "sweet pepper": {
+        "fill": "#ccff22",
+        "opacity": 1
+    },
+    "large man-made outdoor things": {
+        "fill": "#fe614f",
+        "opacity": 1
+    },
+    "bridge": {
+        "fill": "#fe4501",
+        "opacity": 1
+    },
+    "castle": {
+        "fill": "#b10042",
+        "opacity": 1
+    },
+    "house": {
+        "fill": "#c60000",
+        "opacity": 1
+    },
+    "road": {
+        "fill": "#fe0050",
+        "opacity": 1
+    },
+    "skyscraper": {
+        "fill": "#6f0000",
+        "opacity": 1
+    },
+    "large natural outdoor scenes": {
+        "fill": "#80b1d3",
+        "opacity": 1
+    },
+    "cloud": {
+        "fill": "#96a5ff",
+        "opacity": 1
+    },
+    "forest": {
+        "fill": "#0900ff",
+        "opacity": 1
+    },
+    "mountain": {
+        "fill": "#29d7ff",
+        "opacity": 1
+    },
+    "plain": {
+        "fill": "#00295f",
+        "opacity": 1
+    },
+    "sea": {
+        "fill": "#007197",
+        "opacity": 1
+    },
+    "people": {
+        "fill": "#fdb462",
+        "opacity": 1
+    },
+    "baby": {
+        "fill": "#be3a00",
+        "opacity": 1
+    },
+    "boy": {
+        "fill": "#f66148",
+        "opacity": 1
+    },
+    "girl": {
+        "fill": "#feb769",
+        "opacity": 1
+    },
+    "man": {
+        "fill": "#dc6f0b",
+        "opacity": 1
+    },
+    "woman": {
+        "fill": "#c48b00",
+        "opacity": 1
+    },
+    "trees": {
+        "fill": "#b3de69",
+        "opacity": 1
+    },
+    "maple tree": {
+        "fill": "#5ea762",
+        "opacity": 1
+    },
+    "oak tree": {
+        "fill": "#56febf",
+        "opacity": 1
+    },
+    "palm tree": {
+        "fill": "#b9e602",
+        "opacity": 1
+    },
+    "pine tree": {
+        "fill": "#005145",
+        "opacity": 1
+    },
+    "willow tree": {
+        "fill": "#506500",
+        "opacity": 1
+    },
+    "vehicles": {
+        "fill": "#fccde5",
+        "opacity": 1
+    },
+    "vehicles 1": {
+        "fill": "#e830ee",
+        "opacity": 1
+    },
+    "bicycle": {
+        "fill": "url(#texture-bicycle)",
+        "opacity": 1
+    },
+    "bus": {
+        "fill": "url(#texture-bus)",
+        "opacity": 1
+    },
+    "motorcycle": {
+        "fill": "url(#texture-motorcycle)",
+        "opacity": 1
+    },
+    "pickup truck": {
+        "fill": "url(#texture-pickup-truck)",
+        "opacity": 1
+    },
+    "train": {
+        "fill": "url(#texture-train)",
+        "opacity": 1
+    },
+    "vehicles 2": {
+        "fill": "#fe8c80",
+        "opacity": 1
+    },
+    "lawn mower": {
+        "fill": "url(#texture-lawn-mower)",
+        "opacity": 1
+    },
+    "rocket": {
+        "fill": "url(#texture-rocket)",
+        "opacity": 1
+    },
+    "streetcar": {
+        "fill": "url(#texture-streetcar)",
+        "opacity": 1
+    },
+    "tank": {
+        "fill": "url(#texture-tank)",
+        "opacity": 1
+    },
+    "tractor": {
+        "fill": "url(#texture-tractor)",
+        "opacity": 1
+    },
+    "animals": {
+        "fill": "#bc80bd",
+        "opacity": 1
+    },
+    "aquatic mammals": {
+        "fill": "#b079b7",
+        "opacity": 1
+    },
+    "beaver": {
+        "fill": "url(#texture-beaver)",
+        "opacity": 1
+    },
+    "dolphin": {
+        "fill": "url(#texture-dolphin)",
+        "opacity": 1
+    },
+    "otter": {
+        "fill": "url(#texture-otter)",
+        "opacity": 1
+    },
+    "seal": {
+        "fill": "url(#texture-seal)",
+        "opacity": 1
+    },
+    "whale": {
+        "fill": "url(#texture-whale)",
+        "opacity": 1
+    },
+    "fish": {
+        "fill": "#93616a",
+        "opacity": 1
+    },
+    "aquarium fish": {
+        "fill": "url(#texture-aquarium-fish)",
+        "opacity": 1
+    },
+    "flatfish": {
+        "fill": "url(#texture-flatfish)",
+        "opacity": 1
+    },
+    "ray": {
+        "fill": "url(#texture-ray)",
+        "opacity": 1
+    },
+    "shark": {
+        "fill": "url(#texture-shark)",
+        "opacity": 1
+    },
+    "trout": {
+        "fill": "url(#texture-trout)",
+        "opacity": 1
+    },
+    "insects": {
+        "fill": "#cd009e",
+        "opacity": 1
+    },
+    "bee": {
+        "fill": "url(#texture-bee)",
+        "opacity": 1
+    },
+    "beetle": {
+        "fill": "url(#texture-beetle)",
+        "opacity": 1
+    },
+    "butterfly": {
+        "fill": "url(#texture-butterfly)",
+        "opacity": 1
+    },
+    "caterpillar": {
+        "fill": "url(#texture-caterpillar)",
+        "opacity": 1
+    },
+    "cockroach": {
+        "fill": "url(#texture-cockroach)",
+        "opacity": 1
+    },
+    "large carnivores": {
+        "fill": "#383867",
+        "opacity": 1
+    },
+    "bear": {
+        "fill": "url(#texture-bear)",
+        "opacity": 1
+    },
+    "leopard": {
+        "fill": "url(#texture-leopard)",
+        "opacity": 1
+    },
+    "lion": {
+        "fill": "url(#texture-lion)",
+        "opacity": 1
+    },
+    "tiger": {
+        "fill": "url(#texture-tiger)",
+        "opacity": 1
+    },
+    "wolf": {
+        "fill": "url(#texture-wolf)",
+        "opacity": 1
+    },
+    "reptiles": {
+        "fill": "#481d2f",
+        "opacity": 1
+    },
+    "crocodile": {
+        "fill": "url(#texture-crocodile)",
+        "opacity": 1
+    },
+    "dinosaur": {
+        "fill": "url(#texture-dinosaur)",
+        "opacity": 1
+    },
+    "lizard": {
+        "fill": "url(#texture-lizard)",
+        "opacity": 1
+    },
+    "snake": {
+        "fill": "url(#texture-snake)",
+        "opacity": 1
+    },
+    "turtle": {
+        "fill": "url(#texture-turtle)",
+        "opacity": 1
+    },
+    "small mammals": {
+        "fill": "#26003b",
+        "opacity": 1
+    },
+    "hamster": {
+        "fill": "url(#texture-hamster)",
+        "opacity": 1
+    },
+    "mouse": {
+        "fill": "url(#texture-mouse)",
+        "opacity": 1
+    },
+    "rabbit": {
+        "fill": "url(#texture-rabbit)",
+        "opacity": 1
+    },
+    "shrew": {
+        "fill": "url(#texture-shrew)",
+        "opacity": 1
+    },
+    "squirrel": {
+        "fill": "url(#texture-squirrel)",
+        "opacity": 1
+    },
+    "large omnivores and herbivores": {
+        "fill": "#7a0481",
+        "opacity": 1
+    },
+    "camel": {
+        "fill": "url(#texture-camel)",
+        "opacity": 1
+    },
+    "cattle": {
+        "fill": "url(#texture-cattle)",
+        "opacity": 1
+    },
+    "chimpanzee": {
+        "fill": "url(#texture-chimpanzee)",
+        "opacity": 1
+    },
+    "elephant": {
+        "fill": "url(#texture-elephant)",
+        "opacity": 1
+    },
+    "kangaroo": {
+        "fill": "url(#texture-kangaroo)",
+        "opacity": 1
+    },
+    "medium-sized mammals": {
+        "fill": "#7632e7",
+        "opacity": 1
+    },
+    "fox": {
+        "fill": "url(#texture-fox)",
+        "opacity": 1
+    },
+    "porcupine": {
+        "fill": "url(#texture-porcupine)",
+        "opacity": 1
+    },
+    "possum": {
+        "fill": "url(#texture-possum)",
+        "opacity": 1
+    },
+    "raccoon": {
+        "fill": "url(#texture-raccoon)",
+        "opacity": 1
+    },
+    "skunk": {
+        "fill": "url(#texture-skunk)",
+        "opacity": 1
+    },
+    "non-insect invertebrates": {
+        "fill": "#8b79fa",
+        "opacity": 1
+    },
+    "crab": {
+        "fill": "url(#texture-crab)",
+        "opacity": 1
+    },
+    "lobster": {
+        "fill": "url(#texture-lobster)",
+        "opacity": 1
+    },
+    "snail": {
+        "fill": "url(#texture-snail)",
+        "opacity": 1
+    },
+    "spider": {
+        "fill": "url(#texture-spider)",
+        "opacity": 1
+    },
+    "worm": {
+        "fill": "url(#texture-worm)",
+        "opacity": 1
+    },
+    "household goods": {
+        "fill": "#ccebc5",
+        "opacity": 1
+    },
+    "food containers": {
+        "fill": "#edffd3",
+        "opacity": 1
+    },
+    "bottle": {
+        "fill": "url(#texture-bottle)",
+        "opacity": 1
+    },
+    "bowl": {
+        "fill": "url(#texture-bowl)",
+        "opacity": 1
+    },
+    "can": {
+        "fill": "url(#texture-can)",
+        "opacity": 1
+    },
+    "cup": {
+        "fill": "url(#texture-cup)",
+        "opacity": 1
+    },
+    "plate": {
+        "fill": "url(#texture-plate)",
+        "opacity": 1
+    },
+    "household electrical devices": {
+        "fill": "#95f788",
+        "opacity": 1
+    },
+    "clock": {
+        "fill": "url(#texture-clock)",
+        "opacity": 1
+    },
+    "keyboard": {
+        "fill": "url(#texture-keyboard)",
+        "opacity": 1
+    },
+    "lamp": {
+        "fill": "url(#texture-lamp)",
+        "opacity": 1
+    },
+    "telephone": {
+        "fill": "url(#texture-telephone)",
+        "opacity": 1
+    },
+    "television": {
+        "fill": "url(#texture-television)",
+        "opacity": 1
+    },
+    "household furniture": {
+        "fill": "#e4ff98",
+        "opacity": 1
+    },
+    "bed": {
+        "fill": "url(#texture-bed)",
+        "opacity": 1
+    },
+    "chair": {
+        "fill": "url(#texture-chair)",
+        "opacity": 1
+    },
+    "couch": {
+        "fill": "url(#texture-couch)",
+        "opacity": 1
+    },
+    "table": {
+        "fill": "url(#texture-table)",
+        "opacity": 1
+    },
+    "wardrobe": {
+        "fill": "url(#texture-wardrobe)",
+        "opacity": 1
+    }
+}
