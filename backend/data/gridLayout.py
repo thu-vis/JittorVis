@@ -40,9 +40,9 @@ class GridLayout(object):
             X_embedded = self.tsner.fit_transform(X, constraint_X = constraintX, constraint_Y = constraintY, prev_n = 0 if constraintX is None else len(constraintX), 
             alpha = 0.5, labels=labels, label_alpha=0.9)
         else:
-            self.tsner = IncrementalTSNE(n_components=2, init='pca' if init is None else init, method='barnes_hut', perplexity=5, angle=0.3, n_jobs=8, n_iter=1000, random_state = 100)
+            self.tsner = IncrementalTSNE(n_components=2, init='pca' if init is None else init, method='barnes_hut', perplexity=50, angle=0.3, n_jobs=8, n_iter=1000, random_state = 100)
             X_embedded = self.tsner.fit_transform(X, constraint_X = constraintX, constraint_Y = constraintY, constraint_labels = constraintLabels, prev_n = 0 if constraintX is None else len(constraintX), 
-            alpha = 0.3, labels = labels, label_alpha=0.2)
+            alpha = 0.1, labels = labels, label_alpha=0.1)
         return X_embedded
     
     def grid(self, X_embedded: np.ndarray):
