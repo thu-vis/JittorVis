@@ -3,10 +3,10 @@
         <div class="featurenode-header" style="margin-bottom:3px; margin-top:3px">
             <span style="font-size:10px; cursor:pointer; font-family:Comic Sans MS;
                 margin-left:3px;">{{ nodeId }}</span>
-            <el-slider v-model="actThreshold" :min="0" :max="maxActivation" input-size="mini"
+            <el-slider v-show="curVis=='origin'" v-model="actThreshold" :min="0" :max="maxActivation" input-size="mini"
                 :step="0.001" style="width: 150px; margin: 0 20px 0 20px;"></el-slider>
             <div style="width: 50px; flex-grow: 100;"></div>
-            <div style="display:inline-flex; width:50px; margin-right:10px">
+            <div style="display:inline-flex; width:100px; margin-right:10px">
                 <el-select class="visselect" :popper-append-to-body="false" v-on:change="changeKey" v-model="curVis" placeholder="origin">
                     <el-option
                         v-for="item in visOptions"
@@ -60,8 +60,8 @@ export default {
     },
     data: function() {
         return {
-            curVis: '',
-            visOptions: ['original', 'smooth grad'],
+            curVis: 'origin',
+            visOptions: ['origin', 'discrepancy map'],
             leafNode: null,
             leafNodeShape: [],
             featureImages: [],
@@ -80,6 +80,7 @@ export default {
     },
     methods: {
         changeKey: function() {
+            this.getFeatureImages();
         },
         getFeatureImage: function(featureURL) {
             const that = this;
@@ -110,47 +111,92 @@ export default {
             context.putImageData(image, 0, 0);
             return canvas.toDataURL();
         },
+        toImage: function(feature) {
+            // return array;
+            window.feature = feature;
+            const canvas = this.toImage.canvas || (this.toImage.canvas = document.createElement('canvas'));
+            const context = canvas.getContext('2d');
+            const height = feature.length;
+            const width = feature[0].length;
+            const depth = feature[0][0].length;
+            canvas.width = width;
+            canvas.height = height;
+            const image = context.createImageData(width, height);
+            const data = image.data;
+            if (depth==1) {
+                for (let i=0; i<data.length; i+=4) {
+                    const v = feature[Math.floor(i/4/width)][(i/4)%width];
+                    data[i] = v[0];
+                    data[i+1] = v[0];
+                    data[i+2] = v[0];
+                    data[i+3] = 255;
+                }
+            } else {
+                for (let i=0; i<data.length; i+=4) {
+                    const v = feature[Math.floor(i/4/width)][(i/4)%width];
+                    data[i] = v[0];
+                    data[i+1] = v[1];
+                    data[i+2] = v[2];
+                    data[i+3] = 255;
+                }
+            }
+            context.putImageData(image, 0, 0);
+            return canvas.toDataURL();
+        },
+        getFeatureImages: function() {
+            if (this.nodeId != undefined) {
+                const that = this;
+                const store = this.$store;
+                that.rendering = true;
+                console.log('imageID', store.getters.selectedImageID);
+                axios.post(store.getters.URL_GET_FEATURE_INFO, {
+                    'branch': this.nodeId,
+                    'method': this.curVis,
+                    'imageID': store.getters.selectedImageID,
+                }).then(function(response) {
+                    that.rendering = false;
+                    that.leafNode = response.data.leafID;
+                    if (that.leafNode === -1) {
+                        that.featureImages = [];
+                        return;
+                    }
+                    that.leafNodeShape = response.data.shape;
+                    that.featureMaxActivations = response.data.maxActivations;
+                    that.featureMinActivations = response.data.minActivations;
+                    if (that.leafNodeShape.length===1) {
+                        that.featureImages = [];
+                    } else {
+                        // other layer
+                        const featureMatrixs = response.data.features;
+                        // get max/min value to compute d3-scale
+                        let maxv = 0.00001;
+                        let minv = -0.0001;
+                        that.featureMaxActivations.forEach((d) => {
+                            maxv = Math.max(maxv, d);
+                        });
+                        that.maxActivation = maxv;
+                        that.featureMinActivations.forEach((d) => {
+                            minv = Math.min(minv, d);
+                        });
+                        console.log(`Feature map max: ${maxv}, min: ${minv}`);
+                        console.log('Feature matrix', featureMatrixs);
+                        window.featureMatrixs = featureMatrixs;
+                        if (that.curVis=='' || that.curVis=='origin') {
+                            that.featureImages = featureMatrixs.map((d) => {
+                                return that.featureMapToImage(d, maxv, minv);
+                            });
+                        } else {
+                            that.featureImages = featureMatrixs.map((d) => {
+                                return that.toImage(d);
+                            });
+                        }
+                    }
+                });
+            }
+        },
     },
     mounted: function() {
-        if (this.nodeId != undefined) {
-            const that = this;
-            const store = this.$store;
-            axios.post(store.getters.URL_GET_FEATURE_INFO, {
-                'branch': this.nodeId,
-            }).then(function(response) {
-                that.rendering = false;
-                that.leafNode = response.data.leafID;
-                if (that.leafNode === -1) {
-                    that.featureImages = [];
-                    return;
-                }
-                that.leafNodeShape = response.data.shape;
-                that.featureMaxActivations = response.data.maxActivations;
-                that.featureMinActivations = response.data.minActivations;
-                if (that.leafNodeShape.length===1) {
-                    that.featureImages = [];
-                } else {
-                    // other layer
-                    const featureMatrixs = response.data.features;
-                    // get max/min value to compute d3-scale
-                    let maxv = 0.00001;
-                    let minv = -0.0001;
-                    that.featureMaxActivations.forEach((d) => {
-                        maxv = Math.max(maxv, d);
-                    });
-                    that.maxActivation = maxv;
-                    that.featureMinActivations.forEach((d) => {
-                        minv = Math.min(minv, d);
-                    });
-                    console.log(`Feature map max: ${maxv}, min: ${minv}`);
-                    console.log('Feature matrix', featureMatrixs);
-
-                    that.featureImages = featureMatrixs.map((d) => {
-                        return that.featureMapToImage(d, maxv, minv);
-                    });
-                }
-            });
-        }
+        this.getFeatureImages();
     },
 };
 </script>
@@ -158,8 +204,6 @@ export default {
 <style scoped>
 .featurenode {
     width: 100%;
-    max-height: 480px;
-    overflow: hidden;
     border-top: 1px solid #aaaaaa;
     border-radius: 2px;
     padding: 3px;
@@ -177,7 +221,6 @@ export default {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    height: 480px;
     align-items: flex-start;
 }
 .featuremap {
@@ -188,7 +231,7 @@ export default {
     font-size: 5px;
     line-height: 15px;
     height: 15px;
-    width: 50px;
+    width: 100px;
     padding-left: 2px;
     padding-right: 15px;
     border: 1px solid #aaaaaa;
