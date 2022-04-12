@@ -107,10 +107,12 @@ export default {
     },
     watch: {
         labelHierarchy: function(newLabelHierarchy, oldLabelHierarchy) {
+            console.log('label hierarchy');
             this.hierarchy = this.getHierarchy(newLabelHierarchy);
             this.getDataAndRender();
         },
         hierarchyColors: function() {
+            console.log('hierarchy colors');
             this.getDataAndRender();
         },
         shownClass: function(newShownClass, oldShownClass) {
@@ -120,6 +122,7 @@ export default {
     },
     data: function() {
         return {
+            rendering: false,
             hierarchy: {},
             // layout
             textGWidth: 0,
@@ -308,6 +311,10 @@ export default {
             return showNodes;
         },
         getDataAndRender: function() {
+            if (this.rendering) {
+                return;
+            }
+            this.rendering = true;
             // this.setLabelColorsByHierarchy(this.colors, this.hierarchy);
             // get nodes to show
             this.showNodes = this.getShowNodes(this.hierarchy);
@@ -333,6 +340,7 @@ export default {
                 }
             }
             this.render();
+            this.rendering = false;
         },
         setLabelColorsByHierarchy: function(colors, hierarchy) {
             const hierarchyColors = {};
