@@ -13,6 +13,7 @@ from jittor import transform
 from data.feature_vis import FeatureVis
 from data.feature_utils import generate_discrepancy_map
 from queue import PriorityQueue
+import data.reorder.reorder as reorder
 
 class DataCtrler(object):
 
@@ -72,6 +73,23 @@ class DataCtrler(object):
             
             sampling_buffer_path = os.path.join(bufferPath, "hierarchy.pkl")
             self.sampling = self.processSamplingData(sampling_buffer_path)
+            
+        # matrix reordering
+        print("===================matrix reordering=====================")
+        reorderPath = os.path.join(bufferPath, "reorder.json")
+        if not os.path.exists(reorderPath):
+            print("reordering...")
+            ordered_hierarchy = reorder.getOrderedHierarchy(self.statistic["confusion"])
+            with open(reorderPath, 'w') as f:
+                json.dump(ordered_hierarchy, f)
+        else:
+            print("using buffer from", reorderPath)
+        with open(reorderPath) as fr:
+            ordered_hierarchy = json.load(fr)
+        print("===================matrix reorder done=====================")
+        self.statistic["confusion"]['hierarchy'] = ordered_hierarchy
+        
+        
         self.trainImages = trainImages
         
     def getBranchTree(self) -> dict:
