@@ -62,13 +62,15 @@ export default {
             });
         axios.post(store.getters.URL_GET_CONFUSION_MATRIX)
             .then(function(response) {
-                store.commit('setConfusionMatrix', response.data);
-                console.log('confusion matrix data', response.data);
-                const colors = that.initColor(store.getters.labelHierarchy);
+                const matrix = response.data;
+                const colors = that.initColor(matrix.hierarchy);
                 store.commit('setColors', colors);
                 // init hierarchy colors
                 const hierarchyColors = {...colors};
                 store.commit('setHierarchyColors', hierarchyColors);
+                // save confusion matrix data
+                store.commit('setConfusionMatrix', matrix);
+                console.log('confusion matrix data', matrix);
             });
         if (this.$route.path === '/') {
             this.$router.push('/modelview');
