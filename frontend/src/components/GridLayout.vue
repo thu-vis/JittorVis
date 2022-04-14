@@ -81,6 +81,8 @@ export default {
     data: function() {
         return {
             nodes: [],
+            showImageNodesMax: 40,
+            showImageNodes: [],
             depth: 0,
             gridInfo: {},
             rendering: false,
@@ -100,6 +102,7 @@ export default {
                 'centerClass': 'lasso-node',
                 'centerClassNotSelect': 'lasso-not-possible',
                 'centerClassSelect': 'lasso-possible',
+                'imageMargin': 2,
             },
 
             tooltipClass: 'cell-tooltip',
@@ -130,6 +133,13 @@ export default {
             });
         },
         render: async function() {
+            // sort nodes and find most unconfident nodes
+            this.nodes.sort(function(a, b) {
+                return a.confidence-b.confidence;
+            });
+            for (let i=0; i<Math.min(this.showImageNodesMax, this.nodes.length); i++) {
+                this.nodes[i].showImage = true;
+            }
             // set color
             this.setLabelColor(this.labelHierarchy, this.colors, this.nodes, this.labelnames);
 
@@ -191,6 +201,24 @@ export default {
                     .attr('stroke-width', that.gridCellAttrs['stroke-width'])
                     .attr('fill', (d)=>that.hierarchyColors[that.labelnames[d.pred]].fill)
                     .attr('opacity', (d)=>that.hierarchyColors[that.labelnames[d.pred]].opacity);
+
+                gridCellsInG.filter(function(d) {
+                    return d.showImage;
+                }).append('image')
+                    .attr('x', that.gridCellAttrs['imageMargin'])
+                    .attr('y', that.gridCellAttrs['imageMargin'])
+                    .attr('width', that.gridCellAttrs['size']-2*that.gridCellAttrs['imageMargin'])
+                    .attr('height', that.gridCellAttrs['size']-2*that.gridCellAttrs['imageMargin'])
+                    .attr('href', '')
+                    .each(function(node) {
+                        const getImageGradientURL = that.$store.getters.URL_GET_IMAGE_GRADIENT;
+                        // eslint-disable-next-line no-invalid-this
+                        const img = d3.select(this);
+                        axios.get(getImageGradientURL(node.index, 'origin'))
+                            .then(function(response) {
+                                img.attr('href', that.toImage(response.data));
+                            });
+                    });
 
                 that.lassoNodesInG.enter().append('circle')
                     .attr('class', that.gridCellAttrs['centerClass'])
@@ -442,6 +470,7 @@ export default {
                     tooltip.style('display', 'flex');
                     tooltip.html(`<div class="grid-tooltip-info">ID: ${node.index}</div>
                         <div>${that.labelnames[node.label]} -> ${that.labelnames[node.pred]}</div>
+                        <div>confidence: ${Math.round(node.confidence*100000)/100000}</div>
                     <img class="gird-tooltip-image" src="${that.toImage(response.data)}"/>
                     <div id="grid-tooltip-arrow" data-popper-arrow></div>`);
                     return tooltip.node();
