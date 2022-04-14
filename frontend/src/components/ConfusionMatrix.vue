@@ -15,6 +15,7 @@ import * as d3 from 'd3';
 import Util from './Util.vue';
 import GlobalVar from './GlovalVar.vue';
 import clone from 'just-clone';
+import {Mutex} from 'async-mutex';
 
 export default {
     name: 'ConfusionMatrix',
@@ -107,12 +108,10 @@ export default {
     },
     watch: {
         labelHierarchy: function(newLabelHierarchy, oldLabelHierarchy) {
-            console.log('label hierarchy');
             this.hierarchy = this.getHierarchy(newLabelHierarchy);
             this.getDataAndRender();
         },
         hierarchyColors: function() {
-            console.log('hierarchy colors');
             this.getDataAndRender();
         },
         shownClass: function(newShownClass, oldShownClass) {
@@ -122,7 +121,6 @@ export default {
     },
     data: function() {
         return {
-            rendering: false,
             hierarchy: {},
             // layout
             textGWidth: 0,
@@ -174,6 +172,7 @@ export default {
             },
             // buffer
             maxCellValue: 0,
+            mutex: new Mutex(),
         };
     },
     methods: {
@@ -311,36 +310,34 @@ export default {
             return showNodes;
         },
         getDataAndRender: function() {
-            if (this.rendering) {
-                return;
-            }
-            this.rendering = true;
-            // this.setLabelColorsByHierarchy(this.colors, this.hierarchy);
+            const that = this;
+            this.mutex.runExclusive(function() {
+                // this.setLabelColorsByHierarchy(this.colors, this.hierarchy);
             // get nodes to show
-            this.showNodes = this.getShowNodes(this.hierarchy);
-            // get cells to render
-            this.cells = [];
-            this.maxCellValue = 0;
-            for (let i=0; i<this.showNodes.length; i++) {
-                const nodea = this.showNodes[i];
-                for (let j=0; j<this.showNodes.length; j++) {
-                    const nodeb = this.showNodes[j];
-                    const cell = {
-                        key: nodea.name+','+nodeb.name,
-                        value: this.getTwoCellConfusion(nodea, nodeb),
-                        row: i,
-                        column: j,
-                        rowNode: nodea,
-                        colNode: nodeb,
-                    };
-                    this.cells.push(cell);
-                    if (!this.isHideCell(cell) && i!=j) {
-                        this.maxCellValue = Math.max(this.maxCellValue, cell.value*2);
+                that.showNodes = that.getShowNodes(that.hierarchy);
+                // get cells to render
+                that.cells = [];
+                that.maxCellValue = 0;
+                for (let i=0; i<that.showNodes.length; i++) {
+                    const nodea = that.showNodes[i];
+                    for (let j=0; j<that.showNodes.length; j++) {
+                        const nodeb = that.showNodes[j];
+                        const cell = {
+                            key: nodea.name+','+nodeb.name,
+                            value: that.getTwoCellConfusion(nodea, nodeb),
+                            row: i,
+                            column: j,
+                            rowNode: nodea,
+                            colNode: nodeb,
+                        };
+                        that.cells.push(cell);
+                        if (!that.isHideCell(cell) && i!=j) {
+                            that.maxCellValue = Math.max(that.maxCellValue, cell.value*2);
+                        }
                     }
                 }
-            }
-            this.render();
-            this.rendering = false;
+                that.render();
+            });
         },
         setLabelColorsByHierarchy: function(colors, hierarchy) {
             const hierarchyColors = {};

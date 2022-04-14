@@ -70,6 +70,8 @@ class DataCtrler(object):
             self.labels = predictData["labels"].astype(int)
             self.preds = predictData["preds"].astype(int)
             self.features = predictData["features"]
+            self.scores = predictData["scores"]
+            self.confidence = np.max(self.scores, axis=1)
             
             sampling_buffer_path = os.path.join(bufferPath, "hierarchy.pkl")
             self.sampling = self.processSamplingData(sampling_buffer_path)
@@ -310,6 +312,7 @@ class DataCtrler(object):
             zoomInNodes = nodes + zoomInNodes
         zoomInLabels = self.labels[zoomInNodes]
         zoomInPreds = self.preds[zoomInNodes]
+        zoomInConfidence = self.confidence[zoomInNodes]
 
         def getBottomLabels(zoomInNodes):
             hierarchy = copy.deepcopy(self.statistic['confusion']['hierarchy'])
@@ -408,6 +411,7 @@ class DataCtrler(object):
         grid = grid.tolist()
         zoomInLabels = zoomInLabels.tolist()
         zoomInPreds = zoomInPreds.tolist()
+        zoomInConfidence = zoomInConfidence.tolist()
 
         n = len(zoomInNodes)
         nodes = [{
@@ -415,7 +419,8 @@ class DataCtrler(object):
             "tsne": tsne[i],
             "grid": grid[i],
             "label": zoomInLabels[i],
-            "pred": zoomInPreds[i]
+            "pred": zoomInPreds[i],
+            "confidence": zoomInConfidence[i]
         } for i in range(n)]
         res = {
             "nodes": nodes,
