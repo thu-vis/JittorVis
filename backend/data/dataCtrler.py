@@ -53,7 +53,7 @@ class DataCtrler(object):
             data = data.reshape((n, d))
             
             labels = self.labels
-            self.sampler.fit(data, labels, 0.5, 1600)
+            self.sampler.fit(data, labels, 0.5, 400)
             self.sampler.dump(self.sampling_buffer_path)
 
     def process(self, networkRawdata, statisticData, model = None, predictData = None, modeltype='jittor', trainImages = None, bufferPath="/tmp/hierarchy.pkl", attrs = {}):
