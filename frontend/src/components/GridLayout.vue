@@ -81,7 +81,7 @@ export default {
     data: function() {
         return {
             nodes: [],
-            showImageNodesMax: 40,
+            showImageNodesMax: 1600,
             showImageNodes: [],
             depth: 0,
             gridInfo: {},
@@ -94,7 +94,7 @@ export default {
             //
             gridCellAttrs: {
                 'gClass': 'grid-cell-in-g',
-                'size': 30,
+                'size': 60,
                 'stroke-width': 0,
                 'stroke': 'gray',
                 'rectOpacity': 1,
@@ -102,7 +102,7 @@ export default {
                 'centerClass': 'lasso-node',
                 'centerClassNotSelect': 'lasso-not-possible',
                 'centerClassSelect': 'lasso-possible',
-                'imageMargin': 2,
+                'imageMargin': 4,
             },
 
             tooltipClass: 'cell-tooltip',

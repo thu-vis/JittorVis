@@ -5,6 +5,9 @@ import faiss
 import logging
 from sklearn.neighbors import NearestNeighbors
 from sklearn.decomposition import PCA
+import mkl
+
+mkl.get_max_threads()
 
 logging.basicConfig(level=logging.INFO)
 
